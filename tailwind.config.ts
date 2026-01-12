@@ -9,11 +9,25 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        primary: "var(--color-primary)",
+        secondary: "var(--color-secondary)",
+        accent: "var(--color-accent)",
+        success: "var(--color-success)",
+        error: "var(--color-error)",
+        background: "var(--color-background)",
+        foreground: "var(--color-foreground)",
+      },
+      fontFamily: {
+        rubik: ["var(--font-rubik)", "sans-serif"],
+        heebo: ["var(--font-heebo)", "sans-serif"],
+      },
+      borderRadius: {
+        DEFAULT: "8px",
+        lg: "12px",
       },
     },
   },
   plugins: [],
 };
+
 export default config;
