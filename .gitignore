@@ -44,6 +44,9 @@ firebase-debug.log
 # Claude Code local settings
 .claude/settings.local.json
 
+# Git worktrees
+.worktrees/
+
 # Misc
 *.tsbuildinfo
 next-env.d.ts
