@@ -47,3 +47,4 @@ firebase-debug.log
 # Misc
 *.tsbuildinfo
 next-env.d.ts
+tmpclaude-*
