@@ -64,7 +64,7 @@ export function PostCard({
         <div className="border-t pt-4 mt-4 space-y-3">
           <h4 className="font-medium text-sm text-gray-600">תגובות</h4>
           {post.replies.map((reply, i) => (
-            <div key={i} className="bg-gray-50 rounded-lg p-3">
+            <div key={reply.id || `legacy_${i}`} className="bg-gray-50 rounded-lg p-3">
               <p className="text-sm">{reply.content}</p>
               <p className="text-xs text-gray-500 mt-1">
                 {reply.authorName} • {reply.createdAt?.toLocaleDateString("he-IL")}

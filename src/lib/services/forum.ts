@@ -57,11 +57,13 @@ export async function createPost(
 
 export async function addReply(
   postId: string,
-  reply: Omit<ForumReply, "createdAt">
+  reply: Omit<ForumReply, "id" | "createdAt">
 ): Promise<void> {
   try {
+    const replyId = `reply_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
     await updateDoc(doc(db, COLLECTION, postId), {
       replies: arrayUnion({
+        id: replyId,
         ...reply,
         createdAt: new Date(),
       }),

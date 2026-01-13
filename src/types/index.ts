@@ -88,6 +88,7 @@ export interface ForumPost {
 }
 
 export interface ForumReply {
+  id: string;
   authorName: string;
   content: string;
   createdAt: Date;
