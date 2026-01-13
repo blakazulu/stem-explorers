@@ -28,7 +28,7 @@ export async function getPostsByRoom(room: ForumRoom): Promise<ForumPost[]> {
     id: doc.id,
     ...doc.data(),
     createdAt: doc.data().createdAt?.toDate(),
-    replies: doc.data().replies?.map((r: any) => ({
+    replies: doc.data().replies?.map((r: { createdAt?: { toDate: () => Date } }) => ({
       ...r,
       createdAt: r.createdAt?.toDate(),
     })),
