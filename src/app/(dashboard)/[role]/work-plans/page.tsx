@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { GradeSelector } from "@/components/ui/GradeSelector";
@@ -17,11 +18,23 @@ export default function WorkPlansGradeSelectorPage() {
   const isTeacher = session?.user.role === "teacher";
   const canManage = isAdmin || isTeacher;
 
+  // Teachers with a grade should redirect to their grade
+  useEffect(() => {
+    if (isTeacher && session?.user.grade) {
+      router.replace(`/${role}/work-plans/${session.user.grade}`);
+    }
+  }, [isTeacher, session?.user.grade, role, router]);
+
   function handleGradeSelect(grade: Grade) {
     router.push(`/${role}/work-plans/${grade}`);
   }
 
   if (!canManage) {
+    return null;
+  }
+
+  // Teachers with grade - will redirect, show nothing
+  if (isTeacher && session?.user.grade) {
     return null;
   }
 

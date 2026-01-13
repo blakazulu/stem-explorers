@@ -56,9 +56,9 @@ export default function EditUnitPage() {
       return;
     }
     if (!isAdmin) {
-      router.replace(backUrl);
+      router.replace(`/${role}/work-plans/${encodeURIComponent(grade)}`);
     }
-  }, [grade, role, router, isAdmin, backUrl]);
+  }, [grade, role, router, isAdmin]);
 
   // Load unit and units count
   const loadData = useCallback(async () => {

@@ -51,9 +51,9 @@ export default function NewUnitPage() {
       return;
     }
     if (!isAdmin) {
-      router.replace(backUrl);
+      router.replace(`/${role}/work-plans/${encodeURIComponent(grade)}`);
     }
-  }, [grade, role, router, isAdmin, backUrl]);
+  }, [grade, role, router, isAdmin]);
 
   // Load units count to set default order
   const loadUnitsCount = useCallback(async () => {

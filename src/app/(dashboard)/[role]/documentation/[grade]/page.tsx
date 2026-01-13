@@ -4,7 +4,6 @@ import { useState, useCallback, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { GradeSelector } from "@/components/ui/GradeSelector";
 import { getUnitsByGrade } from "@/lib/services/units";
 import { Card } from "@/components/ui/Card";
 import { SkeletonGrid } from "@/components/ui/Skeleton";
@@ -25,8 +24,9 @@ export default function DocumentationUnitSelectorPage() {
   const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const isTeacherOrAdmin =
-    session?.user.role === "teacher" || session?.user.role === "admin";
+  const isAdmin = session?.user.role === "admin";
+  // Only show back button for admins (others are restricted to their grade)
+  const showBackButton = isAdmin;
 
   // Validate grade
   useEffect(() => {
@@ -63,7 +63,7 @@ export default function DocumentationUnitSelectorPage() {
     <div className="space-y-6 max-w-5xl">
       {/* Page Header */}
       <div className="flex items-center gap-3">
-        {isTeacherOrAdmin && (
+        {showBackButton && (
           <Link
             href={`/${role}/documentation`}
             className="p-2 hover:bg-surface-2 rounded-lg transition-colors cursor-pointer"

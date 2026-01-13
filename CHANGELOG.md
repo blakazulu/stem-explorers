@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Edit unit page**: Editing a unit now navigates to a separate page (`/[role]/work-plans/[grade]/[unitId]/edit`) instead of expanding inline form
 - **Improved back button behavior**: Back button from create/edit pages returns to the units list for that grade
 
+#### Teacher Grade Restriction
+- **Teachers now restricted to assigned grade**: Teachers with a grade assigned in their user document are automatically redirected to that grade instead of seeing the grade selector
+- **Affected pages**: work-plans, pedagogical, documentation, reports
+- **Admins still see all grades**: Only admins can access the grade selector to view/manage all grades
+- **Hidden back button for restricted users**: Back button to grade selector is hidden for users restricted to their grade (teachers, students, parents) since it would just redirect them back
+
 #### Layout Improvements
 - **Fixed sidebar and header**: Sidebar now spans full viewport height on desktop; header stays fixed at top of content area
 - **Scrollable main content**: Only the `<main>` element scrolls; sidebar and header remain visible during scroll

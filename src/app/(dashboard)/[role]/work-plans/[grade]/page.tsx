@@ -41,6 +41,8 @@ export default function WorkPlansGradePage() {
   const isAdmin = session?.user.role === "admin";
   const canManage = isAdmin; // Only admins can create/edit/delete units
   const newUnitUrl = `/${role}/work-plans/${encodeURIComponent(grade)}/new`;
+  // Only show back button for admins (others are restricted to their grade)
+  const showBackButton = isAdmin;
 
   // Validate grade
   useEffect(() => {
@@ -86,13 +88,15 @@ export default function WorkPlansGradePage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link
-            href={`/${role}/work-plans`}
-            className="p-2 hover:bg-surface-2 rounded-lg transition-colors cursor-pointer"
-            title="חזרה לבחירת כיתה"
-          >
-            <ArrowRight size={20} className="text-gray-500" />
-          </Link>
+          {showBackButton && (
+            <Link
+              href={`/${role}/work-plans`}
+              className="p-2 hover:bg-surface-2 rounded-lg transition-colors cursor-pointer"
+              title="חזרה לבחירת כיתה"
+            >
+              <ArrowRight size={20} className="text-gray-500" />
+            </Link>
+          )}
           <div className="p-3 bg-role-teacher/10 rounded-xl">
             <FileText size={24} className="text-role-teacher" />
           </div>

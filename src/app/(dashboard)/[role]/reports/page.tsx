@@ -15,20 +15,22 @@ export default function ReportsGradeSelectorPage() {
 
   const role = params.role as UserRole;
   const isParent = session?.user.role === "parent";
+  const isTeacher = session?.user.role === "teacher";
+  const hasGradeRestriction = (isParent || isTeacher) && session?.user.grade;
 
-  // Parents with a grade should redirect to their grade
+  // Parents and teachers with a grade should redirect to their grade
   useEffect(() => {
-    if (isParent && session?.user.grade) {
+    if (hasGradeRestriction) {
       router.replace(`/${role}/reports/${session.user.grade}`);
     }
-  }, [isParent, session?.user.grade, role, router]);
+  }, [hasGradeRestriction, session?.user.grade, role, router]);
 
   function handleGradeSelect(grade: Grade) {
     router.push(`/${role}/reports/${grade}`);
   }
 
-  // Parents with grade - will redirect, show nothing
-  if (isParent && session?.user.grade) {
+  // Users with grade restriction - will redirect, show nothing
+  if (hasGradeRestriction) {
     return null;
   }
 

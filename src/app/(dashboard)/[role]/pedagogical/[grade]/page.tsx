@@ -26,8 +26,11 @@ export default function PedagogicalGradePage() {
   const grade = decodeURIComponent(params.grade as string) as Grade;
   const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
 
+  const isAdmin = session?.user.role === "admin";
   const isTeacherOrAdmin =
     session?.user.role === "teacher" || session?.user.role === "admin";
+  // Only show back button for admins (others are restricted to their grade)
+  const showBackButton = isAdmin;
 
   // Validate grade
   useEffect(() => {
@@ -44,7 +47,7 @@ export default function PedagogicalGradePage() {
     <div className="space-y-6 max-w-4xl">
       {/* Page Header */}
       <div className="flex items-center gap-3">
-        {isTeacherOrAdmin && (
+        {showBackButton && (
           <Link
             href={`/${role}/pedagogical`}
             className="p-2 hover:bg-surface-2 rounded-lg transition-colors cursor-pointer"
