@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import type { User, AuthSession, UserRole, Grade } from "@/types";
+import type { User, AuthSession } from "@/types";
 
 interface AuthContextType {
   session: AuthSession | null;

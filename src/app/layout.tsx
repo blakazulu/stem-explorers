@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Rubik, Heebo } from "next/font/google";
+import { AuthProvider } from "@/contexts/AuthContext";
 import "./globals.css";
 
 const rubik = Rubik({
@@ -27,7 +28,9 @@ export default function RootLayout({
   return (
     <html lang="he" dir="rtl" className={`${rubik.variable} ${heebo.variable}`}>
       <body className="font-heebo bg-background text-foreground min-h-screen">
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
