@@ -4,7 +4,13 @@ export async function resizeImage(file: File, maxWidth: number = 800): Promise<B
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
 
+    // Store the object URL so we can revoke it later to prevent memory leak
+    const objectUrl = URL.createObjectURL(file);
+
     img.onload = () => {
+      // Revoke the object URL to free memory
+      URL.revokeObjectURL(objectUrl);
+
       let { width, height } = img;
 
       if (width > maxWidth) {
@@ -26,8 +32,12 @@ export async function resizeImage(file: File, maxWidth: number = 800): Promise<B
       );
     };
 
-    img.onerror = () => reject(new Error("Failed to load image"));
-    img.src = URL.createObjectURL(file);
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("Failed to load image"));
+    };
+
+    img.src = objectUrl;
   });
 }
 
