@@ -72,7 +72,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### ConfirmDialog Centering
 - **Fixed dialog positioning**: ConfirmDialog now properly centered on screen using fixed positioning with transform
 
+#### Questionnaire System (Breaking Change)
+- **New data model**: Questions now belong to Questionnaires instead of being individually targeted
+  - `Questionnaire`: Container with name, grade, unit, embedded questions, and active status
+  - `EmbeddedQuestion`: Simplified question without target (determined by parent)
+  - Multiple questionnaires allowed per grade+unit, but only one can be active
+- **New route structure**:
+  - `/[role]/questions` - Grade selector
+  - `/[role]/questions/[grade]` - List questionnaires for grade
+  - `/[role]/questions/[grade]/new` - Create new questionnaire
+  - `/[role]/questions/[grade]/[id]` - Edit questionnaire and manage questions
+- **Questionnaire features**:
+  - Min 1, max 10 questions per questionnaire
+  - 4 question types: rating, single choice, multiple choice, open
+  - Activate/deactivate questionnaires (only one active per grade+unit)
+  - Atomic activation using Firestore batch writes
+- **Updated `getQuestionsForUnit()`**: Now fetches questions from active questionnaire only
+
 ### Added
+
+#### Questionnaires Service (`src/lib/services/questionnaires.ts`)
+- `getQuestionnairesByGrade(gradeId)` - List all questionnaires for a grade
+- `getActiveQuestionnaire(gradeId, unitId)` - Get active questionnaire for grade+unit
+- `getQuestionnaire(id)` - Get by ID
+- `createQuestionnaire(data)` - Create new questionnaire
+- `updateQuestionnaire(id, data)` - Update questionnaire
+- `deleteQuestionnaire(id)` - Delete questionnaire
+- `activateQuestionnaire(id, gradeId, unitId)` - Activate (deactivates others)
+- `deactivateQuestionnaire(id)` - Deactivate
 
 #### Document Upload for Units
 - **New `uploadDocument` utility**: Uploads PDF and Word files (.pdf, .doc, .docx) to Firebase Storage

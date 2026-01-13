@@ -40,6 +40,7 @@ export interface ResearchJournal {
   unitId: string;
   gradeId: Grade;
   studentName: string;
+  questionnaireId?: string; // Optional for backward compatibility
   answers: JournalAnswer[];
   createdAt: Date;
 }
@@ -62,6 +63,27 @@ export interface Question {
     units: string[];
   };
   order: number;
+}
+
+// Embedded question within a questionnaire (no target - determined by parent)
+export interface EmbeddedQuestion {
+  id: string;
+  type: QuestionType;
+  text: string;
+  options?: string[];
+  order: number;
+}
+
+// Questionnaire containing embedded questions
+export interface Questionnaire {
+  id: string;
+  name: string;
+  gradeId: Grade;
+  unitId: string;
+  questions: EmbeddedQuestion[];
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // AI-generated report

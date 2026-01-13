@@ -10,6 +10,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { handleFirebaseError } from "@/lib/utils/errors";
+import { getActiveQuestionnaire } from "./questionnaires";
 import type { Question, Grade } from "@/types";
 
 const COLLECTION = "questions";
@@ -19,27 +20,23 @@ export async function getQuestionsForUnit(
   unitId: string
 ): Promise<Question[]> {
   try {
-    const q = query(
-      collection(db, COLLECTION),
-      orderBy("order", "asc")
-    );
+    const activeQuestionnaire = await getActiveQuestionnaire(gradeId, unitId);
 
-    const snapshot = await getDocs(q);
-    const questions = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    })) as Question[];
+    if (!activeQuestionnaire || activeQuestionnaire.questions.length === 0) {
+      return [];
+    }
 
-    // Filter questions that target this grade and unit
-    return questions.filter((question) => {
-      const targetGrades = question.target.grades;
-      const targetUnits = question.target.units;
-
-      const gradeMatch = targetGrades.length === 0 || targetGrades.includes(gradeId);
-      const unitMatch = targetUnits.length === 0 || targetUnits.includes(unitId);
-
-      return gradeMatch && unitMatch;
-    });
+    // Map embedded questions to Question format
+    return activeQuestionnaire.questions
+      .sort((a, b) => a.order - b.order)
+      .map((eq) => ({
+        id: eq.id,
+        type: eq.type,
+        text: eq.text,
+        options: eq.options,
+        target: { grades: [gradeId], units: [unitId] },
+        order: eq.order,
+      }));
   } catch (error) {
     handleFirebaseError(error, "getQuestionsForUnit");
   }
