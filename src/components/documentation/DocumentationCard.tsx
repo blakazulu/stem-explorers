@@ -8,7 +8,7 @@ interface DocumentationCardProps {
 
 export function DocumentationCard({ doc, canDelete, onDelete }: DocumentationCardProps) {
   return (
-    <div className="bg-white rounded-xl overflow-hidden shadow-sm">
+    <div className="bg-white rounded-xl overflow-hidden shadow-sm transition-all duration-200 hover:shadow-md">
       {doc.images.length > 0 && (
         <div className="aspect-video relative">
           <img
@@ -32,7 +32,7 @@ export function DocumentationCard({ doc, canDelete, onDelete }: DocumentationCar
         {canDelete && (
           <button
             onClick={() => onDelete(doc)}
-            className="mt-2 text-sm text-error hover:underline"
+            className="mt-2 text-sm text-error hover:underline cursor-pointer transition-colors hover:text-error/80"
           >
             מחק
           </button>

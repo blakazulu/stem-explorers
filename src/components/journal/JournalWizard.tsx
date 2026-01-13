@@ -53,14 +53,14 @@ export function JournalWizard({ questions, onSubmit, onCancel }: JournalWizardPr
   }
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm max-w-2xl mx-auto">
+    <div className="bg-white rounded-xl p-4 md:p-6 shadow-sm max-w-2xl">
       <div className="mb-6">
         <div className="flex items-center justify-between text-sm text-gray-500 mb-2">
           <span>שאלה {currentStep + 1} מתוך {questions.length}</span>
         </div>
         <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
           <div
-            className="h-full bg-primary transition-all"
+            className="h-full bg-primary transition-all duration-300"
             style={{ width: `${((currentStep + 1) / questions.length) * 100}%` }}
           />
         </div>

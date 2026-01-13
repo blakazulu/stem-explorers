@@ -40,7 +40,7 @@ export function PostCard({
   }
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm">
+    <div className="bg-white rounded-xl p-4 md:p-6 shadow-sm transition-all duration-200 hover:shadow-md">
       <div className="flex justify-between items-start mb-4">
         <div>
           <h3 className="font-rubik font-semibold text-lg">{post.title}</h3>
@@ -51,7 +51,7 @@ export function PostCard({
         {canDelete && (
           <button
             onClick={() => onDelete(post.id)}
-            className="text-sm text-error hover:underline"
+            className="text-sm text-error hover:underline cursor-pointer transition-colors hover:text-error/80"
           >
             מחק
           </button>
@@ -64,7 +64,7 @@ export function PostCard({
         <div className="border-t pt-4 mt-4 space-y-3">
           <h4 className="font-medium text-sm text-gray-600">תגובות</h4>
           {post.replies.map((reply, i) => (
-            <div key={reply.id || `legacy_${i}`} className="bg-gray-50 rounded-lg p-3">
+            <div key={reply.id || `legacy_${i}`} className="bg-gray-50 rounded-lg p-3 transition-colors hover:bg-gray-100">
               <p className="text-sm">{reply.content}</p>
               <p className="text-xs text-gray-500 mt-1">
                 {reply.authorName} • {reply.createdAt?.toLocaleDateString("he-IL")}
@@ -99,7 +99,7 @@ export function PostCard({
       ) : (
         <button
           onClick={() => setShowReplyForm(true)}
-          className="mt-4 text-sm text-primary hover:underline"
+          className="mt-4 text-sm text-primary hover:underline cursor-pointer transition-colors hover:text-primary/80"
         >
           הוסף תגובה
         </button>

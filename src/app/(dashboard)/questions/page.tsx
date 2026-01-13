@@ -154,16 +154,16 @@ export default function QuestionsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-4xl">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-rubik font-bold">ניהול שאלות יומן חוקר</h1>
+        <h1 className="text-xl md:text-2xl font-rubik font-bold">ניהול שאלות יומן חוקר</h1>
         {!showForm && (
           <Button onClick={() => setShowForm(true)}>שאלה חדשה</Button>
         )}
       </div>
 
       {showForm && (
-        <div className="bg-white rounded-xl p-6 shadow-sm space-y-4">
+        <div className="bg-white rounded-xl p-4 md:p-6 shadow-sm space-y-4">
           <h2 className="text-lg font-semibold">
             {editingQuestion ? "עריכת שאלה" : "שאלה חדשה"}
           </h2>
@@ -175,7 +175,7 @@ export default function QuestionsPage() {
               onChange={(e) =>
                 setFormData({ ...formData, type: e.target.value as QuestionType })
               }
-              className="w-full p-2 border rounded-lg"
+              className="w-full p-2 border rounded-lg cursor-pointer transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
             >
               {questionTypes.map((t) => (
                 <option key={t.value} value={t.value}>
@@ -218,7 +218,7 @@ export default function QuestionsPage() {
                     {opt}
                     <button
                       onClick={() => removeOption(opt)}
-                      className="text-error hover:text-red-700"
+                      className="text-error hover:text-red-700 cursor-pointer transition-colors"
                     >
                       ✕
                     </button>
@@ -237,7 +237,7 @@ export default function QuestionsPage() {
                 <button
                   key={g}
                   onClick={() => toggleGrade(g)}
-                  className={`px-3 py-1 rounded-lg text-sm ${
+                  className={`px-3 py-1 rounded-lg text-sm cursor-pointer transition-all duration-200 ${
                     formData.target.grades.includes(g)
                       ? "bg-primary text-white"
                       : "bg-gray-100 hover:bg-gray-200"
@@ -258,7 +258,7 @@ export default function QuestionsPage() {
                 <button
                   key={unit.id}
                   onClick={() => toggleUnit(unit.id)}
-                  className={`px-3 py-1 rounded-lg text-sm ${
+                  className={`px-3 py-1 rounded-lg text-sm cursor-pointer transition-all duration-200 ${
                     formData.target.units.includes(unit.id)
                       ? "bg-primary text-white"
                       : "bg-gray-100 hover:bg-gray-200"
@@ -298,8 +298,8 @@ export default function QuestionsPage() {
           <p className="text-gray-500 text-center py-8">אין שאלות עדיין</p>
         ) : (
           questions.map((q) => (
-            <div key={q.id} className="bg-white rounded-xl p-4 shadow-sm">
-              <div className="flex justify-between items-start">
+            <div key={q.id} className="bg-white rounded-xl p-4 shadow-sm transition-all duration-200 hover:shadow-md">
+              <div className="flex flex-col md:flex-row justify-between items-start gap-3">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-xs px-2 py-0.5 bg-gray-100 rounded">
@@ -318,16 +318,16 @@ export default function QuestionsPage() {
                     יחידות: {q.target.units.length > 0 ? `${q.target.units.length} נבחרו` : "הכל"}
                   </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 shrink-0">
                   <button
                     onClick={() => handleEdit(q)}
-                    className="text-sm text-primary hover:underline"
+                    className="text-sm text-primary hover:underline cursor-pointer transition-colors hover:text-primary/80"
                   >
                     ערוך
                   </button>
                   <button
                     onClick={() => setDeleteId(q.id)}
-                    className="text-sm text-error hover:underline"
+                    className="text-sm text-error hover:underline cursor-pointer transition-colors hover:text-error/80"
                   >
                     מחק
                   </button>

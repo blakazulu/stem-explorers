@@ -84,8 +84,8 @@ export default function DocumentationPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-rubik font-bold">תיעודים</h1>
+    <div className="space-y-6 max-w-5xl">
+      <h1 className="text-xl md:text-2xl font-rubik font-bold">תיעודים</h1>
 
       {error && (
         <div className="bg-error/10 text-error p-4 rounded-lg">{error}</div>
@@ -103,12 +103,12 @@ export default function DocumentationPage() {
       {selectedGrade && !selectedUnit && (
         <div>
           <h2 className="text-lg font-rubik font-semibold mb-4">בחר יחידה</h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             {units.map((unit) => (
               <button
                 key={unit.id}
                 onClick={() => setSelectedUnit(unit)}
-                className="text-right p-4 bg-white rounded-xl border-2 border-gray-100 hover:border-primary hover:shadow-md transition-all"
+                className="text-right p-4 bg-white rounded-xl border-2 border-gray-100 hover:border-primary hover:shadow-md transition-all duration-200 cursor-pointer"
               >
                 <h3 className="font-rubik font-semibold">{unit.name}</h3>
               </button>
@@ -125,14 +125,14 @@ export default function DocumentationPage() {
             </h2>
             <button
               onClick={() => setSelectedUnit(null)}
-              className="text-gray-500 hover:text-gray-700"
+              className="text-gray-500 hover:text-gray-700 cursor-pointer transition-colors"
             >
               חזור לרשימה
             </button>
           </div>
 
           {showAddForm && isTeacherOrAdmin && (
-            <div className="bg-white rounded-xl p-6 shadow-sm mb-6 space-y-4">
+            <div className="bg-white rounded-xl p-4 md:p-6 shadow-sm mb-6 space-y-4">
               <h3 className="font-rubik font-semibold">הוסף תיעוד חדש</h3>
 
               <div>

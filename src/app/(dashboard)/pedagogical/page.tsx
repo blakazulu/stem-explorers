@@ -16,8 +16,8 @@ export default function PedagogicalPage() {
   const isTeacherOrAdmin = session?.user.role === "teacher" || session?.user.role === "admin";
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-rubik font-bold">מודל פדגוגי</h1>
+    <div className="space-y-6 max-w-4xl">
+      <h1 className="text-xl md:text-2xl font-rubik font-bold">מודל פדגוגי</h1>
 
       {isTeacherOrAdmin && (
         <div>
@@ -38,23 +38,23 @@ export default function PedagogicalPage() {
       )}
 
       {selectedUnit && (
-        <div className="bg-white rounded-xl p-6 shadow-sm">
+        <div className="bg-white rounded-xl p-4 md:p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-rubik font-bold">{selectedUnit.name}</h2>
+            <h2 className="text-lg md:text-xl font-rubik font-bold">{selectedUnit.name}</h2>
             <button
               onClick={() => setSelectedUnit(null)}
-              className="text-gray-500 hover:text-gray-700"
+              className="text-gray-500 hover:text-gray-700 cursor-pointer transition-colors"
             >
               חזור לרשימה
             </button>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <a
               href={selectedUnit.introFileUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="block p-4 bg-secondary/10 rounded-lg text-center hover:bg-secondary/20 transition-colors"
+              className="block p-4 bg-secondary/10 rounded-lg text-center hover:bg-secondary/20 transition-all duration-200 cursor-pointer"
             >
               <span className="font-medium text-secondary">מבוא ליחידה</span>
             </a>
@@ -62,7 +62,7 @@ export default function PedagogicalPage() {
               href={selectedUnit.unitFileUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="block p-4 bg-primary/10 rounded-lg text-center hover:bg-primary/20 transition-colors"
+              className="block p-4 bg-primary/10 rounded-lg text-center hover:bg-primary/20 transition-all duration-200 cursor-pointer"
             >
               <span className="font-medium text-primary">תוכן היחידה</span>
             </a>

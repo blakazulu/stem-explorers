@@ -130,7 +130,7 @@ export default function PasswordsPage() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 max-w-4xl">
       <div>
         <h1 className="text-xl md:text-2xl font-rubik font-bold">ניהול סיסמאות</h1>
         <p className="text-sm text-gray-500 mt-1">עריכת סיסמאות הגישה למערכת</p>
@@ -153,13 +153,13 @@ export default function PasswordsPage() {
               {/* Collapsible header */}
               <button
                 onClick={() => toggleSection(role)}
-                className="w-full flex items-center justify-between p-3 md:p-4 hover:bg-gray-50 transition-colors"
+                className="w-full flex items-center justify-between p-3 md:p-4 hover:bg-gray-50 transition-colors cursor-pointer"
               >
                 <span className="font-semibold text-gray-700">
                   {roleLabels[role as UserRole]} ({roleUsers.length})
                 </span>
-                <span className="text-gray-400 text-lg">
-                  {collapsedSections[role] ? "+" : "−"}
+                <span className={`text-gray-400 text-lg transition-transform duration-200 ${collapsedSections[role] ? "" : "rotate-45"}`}>
+                  +
                 </span>
               </button>
 
@@ -170,7 +170,7 @@ export default function PasswordsPage() {
                     {roleUsers.map((user) => (
                       <div
                         key={user.password}
-                        className="bg-gray-50 rounded-lg p-3"
+                        className="bg-gray-50 rounded-lg p-3 transition-all duration-200 hover:bg-gray-100 hover:shadow-sm"
                       >
                         {editingUser?.password === user.password ? (
                           // Edit mode
@@ -210,7 +210,7 @@ export default function PasswordsPage() {
                             </div>
                             <button
                               onClick={() => startEdit(user)}
-                              className="text-xs text-primary hover:underline shrink-0"
+                              className="text-xs text-primary hover:underline shrink-0 cursor-pointer transition-colors hover:text-primary/80"
                             >
                               ערוך
                             </button>

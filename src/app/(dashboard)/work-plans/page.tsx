@@ -124,9 +124,9 @@ export default function WorkPlansPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-4xl">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-rubik font-bold">תוכניות עבודה</h1>
+        <h1 className="text-xl md:text-2xl font-rubik font-bold">תוכניות עבודה</h1>
         {!showForm && (
           <Button onClick={() => setShowForm(true)}>יחידה חדשה</Button>
         )}
@@ -135,7 +135,7 @@ export default function WorkPlansPage() {
       <GradeSelector selected={selectedGrade} onSelect={setSelectedGrade} />
 
       {showForm && (
-        <div className="bg-white rounded-xl p-6 shadow-sm space-y-4">
+        <div className="bg-white rounded-xl p-4 md:p-6 shadow-sm space-y-4">
           <h2 className="text-lg font-semibold">
             {editingUnit ? "עריכת יחידה" : "יחידה חדשה"}
           </h2>
@@ -205,7 +205,7 @@ export default function WorkPlansPage() {
           {units.map((unit) => (
             <div
               key={unit.id}
-              className="bg-white rounded-xl p-4 shadow-sm flex items-center justify-between"
+              className="bg-white rounded-xl p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3 transition-all duration-200 hover:shadow-md"
             >
               <div>
                 <h3 className="font-medium">{unit.name}</h3>
@@ -218,7 +218,7 @@ export default function WorkPlansPage() {
                       href={unit.introFileUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-primary hover:underline"
+                      className="text-primary hover:underline cursor-pointer transition-colors hover:text-primary/80"
                     >
                       קובץ מבוא
                     </a>
@@ -228,7 +228,7 @@ export default function WorkPlansPage() {
                       href={unit.unitFileUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-primary hover:underline"
+                      className="text-primary hover:underline cursor-pointer transition-colors hover:text-primary/80"
                     >
                       קובץ יחידה
                     </a>
@@ -238,14 +238,14 @@ export default function WorkPlansPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => handleEdit(unit)}
-                  className="text-sm text-primary hover:underline"
+                  className="text-sm text-primary hover:underline cursor-pointer transition-colors hover:text-primary/80"
                 >
                   ערוך
                 </button>
                 {isAdmin && (
                   <button
                     onClick={() => setDeleteId(unit.id)}
-                    className="text-sm text-error hover:underline"
+                    className="text-sm text-error hover:underline cursor-pointer transition-colors hover:text-error/80"
                   >
                     מחק
                   </button>

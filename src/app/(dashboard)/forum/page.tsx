@@ -40,9 +40,9 @@ export default function ForumPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-4xl">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-rubik font-bold">פורום</h1>
+        <h1 className="text-xl md:text-2xl font-rubik font-bold">פורום</h1>
         <Button onClick={() => setShowNewPost(true)}>פוסט חדש</Button>
       </div>
 
@@ -51,7 +51,7 @@ export default function ForumPage() {
           <button
             key={room.id}
             onClick={() => setSelectedRoom(room.id)}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 cursor-pointer ${
               selectedRoom === room.id
                 ? "bg-primary text-white"
                 : "bg-white text-foreground hover:bg-gray-100"

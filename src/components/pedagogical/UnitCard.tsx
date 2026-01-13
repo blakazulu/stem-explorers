@@ -9,7 +9,7 @@ export function UnitCard({ unit, onSelect }: UnitCardProps) {
   return (
     <button
       onClick={() => onSelect(unit)}
-      className="w-full text-right p-4 bg-white rounded-lg border-2 border-gray-100 hover:border-primary hover:shadow-md transition-all"
+      className="w-full text-right p-4 bg-white rounded-lg border-2 border-gray-100 hover:border-primary hover:shadow-md transition-all duration-200 cursor-pointer"
     >
       <h3 className="font-rubik font-semibold text-lg text-foreground">
         {unit.name}

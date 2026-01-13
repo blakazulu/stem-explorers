@@ -18,7 +18,7 @@ export function GradeSelector({ selected, onSelect, disabled }: GradeSelectorPro
           key={grade}
           onClick={() => onSelect(grade)}
           disabled={disabled}
-          className={`w-12 h-12 rounded-lg font-rubik font-bold text-lg transition-colors ${
+          className={`w-12 h-12 rounded-lg font-rubik font-bold text-lg transition-all duration-200 cursor-pointer ${
             selected === grade
               ? "bg-primary text-white"
               : "bg-white border-2 border-gray-200 text-foreground hover:border-primary hover:text-primary"

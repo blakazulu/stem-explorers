@@ -37,7 +37,7 @@ export function UnitTree({ grade, onSelectUnit }: UnitTreeProps) {
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
       {units.map((unit) => (
         <UnitCard key={unit.id} unit={unit} onSelect={onSelectUnit} />
       ))}

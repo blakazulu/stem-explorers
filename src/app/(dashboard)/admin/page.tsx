@@ -166,15 +166,15 @@ export default function AdminSettingsPage() {
   ];
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-rubik font-bold">הגדרות מנהל</h1>
+    <div className="space-y-6 max-w-4xl">
+      <h1 className="text-xl md:text-2xl font-rubik font-bold">הגדרות מנהל</h1>
 
-      <div className="flex gap-2 border-b pb-2">
+      <div className="flex gap-2 border-b pb-2 overflow-x-auto">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 rounded-t-lg font-medium transition-colors ${
+            className={`px-4 py-2 rounded-t-lg font-medium transition-all duration-200 cursor-pointer shrink-0 ${
               activeTab === tab.id
                 ? "bg-primary text-white"
                 : "bg-gray-100 text-foreground hover:bg-gray-200"
@@ -193,14 +193,14 @@ export default function AdminSettingsPage() {
           </div>
 
           {buttons.map((button) => (
-            <div key={button.id} className="bg-white rounded-xl p-4 shadow-sm space-y-3">
-              <div className="grid grid-cols-2 gap-4">
+            <div key={button.id} className="bg-white rounded-xl p-4 shadow-sm space-y-3 transition-all duration-200 hover:shadow-md">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">תפקיד</label>
                   <select
                     value={button.role}
                     onChange={(e) => updateButton(button.id, { role: e.target.value as UserRole })}
-                    className="w-full p-2 border rounded-lg"
+                    className="w-full p-2 border rounded-lg cursor-pointer transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
                   >
                     {roles.map((role) => (
                       <option key={role} value={role}>
@@ -240,7 +240,7 @@ export default function AdminSettingsPage() {
                 </label>
                 <button
                   onClick={() => removeButton(button.id)}
-                  className="text-sm text-error hover:underline"
+                  className="text-sm text-error hover:underline cursor-pointer transition-colors hover:text-error/80"
                 >
                   הסר
                 </button>
@@ -258,7 +258,7 @@ export default function AdminSettingsPage() {
         <div className="space-y-4">
           <h2 className="text-lg font-semibold">הגדרות התראות מייל</h2>
 
-          <div className="bg-white rounded-xl p-4 shadow-sm space-y-4">
+          <div className="bg-white rounded-xl p-4 shadow-sm space-y-4 transition-all duration-200 hover:shadow-md">
             <div>
               <label className="block text-sm font-medium mb-2">כתובות מייל מנהלים</label>
               <div className="flex gap-2 mb-2">
@@ -279,7 +279,7 @@ export default function AdminSettingsPage() {
                     {email}
                     <button
                       onClick={() => removeEmail(email)}
-                      className="text-error hover:text-red-700"
+                      className="text-error hover:text-red-700 cursor-pointer transition-colors"
                     >
                       ✕
                     </button>
@@ -295,7 +295,7 @@ export default function AdminSettingsPage() {
                 onChange={(e) =>
                   setEmailConfig({ ...emailConfig, frequency: e.target.value as "immediate" | "daily" })
                 }
-                className="w-full p-2 border rounded-lg"
+                className="w-full p-2 border rounded-lg cursor-pointer transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
               >
                 <option value="immediate">מיידי</option>
                 <option value="daily">יומי</option>
@@ -328,7 +328,7 @@ export default function AdminSettingsPage() {
             <Button onClick={addReportElement}>הוסף אלמנט</Button>
           </div>
 
-          <div className="bg-white rounded-xl p-4 shadow-sm space-y-4">
+          <div className="bg-white rounded-xl p-4 shadow-sm space-y-4 transition-all duration-200 hover:shadow-md">
             <div>
               <label className="block text-sm font-medium mb-2">הנחיות ל-AI</label>
               <textarea
@@ -345,7 +345,7 @@ export default function AdminSettingsPage() {
             <div className="space-y-3">
               <h3 className="font-medium">אלמנטים בדוח</h3>
               {reportConfig.elements.map((elem) => (
-                <div key={elem.id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                <div key={elem.id} className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4 p-3 bg-gray-50 rounded-lg transition-all duration-200 hover:bg-gray-100">
                   <Input
                     value={elem.label}
                     onChange={(e) => updateReportElement(elem.id, { label: e.target.value })}
@@ -374,7 +374,7 @@ export default function AdminSettingsPage() {
                   </label>
                   <button
                     onClick={() => removeReportElement(elem.id)}
-                    className="text-error hover:underline text-sm"
+                    className="text-error hover:underline text-sm cursor-pointer transition-colors hover:text-error/80"
                   >
                     הסר
                   </button>

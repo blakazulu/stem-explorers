@@ -50,7 +50,7 @@ export function DocumentationGallery({
       {(isTeacher || isAdmin) && onAddNew && (
         <button
           onClick={onAddNew}
-          className="w-full p-4 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 hover:border-primary hover:text-primary transition-colors"
+          className="w-full p-4 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 hover:border-primary hover:text-primary transition-all duration-200 cursor-pointer"
         >
           + הוסף תיעוד חדש
         </button>
@@ -59,7 +59,7 @@ export function DocumentationGallery({
       {docs.length === 0 ? (
         <p className="text-gray-500 text-center py-8">אין תיעודים עדיין</p>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {docs.map((doc) => (
             <DocumentationCard
               key={doc.id}

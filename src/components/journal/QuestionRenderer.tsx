@@ -18,7 +18,7 @@ export function QuestionRenderer({ question, value, onChange }: QuestionRenderer
                 key={n}
                 type="button"
                 onClick={() => onChange(n)}
-                className={`w-10 h-10 rounded-full border-2 font-medium transition-colors ${
+                className={`w-10 h-10 rounded-full border-2 font-medium transition-all duration-200 cursor-pointer ${
                   value === n
                     ? "bg-primary text-white border-primary"
                     : "border-gray-300 hover:border-primary"
@@ -86,7 +86,7 @@ export function QuestionRenderer({ question, value, onChange }: QuestionRenderer
           <textarea
             value={value as string || ""}
             onChange={(e) => onChange(e.target.value)}
-            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+            className="w-full p-3 border rounded-lg transition-colors duration-200 focus:ring-2 focus:ring-primary focus:border-transparent"
             rows={4}
           />
         </div>

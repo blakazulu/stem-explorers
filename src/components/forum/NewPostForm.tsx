@@ -34,7 +34,7 @@ export function NewPostForm({ room, authorName, onCreated, onCancel }: NewPostFo
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-xl p-6 shadow-sm space-y-4">
+    <form onSubmit={handleSubmit} className="bg-white rounded-xl p-4 md:p-6 shadow-sm space-y-4">
       <h3 className="font-rubik font-semibold text-lg">פוסט חדש</h3>
 
       <Input
