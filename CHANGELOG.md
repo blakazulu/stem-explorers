@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- **Explanation buttons feature**: Removed the unused "כפתורי הסבר" (explanation buttons) tab from admin settings, along with related service functions and types
+
+### Fixed
+
+- **Questionnaire activation validation**: Prevent activating questionnaires with 0 questions (button is now disabled with tooltip explaining why)
+
 ### Changed
 
 #### Unit Form Navigation

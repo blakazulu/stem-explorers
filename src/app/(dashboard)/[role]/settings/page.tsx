@@ -4,8 +4,6 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useParams, useRouter } from "next/navigation";
 import {
-  getExplanationButtons,
-  saveExplanationButtons,
   getEmailConfig,
   saveEmailConfig,
   getReportConfig,
@@ -17,31 +15,17 @@ import { Card } from "@/components/ui/Card";
 import { SkeletonList } from "@/components/ui/Skeleton";
 import {
   Settings,
-  MessageSquareText,
   Mail,
   FileBarChart,
   Plus,
   X,
-  Trash2,
-  Eye,
-  EyeOff,
   Save,
-  User,
 } from "lucide-react";
-import type { ExplanationButton, EmailConfig, ReportConfig, UserRole } from "@/types";
+import type { EmailConfig, ReportConfig, UserRole } from "@/types";
 
-type Tab = "buttons" | "email" | "report";
-
-const roles: UserRole[] = ["admin", "teacher", "parent", "student"];
-const roleLabels: Record<UserRole, string> = {
-  admin: "מנהל",
-  teacher: "מורה",
-  parent: "הורה",
-  student: "תלמיד",
-};
+type Tab = "email" | "report";
 
 const tabConfig: { id: Tab; label: string; icon: typeof Settings }[] = [
-  { id: "buttons", label: "כפתורי הסבר", icon: MessageSquareText },
   { id: "email", label: "הגדרות מייל", icon: Mail },
   { id: "report", label: "הגדרות דוח", icon: FileBarChart },
 ];
@@ -59,11 +43,10 @@ export default function SettingsPage() {
   const router = useRouter();
   const role = params.role as UserRole;
 
-  const [activeTab, setActiveTab] = useState<Tab>("buttons");
+  const [activeTab, setActiveTab] = useState<Tab>("email");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const [buttons, setButtons] = useState<ExplanationButton[]>([]);
   const [emailConfig, setEmailConfig] = useState<EmailConfig>({
     adminEmails: [],
     frequency: "daily",
@@ -88,12 +71,10 @@ export default function SettingsPage() {
 
     async function load() {
       setLoading(true);
-      const [btns, email, report] = await Promise.all([
-        getExplanationButtons(),
+      const [email, report] = await Promise.all([
         getEmailConfig(),
         getReportConfig(),
       ]);
-      setButtons(btns);
       if (email) setEmailConfig(email);
       if (report) {
         const mergedElements = REPORT_ELEMENTS.map((el) => {
@@ -112,12 +93,6 @@ export default function SettingsPage() {
     load();
   }, [session, router, role]);
 
-  async function handleSaveButtons() {
-    setSaving(true);
-    await saveExplanationButtons(buttons);
-    setSaving(false);
-  }
-
   async function handleSaveEmail() {
     setSaving(true);
     await saveEmailConfig(emailConfig);
@@ -128,27 +103,6 @@ export default function SettingsPage() {
     setSaving(true);
     await saveReportConfig(reportConfig);
     setSaving(false);
-  }
-
-  function addButton() {
-    setButtons([
-      ...buttons,
-      {
-        id: `btn_${Date.now()}`,
-        role: "teacher",
-        label: "",
-        content: "",
-        visible: true,
-      },
-    ]);
-  }
-
-  function updateButton(id: string, updates: Partial<ExplanationButton>) {
-    setButtons(buttons.map((b) => (b.id === id ? { ...b, ...updates } : b)));
-  }
-
-  function removeButton(id: string) {
-    setButtons(buttons.filter((b) => b.id !== id));
   }
 
   function addEmail() {
@@ -233,134 +187,6 @@ export default function SettingsPage() {
           );
         })}
       </div>
-
-      {activeTab === "buttons" && (
-        <div className="space-y-4 animate-fade-in">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <MessageSquareText size={20} className="text-role-admin" />
-              <h2 className="text-lg font-rubik font-semibold text-foreground">
-                כפתורי הסבר לפי תפקיד
-              </h2>
-            </div>
-            <Button onClick={addButton} rightIcon={Plus} size="sm">
-              הוסף כפתור
-            </Button>
-          </div>
-
-          {buttons.length === 0 ? (
-            <Card className="text-center py-8">
-              <MessageSquareText size={48} className="mx-auto text-gray-300 mb-4" />
-              <p className="text-gray-500">אין כפתורי הסבר עדיין</p>
-              <Button onClick={addButton} rightIcon={Plus} className="mt-4">
-                הוסף כפתור חדש
-              </Button>
-            </Card>
-          ) : (
-            buttons.map((button, index) => (
-              <Card
-                key={button.id}
-                className={`animate-slide-up stagger-${Math.min(index + 1, 6)}`}
-              >
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
-                        <User size={14} className="text-gray-500" />
-                        תפקיד
-                      </label>
-                      <select
-                        value={button.role}
-                        onChange={(e) =>
-                          updateButton(button.id, {
-                            role: e.target.value as UserRole,
-                          })
-                        }
-                        className="w-full p-3 border-2 border-surface-3 rounded-xl bg-surface-0 cursor-pointer transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
-                      >
-                        {roles.map((r) => (
-                          <option key={r} value={r}>
-                            {roleLabels[r]}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">
-                        תווית
-                      </label>
-                      <Input
-                        value={button.label}
-                        onChange={(e) =>
-                          updateButton(button.id, { label: e.target.value })
-                        }
-                        placeholder="שם הכפתור"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">
-                      תוכן
-                    </label>
-                    <textarea
-                      value={button.content}
-                      onChange={(e) =>
-                        updateButton(button.id, { content: e.target.value })
-                      }
-                      className="w-full p-4 border-2 border-surface-3 rounded-xl bg-surface-0 text-foreground placeholder:text-gray-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none"
-                      rows={3}
-                      placeholder="תוכן ההסבר"
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between pt-2 border-t border-surface-2">
-                    <button
-                      onClick={() =>
-                        updateButton(button.id, { visible: !button.visible })
-                      }
-                      className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium cursor-pointer transition-all ${
-                        button.visible
-                          ? "bg-success/10 text-success"
-                          : "bg-surface-2 text-gray-500"
-                      }`}
-                    >
-                      {button.visible ? (
-                        <>
-                          <Eye size={14} />
-                          גלוי
-                        </>
-                      ) : (
-                        <>
-                          <EyeOff size={14} />
-                          מוסתר
-                        </>
-                      )}
-                    </button>
-                    <button
-                      onClick={() => removeButton(button.id)}
-                      className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-error cursor-pointer transition-colors"
-                    >
-                      <Trash2 size={14} />
-                      הסר
-                    </button>
-                  </div>
-                </div>
-              </Card>
-            ))
-          )}
-
-          <Button
-            onClick={handleSaveButtons}
-            disabled={saving}
-            loading={saving}
-            loadingText="שומר..."
-            rightIcon={Save}
-          >
-            שמור שינויים
-          </Button>
-        </div>
-      )}
 
       {activeTab === "email" && (
         <div className="space-y-4 animate-fade-in">

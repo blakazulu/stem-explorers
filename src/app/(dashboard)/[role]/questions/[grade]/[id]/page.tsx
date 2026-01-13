@@ -329,9 +329,10 @@ export default function EditQuestionnairePage() {
         {/* Activate Button */}
         <Button
           onClick={handleToggleActive}
-          disabled={saving || questionnaire.questions.length === 0}
+          disabled={saving || (!questionnaire.isActive && questionnaire.questions.length === 0)}
           variant={questionnaire.isActive ? "outline" : "primary"}
           rightIcon={questionnaire.isActive ? Circle : CheckCircle}
+          title={!questionnaire.isActive && questionnaire.questions.length === 0 ? "יש להוסיף שאלות לפני הפעלה" : undefined}
         >
           {questionnaire.isActive ? "השבת" : "הפעל"}
         </Button>

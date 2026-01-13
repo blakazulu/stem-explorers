@@ -122,15 +122,6 @@ export interface ForumReply {
   createdAt: Date;
 }
 
-// Explanation button configuration
-export interface ExplanationButton {
-  id: string;
-  role: UserRole;
-  label: string;
-  content: string;
-  visible: boolean;
-}
-
 // Email configuration
 export interface EmailConfig {
   adminEmails: string[];

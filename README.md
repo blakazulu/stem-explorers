@@ -455,7 +455,6 @@ wiggle           - Playful wiggle animation
   - replies: { authorName, content, createdAt }[]
   - createdAt: timestamp
 
-/settings/explanationButtons
 /settings/emailConfig
 /settings/reportConfig
 ```

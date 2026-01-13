@@ -1,27 +1,9 @@
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { handleFirebaseError } from "@/lib/utils/errors";
-import type { ExplanationButton, EmailConfig, ReportConfig } from "@/types";
+import type { EmailConfig, ReportConfig } from "@/types";
 
 const SETTINGS_DOC = "settings";
-
-export async function getExplanationButtons(): Promise<ExplanationButton[]> {
-  try {
-    const docRef = doc(db, SETTINGS_DOC, "explanationButtons");
-    const docSnap = await getDoc(docRef);
-    return docSnap.exists() ? (docSnap.data().buttons as ExplanationButton[]) : [];
-  } catch (error) {
-    handleFirebaseError(error, "getExplanationButtons");
-  }
-}
-
-export async function saveExplanationButtons(buttons: ExplanationButton[]): Promise<void> {
-  try {
-    await setDoc(doc(db, SETTINGS_DOC, "explanationButtons"), { buttons });
-  } catch (error) {
-    handleFirebaseError(error, "saveExplanationButtons");
-  }
-}
 
 export async function getEmailConfig(): Promise<EmailConfig | null> {
   try {

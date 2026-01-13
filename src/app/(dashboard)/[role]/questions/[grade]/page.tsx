@@ -198,7 +198,9 @@ export default function QuestionnairesListPage() {
                     variant="ghost"
                     size="sm"
                     onClick={() => handleToggleActive(q)}
+                    disabled={!q.isActive && q.questions.length === 0}
                     rightIcon={q.isActive ? Circle : CheckCircle}
+                    title={!q.isActive && q.questions.length === 0 ? "יש להוסיף שאלות לפני הפעלה" : undefined}
                   >
                     {q.isActive ? "השבת" : "הפעל"}
                   </Button>
