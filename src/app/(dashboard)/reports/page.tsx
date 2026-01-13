@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import ReactMarkdown from "react-markdown";
 import { useAuth } from "@/contexts/AuthContext";
 import { GradeSelector } from "@/components/ui/GradeSelector";
 import { getUnitsByGrade } from "@/lib/services/units";
@@ -16,14 +17,21 @@ export default function ReportsPage() {
   const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
   const [report, setReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const isTeacherOrAdmin = session?.user.role === "teacher" || session?.user.role === "admin";
   const isParent = session?.user.role === "parent";
 
   const loadUnits = useCallback(async () => {
     if (!selectedGrade) return;
-    const data = await getUnitsByGrade(selectedGrade);
-    setUnits(data);
+    try {
+      setError(null);
+      const data = await getUnitsByGrade(selectedGrade);
+      setUnits(data);
+    } catch (err) {
+      setError("שגיאה בטעינת יחידות");
+      console.error(err);
+    }
   }, [selectedGrade]);
 
   useEffect(() => {
@@ -33,8 +41,14 @@ export default function ReportsPage() {
   async function loadReport(unit: Unit) {
     setSelectedUnit(unit);
     setLoading(true);
-    const data = await getReport(unit.id, selectedGrade!);
-    setReport(data);
+    setError(null);
+    try {
+      const data = await getReport(unit.id, selectedGrade!);
+      setReport(data);
+    } catch (err) {
+      setError("שגיאה בטעינת דוח");
+      console.error(err);
+    }
     setLoading(false);
   }
 
@@ -47,6 +61,10 @@ export default function ReportsPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-rubik font-bold">דוחות</h1>
+
+      {error && (
+        <div className="bg-error/10 text-error p-4 rounded-lg">{error}</div>
+      )}
 
       {isTeacherOrAdmin && (
         <div>
@@ -94,11 +112,9 @@ export default function ReportsPage() {
           {loading ? (
             <div className="text-gray-500">טוען דוח...</div>
           ) : reportContent ? (
-            <div
-              className="prose prose-lg max-w-none"
-              dir="rtl"
-              dangerouslySetInnerHTML={{ __html: reportContent }}
-            />
+            <div className="prose prose-lg max-w-none" dir="rtl">
+              <ReactMarkdown>{reportContent}</ReactMarkdown>
+            </div>
           ) : (
             <p className="text-gray-500">אין דוח זמין ליחידה זו</p>
           )}
