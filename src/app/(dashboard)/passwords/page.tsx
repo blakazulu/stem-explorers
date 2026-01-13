@@ -3,35 +3,28 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import { getAllUsers, createUser, deleteUser, UserDocument } from "@/lib/services/users";
+import { getAllUsers, updateUserPassword, UserDocument } from "@/lib/services/users";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import type { UserRole, Grade } from "@/types";
 
-const roles: { value: UserRole; label: string }[] = [
-  { value: "admin", label: "מנהל" },
-  { value: "teacher", label: "מורה" },
-  { value: "parent", label: "הורה" },
-  { value: "student", label: "תלמיד" },
-];
-
-const grades: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
+const roleLabels: Record<UserRole, string> = {
+  admin: "מנהל",
+  teacher: "מורה",
+  parent: "הורה",
+  student: "תלמיד",
+};
 
 export default function PasswordsPage() {
-  const { session } = useAuth();
+  const { session, logout } = useAuth();
   const router = useRouter();
   const [users, setUsers] = useState<UserDocument[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [deletePassword, setDeletePassword] = useState<string | null>(null);
+  const [editingUser, setEditingUser] = useState<UserDocument | null>(null);
+  const [newPassword, setNewPassword] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Form state
-  const [newPassword, setNewPassword] = useState("");
-  const [newRole, setNewRole] = useState<UserRole>("teacher");
-  const [newGrade, setNewGrade] = useState<Grade | null>("א");
+  const [success, setSuccess] = useState<string | null>(null);
 
   const loadUsers = useCallback(async () => {
     setLoading(true);
@@ -43,7 +36,8 @@ export default function PasswordsPage() {
         if (roleOrder[a.role] !== roleOrder[b.role]) {
           return roleOrder[a.role] - roleOrder[b.role];
         }
-        return (a.grade || "").localeCompare(b.grade || "");
+        const gradeOrder = ["א", "ב", "ג", "ד", "ה", "ו"];
+        return gradeOrder.indexOf(a.grade || "") - gradeOrder.indexOf(b.grade || "");
       });
       setUsers(data);
     } catch {
@@ -60,23 +54,33 @@ export default function PasswordsPage() {
     loadUsers();
   }, [session, router, loadUsers]);
 
-  function resetForm() {
+  function startEdit(user: UserDocument) {
+    setEditingUser(user);
+    setNewPassword(user.password);
+    setError(null);
+    setSuccess(null);
+  }
+
+  function cancelEdit() {
+    setEditingUser(null);
     setNewPassword("");
-    setNewRole("teacher");
-    setNewGrade("א");
-    setShowForm(false);
     setError(null);
   }
 
-  async function handleCreate() {
-    if (!newPassword.trim()) {
+  async function handleSave() {
+    if (!editingUser) return;
+
+    const trimmedPassword = newPassword.trim();
+
+    if (!trimmedPassword) {
       setError("יש להזין סיסמה");
       return;
     }
 
-    // Check if password already exists
-    if (users.some((u) => u.password === newPassword.trim())) {
-      setError("סיסמה זו כבר קיימת");
+    // Check if new password already exists (and it's not the same user)
+    if (trimmedPassword !== editingUser.password &&
+        users.some((u) => u.password === trimmedPassword)) {
+      setError("סיסמה זו כבר בשימוש");
       return;
     }
 
@@ -84,34 +88,33 @@ export default function PasswordsPage() {
     setError(null);
 
     try {
-      const grade = newRole === "admin" ? null : newGrade;
-      await createUser(newPassword.trim(), newRole, grade);
-      resetForm();
+      // If password changed, update it
+      if (trimmedPassword !== editingUser.password) {
+        await updateUserPassword(
+          editingUser.password,
+          trimmedPassword,
+          editingUser.role,
+          editingUser.grade
+        );
+
+        // If this is the current admin, log out (password changed)
+        if (editingUser.password === session?.documentId) {
+          setSuccess("הסיסמה עודכנה. מתנתק...");
+          setTimeout(() => logout(), 2000);
+          return;
+        }
+
+        setSuccess("הסיסמה עודכנה בהצלחה");
+      }
+
+      setEditingUser(null);
+      setNewPassword("");
       await loadUsers();
     } catch {
-      setError("שגיאה ביצירת משתמש");
+      setError("שגיאה בעדכון הסיסמה");
     }
 
     setSaving(false);
-  }
-
-  async function handleDelete() {
-    if (!deletePassword) return;
-
-    // Prevent deleting the current admin
-    if (deletePassword === session?.documentId) {
-      setError("לא ניתן למחוק את המשתמש הנוכחי");
-      setDeletePassword(null);
-      return;
-    }
-
-    try {
-      await deleteUser(deletePassword);
-      setDeletePassword(null);
-      await loadUsers();
-    } catch {
-      setError("שגיאה במחיקת משתמש");
-    }
   }
 
   if (session?.user.role !== "admin") {
@@ -128,118 +131,92 @@ export default function PasswordsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div>
         <h1 className="text-2xl font-rubik font-bold">ניהול סיסמאות</h1>
-        {!showForm && (
-          <Button onClick={() => setShowForm(true)}>סיסמה חדשה</Button>
-        )}
+        <p className="text-gray-500 mt-1">עריכת סיסמאות הגישה למערכת</p>
       </div>
 
       {error && (
         <div className="bg-error/10 text-error p-4 rounded-lg">{error}</div>
       )}
 
-      {showForm && (
-        <div className="bg-white rounded-xl p-6 shadow-sm space-y-4">
-          <h2 className="text-lg font-semibold">יצירת סיסמה חדשה</h2>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">סיסמה</label>
-            <Input
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="לדוגמה: teacher-a"
-              dir="ltr"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              מומלץ: teacher-X, parent-X, zzz-X (כאשר X = a-f לכיתות א-ו)
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">תפקיד</label>
-            <select
-              value={newRole}
-              onChange={(e) => setNewRole(e.target.value as UserRole)}
-              className="w-full p-2 border rounded-lg"
-            >
-              {roles.map((r) => (
-                <option key={r.value} value={r.value}>
-                  {r.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {newRole !== "admin" && (
-            <div>
-              <label className="block text-sm font-medium mb-1">כיתה</label>
-              <div className="flex gap-2">
-                {grades.map((g) => (
-                  <button
-                    key={g}
-                    type="button"
-                    onClick={() => setNewGrade(g)}
-                    className={`w-10 h-10 rounded-lg font-bold ${
-                      newGrade === g
-                        ? "bg-primary text-white"
-                        : "bg-gray-100 hover:bg-gray-200"
-                    }`}
-                  >
-                    {g}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="flex gap-2">
-            <Button onClick={handleCreate} disabled={saving}>
-              {saving ? "יוצר..." : "צור סיסמה"}
-            </Button>
-            <Button variant="outline" onClick={resetForm}>
-              ביטול
-            </Button>
-          </div>
-        </div>
+      {success && (
+        <div className="bg-success/10 text-success p-4 rounded-lg">{success}</div>
       )}
 
       {loading ? (
         <div className="text-gray-500">טוען משתמשים...</div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-8">
           {Object.entries(groupedUsers).map(([role, roleUsers]) => (
-            <div key={role} className="space-y-2">
-              <h2 className="text-lg font-semibold text-gray-700">
-                {roles.find((r) => r.value === role)?.label} ({roleUsers.length})
+            <div key={role}>
+              <h2 className="text-lg font-semibold text-gray-700 mb-3 border-b pb-2">
+                {roleLabels[role as UserRole]} ({roleUsers.length})
               </h2>
 
               {roleUsers.length === 0 ? (
                 <p className="text-sm text-gray-400">אין משתמשים</p>
               ) : (
-                <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
+                <div className="space-y-2">
                   {roleUsers.map((user) => (
                     <div
                       key={user.password}
-                      className="bg-white rounded-lg p-4 shadow-sm flex items-center justify-between"
+                      className="bg-white rounded-lg p-4 shadow-sm"
                     >
-                      <div>
-                        <code className="text-sm font-mono bg-gray-100 px-2 py-1 rounded">
-                          {user.password}
-                        </code>
-                        {user.grade && (
-                          <span className="mr-2 text-sm text-gray-500">
-                            כיתה {user.grade}
-                          </span>
-                        )}
-                      </div>
-                      <button
-                        onClick={() => setDeletePassword(user.password)}
-                        className="text-sm text-error hover:underline"
-                        disabled={user.password === session?.documentId}
-                      >
-                        {user.password === session?.documentId ? "(נוכחי)" : "מחק"}
-                      </button>
+                      {editingUser?.password === user.password ? (
+                        // Edit mode
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-3">
+                            <span className="font-medium">
+                              {roleLabels[user.role]}
+                              {user.grade && ` כיתה ${user.grade}`}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <label className="text-sm text-gray-600">סיסמה:</label>
+                            <Input
+                              value={newPassword}
+                              onChange={(e) => setNewPassword(e.target.value)}
+                              className="flex-1 max-w-xs"
+                              dir="ltr"
+                              autoFocus
+                            />
+                          </div>
+                          <div className="flex gap-2">
+                            <Button size="sm" onClick={handleSave} disabled={saving}>
+                              {saving ? "שומר..." : "שמור"}
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={cancelEdit}>
+                              ביטול
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        // View mode
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <span className="font-medium min-w-[120px]">
+                              {roleLabels[user.role]}
+                              {user.grade && ` כיתה ${user.grade}`}
+                            </span>
+                            <span className="text-gray-400">|</span>
+                            <span className="text-sm text-gray-600">סיסמה:</span>
+                            <code className="font-mono bg-gray-100 px-2 py-1 rounded text-sm">
+                              {user.password}
+                            </code>
+                            {user.password === session?.documentId && (
+                              <span className="text-xs text-primary">(את/ה)</span>
+                            )}
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => startEdit(user)}
+                          >
+                            ערוך
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -248,15 +225,6 @@ export default function PasswordsPage() {
           ))}
         </div>
       )}
-
-      <ConfirmDialog
-        isOpen={deletePassword !== null}
-        title="מחיקת סיסמה"
-        message={`האם אתה בטוח שברצונך למחוק את הסיסמה "${deletePassword}"? משתמשים עם סיסמה זו לא יוכלו להתחבר.`}
-        confirmLabel="מחק"
-        onConfirm={handleDelete}
-        onCancel={() => setDeletePassword(null)}
-      />
     </div>
   );
 }

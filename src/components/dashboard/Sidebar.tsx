@@ -12,13 +12,14 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: "מודל פדגוגי", href: "/pedagogical", roles: ["admin", "teacher", "parent", "student"] },
-  { label: "תוכניות עבודה", href: "/work-plans", roles: ["admin"] },
+  { label: "תוכניות עבודה", href: "/work-plans", roles: ["admin", "teacher"] },
   { label: "תיעודים", href: "/documentation", roles: ["admin", "teacher", "parent", "student"] },
   { label: "יומן חוקר", href: "/journal", roles: ["student"] },
   { label: "דוחות", href: "/reports", roles: ["admin", "teacher", "parent"] },
   { label: "פורום", href: "/forum", roles: ["admin", "teacher"] },
   { label: "שאלות", href: "/questions", roles: ["admin"] },
-  { label: "הגדרות", href: "/settings", roles: ["admin"] },
+  { label: "סיסמאות", href: "/passwords", roles: ["admin"] },
+  { label: "הגדרות", href: "/admin", roles: ["admin"] },
 ];
 
 export function Sidebar() {

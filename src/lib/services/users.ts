@@ -31,26 +31,22 @@ export async function getAllUsers(): Promise<UserDocument[]> {
   }
 }
 
-export async function createUser(
-  password: string,
+export async function updateUserPassword(
+  oldPassword: string,
+  newPassword: string,
   role: UserRole,
   grade: Grade | null
 ): Promise<void> {
   try {
-    await setDoc(doc(db, "users", password), {
+    // Create new document with new password
+    await setDoc(doc(db, "users", newPassword), {
       role,
       grade,
       createdAt: serverTimestamp(),
     });
+    // Delete old document
+    await deleteDoc(doc(db, "users", oldPassword));
   } catch (error) {
-    handleFirebaseError(error, "createUser");
-  }
-}
-
-export async function deleteUser(password: string): Promise<void> {
-  try {
-    await deleteDoc(doc(db, "users", password));
-  } catch (error) {
-    handleFirebaseError(error, "deleteUser");
+    handleFirebaseError(error, "updateUserPassword");
   }
 }
