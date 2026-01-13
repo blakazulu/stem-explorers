@@ -70,7 +70,15 @@ export default function PedagogicalGradePage() {
           <h2 className="text-lg font-rubik font-semibold text-foreground">
             יחידות לימוד
           </h2>
-          <UnitTree grade={grade} onSelectUnit={setSelectedUnit} />
+          <UnitTree
+            grade={grade}
+            onSelectUnit={setSelectedUnit}
+            onAddUnit={
+              isTeacherOrAdmin
+                ? () => router.push(`/${role}/work-plans/${encodeURIComponent(grade)}`)
+                : undefined
+            }
+          />
         </div>
       )}
 

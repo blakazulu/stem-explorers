@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Pedagogical UX Improvement
+- **UnitTree Component**: Added "הוסף יחידה" (Add Unit) button to empty state when no units exist for a grade
+  - Button only visible to teachers and admins
+  - Navigates to work-plans page for the selected grade to create new units
+
 #### Logo Integration
 - **WelcomeHeader**: Logo displayed alongside greeting with role-specific animations (bouncy for students)
 - **Login Page**: Full logo on desktop illustration panel and mobile header (replaces Atom icon)

@@ -6,15 +6,16 @@ import { UnitCard } from "./UnitCard";
 import { SkeletonGrid } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
-import { AlertCircle, RefreshCw, X } from "lucide-react";
+import { AlertCircle, RefreshCw, X, Plus } from "lucide-react";
 import type { Unit, Grade } from "@/types";
 
 interface UnitTreeProps {
   grade: Grade;
   onSelectUnit: (unit: Unit) => void;
+  onAddUnit?: () => void;
 }
 
-export function UnitTree({ grade, onSelectUnit }: UnitTreeProps) {
+export function UnitTree({ grade, onSelectUnit, onAddUnit }: UnitTreeProps) {
   const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -70,6 +71,13 @@ export function UnitTree({ grade, onSelectUnit }: UnitTreeProps) {
         title="אין יחידות לימוד"
         description={`עדיין לא נוספו יחידות לימוד לכיתה ${grade}`}
         variant="stem"
+        action={
+          onAddUnit ? (
+            <Button onClick={onAddUnit} rightIcon={Plus}>
+              הוסף יחידה
+            </Button>
+          ) : undefined
+        }
       />
     );
   }
