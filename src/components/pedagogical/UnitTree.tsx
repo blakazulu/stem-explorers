@@ -6,7 +6,8 @@ import { UnitCard } from "./UnitCard";
 import { SkeletonGrid } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
-import { AlertCircle, RefreshCw, X, Plus } from "lucide-react";
+import { useToastActions } from "@/components/ui/Toast";
+import { RefreshCw, Plus } from "lucide-react";
 import type { Unit, Grade } from "@/types";
 
 interface UnitTreeProps {
@@ -18,16 +19,18 @@ interface UnitTreeProps {
 export function UnitTree({ grade, onSelectUnit, onAddUnit }: UnitTreeProps) {
   const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState(false);
+  const toast = useToastActions();
 
   async function loadUnits() {
     setLoading(true);
-    setError(null);
+    setLoadError(false);
     try {
       const data = await getUnitsByGrade(grade);
       setUnits(data);
     } catch {
-      setError("שגיאה בטעינת יחידות הלימוד");
+      setLoadError(true);
+      toast.error("שגיאה", "שגיאה בטעינת יחידות הלימוד");
     }
     setLoading(false);
   }
@@ -40,27 +43,18 @@ export function UnitTree({ grade, onSelectUnit, onAddUnit }: UnitTreeProps) {
     return <SkeletonGrid count={6} columns={3} />;
   }
 
-  if (error) {
+  if (loadError) {
     return (
-      <div className="flex items-center gap-3 bg-error/10 text-error p-4 rounded-xl animate-slide-up">
-        <AlertCircle size={20} />
-        <span className="text-sm font-medium flex-1">{error}</span>
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={loadUnits}
-          rightIcon={RefreshCw}
-          className="text-error hover:bg-error/20"
-        >
-          נסה שוב
-        </Button>
-        <button
-          onClick={() => setError(null)}
-          className="p-1 hover:bg-error/20 rounded-lg transition-colors cursor-pointer"
-        >
-          <X size={16} />
-        </button>
-      </div>
+      <EmptyState
+        icon="alert-triangle"
+        title="שגיאה בטעינה"
+        description="לא הצלחנו לטעון את יחידות הלימוד"
+        action={
+          <Button onClick={loadUnits} rightIcon={RefreshCw}>
+            נסה שוב
+          </Button>
+        }
+      />
     );
   }
 

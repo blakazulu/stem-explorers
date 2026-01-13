@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import { SkeletonList } from "@/components/ui/Skeleton";
+import { useToastActions } from "@/components/ui/Toast";
 import {
   Key,
   ChevronDown,
@@ -20,8 +21,6 @@ import {
   Check,
   X,
   Save,
-  AlertCircle,
-  CheckCircle,
 } from "lucide-react";
 import type { UserRole } from "@/types";
 
@@ -224,8 +223,7 @@ export default function PasswordsPage() {
   const [editingUser, setEditingUser] = useState<UserDocument | null>(null);
   const [newPassword, setNewPassword] = useState("");
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const toast = useToastActions();
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     admin: true,
     teacher: true,
@@ -247,10 +245,10 @@ export default function PasswordsPage() {
       });
       setUsers(data);
     } catch {
-      setError("שגיאה בטעינת משתמשים");
+      toast.error("שגיאה", "שגיאה בטעינת משתמשים");
     }
     setLoading(false);
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     if (session?.user.role !== "admin") {
@@ -267,14 +265,11 @@ export default function PasswordsPage() {
   function startEdit(user: UserDocument) {
     setEditingUser(user);
     setNewPassword(user.password);
-    setError(null);
-    setSuccess(null);
   }
 
   function cancelEdit() {
     setEditingUser(null);
     setNewPassword("");
-    setError(null);
   }
 
   async function handleSave() {
@@ -283,18 +278,17 @@ export default function PasswordsPage() {
     const trimmedPassword = newPassword.trim();
 
     if (!trimmedPassword) {
-      setError("יש להזין סיסמה");
+      toast.error("שגיאה", "יש להזין סיסמה");
       return;
     }
 
     if (trimmedPassword !== editingUser.password &&
         users.some((u) => u.password === trimmedPassword)) {
-      setError("סיסמה זו כבר בשימוש");
+      toast.error("שגיאה", "סיסמה זו כבר בשימוש");
       return;
     }
 
     setSaving(true);
-    setError(null);
 
     try {
       if (trimmedPassword !== editingUser.password) {
@@ -306,19 +300,19 @@ export default function PasswordsPage() {
         );
 
         if (editingUser.password === session?.documentId) {
-          setSuccess("הסיסמה עודכנה. מתנתק...");
+          toast.success("הצלחה", "הסיסמה עודכנה. מתנתק...");
           setTimeout(() => logout(), 2000);
           return;
         }
 
-        setSuccess("הסיסמה עודכנה בהצלחה");
+        toast.success("הצלחה", "הסיסמה עודכנה בהצלחה");
       }
 
       setEditingUser(null);
       setNewPassword("");
       await loadUsers();
     } catch {
-      setError("שגיאה בעדכון הסיסמה");
+      toast.error("שגיאה", "שגיאה בעדכון הסיסמה");
     }
 
     setSaving(false);
@@ -350,32 +344,6 @@ export default function PasswordsPage() {
           </p>
         </div>
       </div>
-
-      {error && (
-        <div className="flex items-center gap-3 bg-error/10 text-error p-4 rounded-xl animate-slide-up">
-          <AlertCircle size={20} />
-          <span className="text-sm font-medium">{error}</span>
-          <button
-            onClick={() => setError(null)}
-            className="mr-auto p-1 hover:bg-error/20 rounded-lg transition-colors cursor-pointer"
-          >
-            <X size={16} />
-          </button>
-        </div>
-      )}
-
-      {success && (
-        <div className="flex items-center gap-3 bg-success/10 text-success p-4 rounded-xl animate-slide-up">
-          <CheckCircle size={20} />
-          <span className="text-sm font-medium">{success}</span>
-          <button
-            onClick={() => setSuccess(null)}
-            className="mr-auto p-1 hover:bg-success/20 rounded-lg transition-colors cursor-pointer"
-          >
-            <X size={16} />
-          </button>
-        </div>
-      )}
 
       {loading ? (
         <SkeletonList count={4} />

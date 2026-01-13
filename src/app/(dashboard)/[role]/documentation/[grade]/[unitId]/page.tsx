@@ -10,11 +10,11 @@ import { createDocumentation } from "@/lib/services/documentation";
 import { uploadImage } from "@/lib/utils/imageUpload";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { useToastActions } from "@/components/ui/Toast";
 import {
   Camera,
   Upload,
   ArrowRight,
-  AlertCircle,
   X,
   BookOpen,
   Image,
@@ -37,8 +37,8 @@ export default function DocumentationGalleryPage() {
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const toast = useToastActions();
 
   // Form state
   const [text, setText] = useState("");
@@ -75,12 +75,11 @@ export default function DocumentationGalleryPage() {
   async function handleAddDocumentation() {
     if (!unit || !session) return;
     if (images.length === 0 && !text.trim()) {
-      setError("יש להוסיף תמונות או טקסט");
+      toast.error("שגיאה", "יש להוסיף תמונות או טקסט");
       return;
     }
 
     setUploading(true);
-    setError(null);
 
     try {
       // Upload images
@@ -106,7 +105,7 @@ export default function DocumentationGalleryPage() {
       setShowAddForm(false);
       setRefreshKey((k) => k + 1);
     } catch {
-      setError("שגיאה בהוספת תיעוד");
+      toast.error("שגיאה", "שגיאה בהוספת תיעוד");
     }
 
     setUploading(false);
@@ -141,20 +140,6 @@ export default function DocumentationGalleryPage() {
           <p className="text-sm text-gray-500">כיתה {grade}</p>
         </div>
       </div>
-
-      {/* Error Alert */}
-      {error && (
-        <div className="flex items-center gap-3 bg-error/10 text-error p-4 rounded-xl animate-slide-up">
-          <AlertCircle size={20} />
-          <span className="text-sm font-medium">{error}</span>
-          <button
-            onClick={() => setError(null)}
-            className="mr-auto p-1 hover:bg-error/20 rounded-lg transition-colors cursor-pointer"
-          >
-            <X size={16} />
-          </button>
-        </div>
-      )}
 
       {/* Add Documentation Form */}
       {showAddForm && isTeacherOrAdmin && (

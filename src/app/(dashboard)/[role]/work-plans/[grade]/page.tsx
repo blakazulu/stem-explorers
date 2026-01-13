@@ -17,6 +17,7 @@ import { Card } from "@/components/ui/Card";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { SkeletonList } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { useToastActions } from "@/components/ui/Toast";
 import {
   FileText,
   Plus,
@@ -29,8 +30,6 @@ import {
   X,
   Hash,
   CheckCircle,
-  AlertCircle,
-  RefreshCw,
   ArrowRight,
 } from "lucide-react";
 import type { Unit, Grade, UserRole } from "@/types";
@@ -51,7 +50,7 @@ export default function WorkPlansGradePage() {
   const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const toast = useToastActions();
 
   // Form state
   const [name, setName] = useState("");
@@ -72,15 +71,14 @@ export default function WorkPlansGradePage() {
   const loadUnits = useCallback(async () => {
     if (!VALID_GRADES.includes(grade)) return;
     setLoading(true);
-    setError(null);
     try {
       const data = await getUnitsByGrade(grade);
       setUnits(data);
     } catch {
-      setError("שגיאה בטעינת יחידות הלימוד");
+      toast.error("שגיאה", "שגיאה בטעינת יחידות הלימוד");
     }
     setLoading(false);
-  }, [grade]);
+  }, [grade, toast]);
 
   useEffect(() => {
     loadUnits();
@@ -114,7 +112,6 @@ export default function WorkPlansGradePage() {
   async function handleSubmit() {
     if (!name.trim()) return;
     setSaving(true);
-    setError(null);
 
     try {
       let introFileUrl = editingUnit?.introFileUrl || "";
@@ -148,7 +145,7 @@ export default function WorkPlansGradePage() {
       resetForm();
       await loadUnits();
     } catch {
-      setError("שגיאה בשמירת היחידה");
+      toast.error("שגיאה", "שגיאה בשמירת היחידה");
     } finally {
       setSaving(false);
     }
@@ -161,7 +158,7 @@ export default function WorkPlansGradePage() {
       setDeleteId(null);
       await loadUnits();
     } catch {
-      setError("שגיאה במחיקת היחידה");
+      toast.error("שגיאה", "שגיאה במחיקת היחידה");
       setDeleteId(null);
     }
   }
@@ -200,29 +197,6 @@ export default function WorkPlansGradePage() {
           </Button>
         )}
       </div>
-
-      {/* Error Alert */}
-      {error && (
-        <div className="flex items-center gap-3 bg-error/10 text-error p-4 rounded-xl animate-slide-up">
-          <AlertCircle size={20} />
-          <span className="text-sm font-medium flex-1">{error}</span>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={loadUnits}
-            rightIcon={RefreshCw}
-            className="text-error hover:bg-error/20"
-          >
-            נסה שוב
-          </Button>
-          <button
-            onClick={() => setError(null)}
-            className="p-1 hover:bg-error/20 rounded-lg transition-colors cursor-pointer"
-          >
-            <X size={16} />
-          </button>
-        </div>
-      )}
 
       {/* Unit Form - Admin only */}
       {canManage && showForm && (

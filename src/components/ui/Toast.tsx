@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useMemo, ReactNode } from "react";
 import { Icon } from "./Icon";
 
 type ToastType = "success" | "error" | "warning" | "info";
@@ -29,11 +29,11 @@ export function useToast() {
   return context;
 }
 
-// Convenience functions
+// Convenience functions - memoized to prevent unnecessary re-renders
 export function useToastActions() {
   const { addToast } = useToast();
 
-  return {
+  return useMemo(() => ({
     success: (title: string, description?: string) =>
       addToast({ type: "success", title, description }),
     error: (title: string, description?: string) =>
@@ -42,7 +42,7 @@ export function useToastActions() {
       addToast({ type: "warning", title, description }),
     info: (title: string, description?: string) =>
       addToast({ type: "info", title, description }),
-  };
+  }), [addToast]);
 }
 
 export function ToastProvider({ children }: { children: ReactNode }) {
@@ -78,7 +78,7 @@ function ToastContainer() {
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed top-4 left-4 z-50 flex flex-col gap-2 max-w-sm">
+    <div className="fixed bottom-4 left-4 z-50 flex flex-col gap-2 max-w-sm">
       {toasts.map((toast) => (
         <ToastItem key={toast.id} toast={toast} onClose={() => removeToast(toast.id)} />
       ))}
@@ -121,7 +121,7 @@ function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {
 
   return (
     <div
-      className={`${style.bg} ${style.border} border-r-4 rounded-lg p-4 shadow-lg animate-slide-in-right flex items-start gap-3`}
+      className={`${style.bg} ${style.border} border-l-4 rounded-lg p-4 shadow-lg animate-slide-up flex items-start gap-3`}
       role="alert"
     >
       <Icon name={style.icon} size="md" className={iconColors[toast.type]} />

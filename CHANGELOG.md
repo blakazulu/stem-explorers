@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+#### Layout Improvements
+- **Fixed sidebar and header**: Sidebar now spans full viewport height on desktop; header stays fixed at top of content area
+- **Scrollable main content**: Only the `<main>` element scrolls; sidebar and header remain visible during scroll
+- **Mobile behavior unchanged**: Mobile sidebar overlay with backdrop works as before
+
+#### Toast Notifications
+- **Position moved to bottom-left**: Toast notifications now appear at bottom-left of screen instead of top-left
+- **Animation updated**: Changed from `animate-slide-in-right` to `animate-slide-up` for better UX
+- **Error messages unified**: All error messages throughout the app now display as toast notifications instead of inline alerts
+  - Affected components: DocumentationGallery, UnitTree, NewPostForm, PostCard
+  - Affected pages: passwords, forum, journal, documentation, work-plans
+- **RTL border direction**: Toast accent border now appears on the correct (left) side for RTL layouts
+- **Memoized `useToastActions` hook**: Prevents unnecessary re-renders when toast is included in useCallback dependencies
+- **Standardized toast message format**: All toast messages now follow consistent pattern (category title + action description)
+
+#### Journal Error Recovery
+- **Retry buttons for journal pages**: Added error states with retry buttons to journal unit selector and journal wizard pages
+  - Shows EmptyState with "נסה שוב" button when loading fails
+  - Maintains consistent UX with other pages (DocumentationGallery, UnitTree)
+
 ### Added
 
 #### Document Upload for Units

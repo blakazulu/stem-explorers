@@ -10,14 +10,12 @@ import { NewPostForm } from "@/components/forum/NewPostForm";
 import { Button } from "@/components/ui/Button";
 import { SkeletonList } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { useToastActions } from "@/components/ui/Toast";
 import {
   MessageSquare,
   Plus,
   HelpCircle,
   Users,
-  AlertCircle,
-  RefreshCw,
-  X,
 } from "lucide-react";
 import type { ForumPost, ForumRoom, UserRole } from "@/types";
 
@@ -39,7 +37,7 @@ export default function ForumRoomPage() {
   const [posts, setPosts] = useState<ForumPost[]>([]);
   const [showNewPost, setShowNewPost] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const toast = useToastActions();
 
   const isAdmin = session?.user.role === "admin";
 
@@ -53,15 +51,14 @@ export default function ForumRoomPage() {
   const loadPosts = useCallback(async () => {
     if (!VALID_ROOMS.includes(room)) return;
     setLoading(true);
-    setError(null);
     try {
       const data = await getPostsByRoom(room);
       setPosts(data);
     } catch {
-      setError("שגיאה בטעינת הפוסטים");
+      toast.error("שגיאה", "שגיאה בטעינת הפוסטים");
     }
     setLoading(false);
-  }, [room]);
+  }, [room, toast]);
 
   useEffect(() => {
     loadPosts();
@@ -73,7 +70,7 @@ export default function ForumRoomPage() {
       await deletePost(id);
       await loadPosts();
     } catch {
-      setError("שגיאה במחיקת הפוסט");
+      toast.error("שגיאה", "שגיאה במחיקת הפוסט");
     }
   }
 
@@ -106,29 +103,6 @@ export default function ForumRoomPage() {
           </Button>
         )}
       </div>
-
-      {/* Error Alert */}
-      {error && (
-        <div className="flex items-center gap-3 bg-error/10 text-error p-4 rounded-xl animate-slide-up">
-          <AlertCircle size={20} />
-          <span className="text-sm font-medium flex-1">{error}</span>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={loadPosts}
-            rightIcon={RefreshCw}
-            className="text-error hover:bg-error/20"
-          >
-            נסה שוב
-          </Button>
-          <button
-            onClick={() => setError(null)}
-            className="p-1 hover:bg-error/20 rounded-lg transition-colors cursor-pointer"
-          >
-            <X size={16} />
-          </button>
-        </div>
-      )}
 
       {/* Room Tabs */}
       <div className="flex gap-2 p-1 bg-surface-1 rounded-xl">
@@ -173,7 +147,7 @@ export default function ForumRoomPage() {
       {/* Posts List */}
       {loading ? (
         <SkeletonList count={3} />
-      ) : posts.length === 0 && !error ? (
+      ) : posts.length === 0 ? (
         <EmptyState
           icon="message-square"
           title={`אין פוסטים ב${currentRoom?.label || "חדר זה"}`}

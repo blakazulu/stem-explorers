@@ -54,7 +54,7 @@ export default function DashboardLayout({
   return (
     <ThemeProvider>
       <ToastProvider>
-        <div className="min-h-screen bg-background flex">
+        <div className="h-screen bg-background flex overflow-hidden">
           {/* Desktop Sidebar */}
           <div className="hidden md:block">
             <Sidebar />
@@ -88,9 +88,9 @@ export default function DashboardLayout({
           )}
 
           {/* Main Content */}
-          <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
             <Header onMenuToggle={() => setSidebarOpen(true)} />
-            <main className="flex-1 p-4 md:p-6 overflow-x-hidden">
+            <main className="flex-1 p-4 md:p-6 overflow-y-auto overflow-x-hidden">
               <div className="animate-fade-in">{children}</div>
             </main>
           </div>

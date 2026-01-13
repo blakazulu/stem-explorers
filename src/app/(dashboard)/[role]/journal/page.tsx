@@ -8,11 +8,10 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { SkeletonGrid } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { useToastActions } from "@/components/ui/Toast";
 import {
   BookOpen,
   PenTool,
-  AlertCircle,
-  X,
   RefreshCw,
 } from "lucide-react";
 import type { Unit, Grade, UserRole } from "@/types";
@@ -27,20 +26,22 @@ export default function JournalUnitSelectorPage() {
 
   const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState(false);
+  const toast = useToastActions();
 
   const loadUnits = useCallback(async () => {
     if (!grade) return;
     setLoading(true);
-    setError(null);
+    setLoadError(false);
     try {
       const data = await getUnitsByGrade(grade);
       setUnits(data);
     } catch {
-      setError("שגיאה בטעינת יחידות הלימוד. נסה שוב מאוחר יותר.");
+      setLoadError(true);
+      toast.error("שגיאה", "שגיאה בטעינת יחידות הלימוד");
     }
     setLoading(false);
-  }, [grade]);
+  }, [grade, toast]);
 
   useEffect(() => {
     loadUnits();
@@ -76,33 +77,21 @@ export default function JournalUnitSelectorPage() {
         </div>
       </div>
 
-      {/* Error Alert */}
-      {error && (
-        <div className="flex items-center gap-3 bg-error/10 text-error p-4 rounded-xl animate-slide-up">
-          <AlertCircle size={20} />
-          <span className="text-sm font-medium flex-1">{error}</span>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={loadUnits}
-            rightIcon={RefreshCw}
-            className="text-error hover:bg-error/20"
-          >
-            נסה שוב
-          </Button>
-          <button
-            onClick={() => setError(null)}
-            className="p-1 hover:bg-error/20 rounded-lg transition-colors cursor-pointer"
-          >
-            <X size={16} />
-          </button>
-        </div>
-      )}
-
       {/* Units Grid */}
       {loading ? (
         <SkeletonGrid count={6} />
-      ) : units.length === 0 && !error ? (
+      ) : loadError ? (
+        <EmptyState
+          icon="alert-triangle"
+          title="שגיאה בטעינה"
+          description="לא הצלחנו לטעון את יחידות הלימוד"
+          action={
+            <Button onClick={loadUnits} rightIcon={RefreshCw}>
+              נסה שוב
+            </Button>
+          }
+        />
+      ) : units.length === 0 ? (
         <EmptyState
           icon="book-open"
           title="אין יחידות זמינות"
