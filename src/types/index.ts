@@ -134,5 +134,5 @@ export interface BotKnowledge {
 // Session/Auth context
 export interface AuthSession {
   user: User;
-  password: string;
+  documentId: string; // Changed from password - stores Firestore doc ID for re-validation
 }
