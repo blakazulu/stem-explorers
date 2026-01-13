@@ -81,7 +81,7 @@ export function ConfirmDialog({
   return (
     <dialog
       ref={dialogRef}
-      className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 rounded-2xl p-0 backdrop:bg-black/50 backdrop:animate-fade-in max-w-md w-full shadow-2xl animate-scale-in border-0 m-0"
+      className="fixed inset-0 m-auto h-fit z-50 rounded-2xl p-0 backdrop:bg-black/50 backdrop:animate-fade-in max-w-md w-full shadow-2xl animate-scale-in border-0"
       onClose={onCancel}
     >
       <div className="p-6" dir="rtl">
