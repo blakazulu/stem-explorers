@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+#### URL Routing - Complete Restructure to Nested Role-Based Routes
+- **Breaking:** All dashboard routes now include role prefix (`/admin/...`, `/teacher/...`, `/parent/...`, `/student/...`)
+- URLs now preserve state on page refresh (grade, unit, forum room selections)
+- Example routes:
+  - `/admin/work-plans/א` - Admin viewing grade א work plans
+  - `/teacher/forum/requests` - Teacher viewing forum requests room
+  - `/student/journal/unit-123` - Student working on specific journal unit
+
+#### New Route Structure
+- `[role]/layout.tsx` - Role validation middleware (redirects unauthorized users)
+- `[role]/page.tsx` - Role-specific dashboard home
+- `[role]/work-plans/page.tsx` - Grade selector
+- `[role]/work-plans/[grade]/page.tsx` - Units CRUD for selected grade
+- `[role]/pedagogical/page.tsx` - Grade selector (auto-redirects students/parents to their grade)
+- `[role]/pedagogical/[grade]/page.tsx` - Unit content tree
+- `[role]/documentation/page.tsx` - Grade selector
+- `[role]/documentation/[grade]/page.tsx` - Unit selector
+- `[role]/documentation/[grade]/[unitId]/page.tsx` - Documentation gallery
+- `[role]/reports/page.tsx` - Grade selector (auto-redirects parents to their grade)
+- `[role]/reports/[grade]/page.tsx` - Unit selector
+- `[role]/reports/[grade]/[unitId]/page.tsx` - AI report viewer
+- `[role]/journal/page.tsx` - Unit selector for students
+- `[role]/journal/[unitId]/page.tsx` - Research journal wizard
+- `[role]/forum/page.tsx` - Redirects to default room
+- `[role]/forum/[room]/page.tsx` - Forum posts with room tabs as Links
+- `[role]/questions/page.tsx` - Question management (admin only)
+- `[role]/passwords/page.tsx` - Password management (admin only)
+- `[role]/settings/page.tsx` - Admin settings (buttons, email, reports)
+
+#### Navigation Updates
+- Sidebar links now use role-prefixed URLs
+- Sidebar active state detection updated for nested routes using `startsWith()`
+- GradeSelector now navigates via `router.push()` instead of `setState()`
+- Login redirects to `/{role}` based on user role
+- Root page (`/`) redirects to `/{role}` or `/login` based on session
+
+### Removed
+- Old flat routes (`/dashboard`, `/pedagogical`, `/work-plans`, `/documentation`, `/reports`, `/journal`, `/forum`, `/questions`, `/passwords`, `/admin`)
+- State-based grade/unit selection (replaced with URL params)
+
+### Fixed
+- AuthContext login return type now includes `role` property for redirect
+- GradeSelector prop validation (added required `selected` prop)
+
 ## [0.1.0] - 2026-01-13
 
 ### Added

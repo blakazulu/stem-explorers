@@ -21,11 +21,12 @@ import type { LucideIcon } from "lucide-react";
 
 interface NavItem {
   label: string;
-  href: string;
+  href: string; // Base path without role prefix
   roles: UserRole[];
   icon: LucideIcon;
 }
 
+// Base paths - will be prefixed with role
 const navItems: NavItem[] = [
   { label: "מודל פדגוגי", href: "/pedagogical", roles: ["admin", "teacher", "parent", "student"], icon: BookOpen },
   { label: "תוכניות עבודה", href: "/work-plans", roles: ["admin", "teacher"], icon: FileText },
@@ -35,7 +36,7 @@ const navItems: NavItem[] = [
   { label: "פורום", href: "/forum", roles: ["admin", "teacher"], icon: MessageSquare },
   { label: "שאלות", href: "/questions", roles: ["admin"], icon: HelpCircle },
   { label: "סיסמאות", href: "/passwords", roles: ["admin"], icon: Key },
-  { label: "הגדרות", href: "/admin", roles: ["admin"], icon: Settings },
+  { label: "הגדרות", href: "/settings", roles: ["admin"], icon: Settings },
 ];
 
 // Role-specific accent colors
@@ -66,11 +67,20 @@ export function Sidebar({ onClose }: SidebarProps) {
 
   // Group items for admin view
   const mainItems = visibleItems.filter(
-    (item) => !["questions", "passwords", "admin"].includes(item.href.slice(1))
+    (item) => !["questions", "passwords", "settings"].includes(item.href.slice(1))
   );
   const adminItems = visibleItems.filter((item) =>
-    ["questions", "passwords", "admin"].includes(item.href.slice(1))
+    ["questions", "passwords", "settings"].includes(item.href.slice(1))
   );
+
+  // Get full href with role prefix
+  const getFullHref = (baseHref: string) => `/${role}${baseHref}`;
+
+  // Check if path is active (starts with the full href)
+  const isPathActive = (baseHref: string) => {
+    const fullHref = getFullHref(baseHref);
+    return pathname === fullHref || pathname.startsWith(fullHref + "/");
+  };
 
   const roleColor = role ? roleColors[role] : "text-primary";
   const roleBgColor = role ? roleBgColors[role] : "bg-primary/10";
@@ -80,7 +90,7 @@ export function Sidebar({ onClose }: SidebarProps) {
       {/* Logo Header */}
       <div className="p-6 border-b border-surface-2">
         <Link
-          href="/dashboard"
+          href={role ? `/${role}` : "/login"}
           className="flex items-center gap-3 group cursor-pointer"
           onClick={onClose}
         >
@@ -101,13 +111,14 @@ export function Sidebar({ onClose }: SidebarProps) {
         {/* Main Navigation Items */}
         <ul className="space-y-1">
           {mainItems.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive = isPathActive(item.href);
             const ItemIcon = item.icon;
+            const fullHref = getFullHref(item.href);
 
             return (
               <li key={item.href}>
                 <Link
-                  href={item.href}
+                  href={fullHref}
                   onClick={onClose}
                   className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 cursor-pointer relative group ${
                     isActive
@@ -143,13 +154,14 @@ export function Sidebar({ onClose }: SidebarProps) {
             </p>
             <ul className="space-y-1">
               {adminItems.map((item) => {
-                const isActive = pathname === item.href;
+                const isActive = isPathActive(item.href);
                 const ItemIcon = item.icon;
+                const fullHref = getFullHref(item.href);
 
                 return (
                   <li key={item.href}>
                     <Link
-                      href={item.href}
+                      href={fullHref}
                       onClick={onClose}
                       className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 cursor-pointer relative group ${
                         isActive

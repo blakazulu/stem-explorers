@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   getExplanationButtons,
   saveExplanationButtons,
@@ -26,7 +26,6 @@ import {
   Eye,
   EyeOff,
   Save,
-  CheckCircle,
   User,
 } from "lucide-react";
 import type { ExplanationButton, EmailConfig, ReportConfig, UserRole } from "@/types";
@@ -47,7 +46,6 @@ const tabConfig: { id: Tab; label: string; icon: typeof Settings }[] = [
   { id: "report", label: "הגדרות דוח", icon: FileBarChart },
 ];
 
-// Predefined report elements - no manual input needed
 const REPORT_ELEMENTS = [
   { id: "summary", label: "סיכום כללי", defaultTeacher: true, defaultParent: true },
   { id: "patterns", label: "דפוסים ומגמות", defaultTeacher: true, defaultParent: false },
@@ -55,25 +53,23 @@ const REPORT_ELEMENTS = [
   { id: "suggestions", label: "המלצות להמשך", defaultTeacher: true, defaultParent: true },
 ] as const;
 
-export default function AdminSettingsPage() {
+export default function SettingsPage() {
   const { session } = useAuth();
+  const params = useParams();
   const router = useRouter();
+  const role = params.role as UserRole;
+
   const [activeTab, setActiveTab] = useState<Tab>("buttons");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // Explanation Buttons state
   const [buttons, setButtons] = useState<ExplanationButton[]>([]);
-
-  // Email Config state
   const [emailConfig, setEmailConfig] = useState<EmailConfig>({
     adminEmails: [],
     frequency: "daily",
     includeContent: true,
   });
   const [newEmail, setNewEmail] = useState("");
-
-  // Report Config state - initialized with predefined elements
   const [reportConfig, setReportConfig] = useState<ReportConfig>({
     elements: REPORT_ELEMENTS.map((el) => ({
       id: el.id,
@@ -86,7 +82,7 @@ export default function AdminSettingsPage() {
 
   useEffect(() => {
     if (session?.user.role !== "admin") {
-      router.push("/dashboard");
+      router.push(`/${role}`);
       return;
     }
 
@@ -99,7 +95,6 @@ export default function AdminSettingsPage() {
       ]);
       setButtons(btns);
       if (email) setEmailConfig(email);
-      // Merge saved config with predefined elements (ensures new elements are added)
       if (report) {
         const mergedElements = REPORT_ELEMENTS.map((el) => {
           const saved = report.elements.find((e) => e.id === el.id);
@@ -115,7 +110,7 @@ export default function AdminSettingsPage() {
       setLoading(false);
     }
     load();
-  }, [session, router]);
+  }, [session, router, role]);
 
   async function handleSaveButtons() {
     setSaving(true);
@@ -182,6 +177,10 @@ export default function AdminSettingsPage() {
     });
   }
 
+  if (session?.user.role !== "admin") {
+    return null;
+  }
+
   if (loading) {
     return (
       <div className="space-y-6 max-w-4xl">
@@ -200,11 +199,8 @@ export default function AdminSettingsPage() {
     );
   }
 
-  const activeTabConfig = tabConfig.find((t) => t.id === activeTab);
-
   return (
     <div className="space-y-6 max-w-4xl">
-      {/* Page Header */}
       <div className="flex items-center gap-3">
         <div className="p-3 bg-role-admin/10 rounded-xl">
           <Settings size={24} className="text-role-admin" />
@@ -213,13 +209,10 @@ export default function AdminSettingsPage() {
           <h1 className="text-xl md:text-2xl font-rubik font-bold text-foreground">
             הגדרות מנהל
           </h1>
-          <p className="text-sm text-gray-500">
-            ניהול הגדרות מערכת ותצורה
-          </p>
+          <p className="text-sm text-gray-500">ניהול הגדרות מערכת ותצורה</p>
         </div>
       </div>
 
-      {/* Tab Navigation */}
       <div className="flex gap-2 p-1 bg-surface-1 rounded-xl overflow-x-auto">
         {tabConfig.map((tab) => {
           const IconComponent = tab.icon;
@@ -241,7 +234,6 @@ export default function AdminSettingsPage() {
         })}
       </div>
 
-      {/* Buttons Tab */}
       {activeTab === "buttons" && (
         <div className="space-y-4 animate-fade-in">
           <div className="flex justify-between items-center">
@@ -286,9 +278,9 @@ export default function AdminSettingsPage() {
                         }
                         className="w-full p-3 border-2 border-surface-3 rounded-xl bg-surface-0 cursor-pointer transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
                       >
-                        {roles.map((role) => (
-                          <option key={role} value={role}>
-                            {roleLabels[role]}
+                        {roles.map((r) => (
+                          <option key={r} value={r}>
+                            {roleLabels[r]}
                           </option>
                         ))}
                       </select>
@@ -370,7 +362,6 @@ export default function AdminSettingsPage() {
         </div>
       )}
 
-      {/* Email Tab */}
       {activeTab === "email" && (
         <div className="space-y-4 animate-fade-in">
           <div className="flex items-center gap-2">
@@ -381,7 +372,6 @@ export default function AdminSettingsPage() {
           </div>
 
           <Card className="space-y-6">
-            {/* Admin Emails */}
             <div>
               <label className="block text-sm font-medium text-foreground mb-3">
                 כתובות מייל מנהלים
@@ -422,7 +412,6 @@ export default function AdminSettingsPage() {
               </div>
             </div>
 
-            {/* Frequency */}
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
                 תדירות שליחה
@@ -442,7 +431,6 @@ export default function AdminSettingsPage() {
               </select>
             </div>
 
-            {/* Include Content */}
             <label className="flex items-center gap-3 p-3 bg-surface-1 rounded-xl cursor-pointer hover:bg-surface-2 transition-colors">
               <input
                 type="checkbox"
@@ -478,7 +466,6 @@ export default function AdminSettingsPage() {
         </div>
       )}
 
-      {/* Report Tab */}
       {activeTab === "report" && (
         <div className="space-y-4 animate-fade-in">
           <div className="flex items-center gap-2">
@@ -493,14 +480,12 @@ export default function AdminSettingsPage() {
           </p>
 
           <Card className="overflow-hidden">
-            {/* Header Row */}
             <div className="grid grid-cols-[1fr_auto_auto] gap-4 p-4 bg-surface-1 border-b border-surface-2 font-medium text-sm">
               <span className="text-foreground">אלמנט</span>
               <span className="text-role-teacher w-20 text-center">מורים</span>
               <span className="text-role-parent w-20 text-center">הורים</span>
             </div>
 
-            {/* Element Rows */}
             <div className="divide-y divide-surface-2">
               {reportConfig.elements.map((elem, index) => (
                 <div
@@ -509,7 +494,6 @@ export default function AdminSettingsPage() {
                 >
                   <span className="font-medium text-foreground">{elem.label}</span>
 
-                  {/* Teacher Toggle */}
                   <button
                     onClick={() => toggleReportElement(elem.id, "enabledForTeacher")}
                     className={`w-20 py-2 rounded-lg font-medium text-sm transition-all duration-200 cursor-pointer ${
@@ -521,7 +505,6 @@ export default function AdminSettingsPage() {
                     {elem.enabledForTeacher ? "מוצג" : "מוסתר"}
                   </button>
 
-                  {/* Parent Toggle */}
                   <button
                     onClick={() => toggleReportElement(elem.id, "enabledForParent")}
                     className={`w-20 py-2 rounded-lg font-medium text-sm transition-all duration-200 cursor-pointer ${

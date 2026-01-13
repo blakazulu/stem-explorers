@@ -3,12 +3,12 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import type { User, AuthSession } from "@/types";
+import type { User, AuthSession, UserRole } from "@/types";
 
 interface AuthContextType {
   session: AuthSession | null;
   loading: boolean;
-  login: (name: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  login: (name: string, password: string) => Promise<{ success: boolean; error?: string; role?: UserRole }>;
   logout: () => void;
 }
 
@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(newSession);
       localStorage.setItem("stem-session", JSON.stringify(newSession));
 
-      return { success: true };
+      return { success: true, role: user.role };
     } catch (error) {
       console.error("Login error:", error);
       return { success: false, error: "שגיאה בהתחברות" };

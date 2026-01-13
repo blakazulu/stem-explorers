@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { getPostsByRoom, deletePost } from "@/lib/services/forum";
 import { PostCard } from "@/components/forum/PostCard";
@@ -17,16 +19,23 @@ import {
   RefreshCw,
   X,
 } from "lucide-react";
-import type { ForumPost, ForumRoom } from "@/types";
+import type { ForumPost, ForumRoom, UserRole } from "@/types";
 
 const rooms: { id: ForumRoom; label: string; icon: typeof HelpCircle }[] = [
   { id: "requests", label: "בקשות", icon: HelpCircle },
   { id: "consultations", label: "התייעצויות", icon: Users },
 ];
 
-export default function ForumPage() {
+const VALID_ROOMS: ForumRoom[] = ["requests", "consultations"];
+
+export default function ForumRoomPage() {
   const { session } = useAuth();
-  const [selectedRoom, setSelectedRoom] = useState<ForumRoom>("requests");
+  const params = useParams();
+  const router = useRouter();
+
+  const role = params.role as UserRole;
+  const room = params.room as ForumRoom;
+
   const [posts, setPosts] = useState<ForumPost[]>([]);
   const [showNewPost, setShowNewPost] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -34,17 +43,25 @@ export default function ForumPage() {
 
   const isAdmin = session?.user.role === "admin";
 
+  // Validate room
+  useEffect(() => {
+    if (!VALID_ROOMS.includes(room)) {
+      router.replace(`/${role}/forum/requests`);
+    }
+  }, [room, role, router]);
+
   const loadPosts = useCallback(async () => {
+    if (!VALID_ROOMS.includes(room)) return;
     setLoading(true);
     setError(null);
     try {
-      const data = await getPostsByRoom(selectedRoom);
+      const data = await getPostsByRoom(room);
       setPosts(data);
     } catch {
       setError("שגיאה בטעינת הפוסטים");
     }
     setLoading(false);
-  }, [selectedRoom]);
+  }, [room]);
 
   useEffect(() => {
     loadPosts();
@@ -60,7 +77,11 @@ export default function ForumPage() {
     }
   }
 
-  const currentRoom = rooms.find((r) => r.id === selectedRoom);
+  const currentRoom = rooms.find((r) => r.id === room);
+
+  if (!VALID_ROOMS.includes(room)) {
+    return null;
+  }
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -111,13 +132,13 @@ export default function ForumPage() {
 
       {/* Room Tabs */}
       <div className="flex gap-2 p-1 bg-surface-1 rounded-xl">
-        {rooms.map((room) => {
-          const IconComponent = room.icon;
-          const isActive = selectedRoom === room.id;
+        {rooms.map((r) => {
+          const IconComponent = r.icon;
+          const isActive = room === r.id;
           return (
-            <button
-              key={room.id}
-              onClick={() => setSelectedRoom(room.id)}
+            <Link
+              key={r.id}
+              href={`/${role}/forum/${r.id}`}
               className={`flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all duration-200 cursor-pointer ${
                 isActive
                   ? "bg-surface-0 text-primary shadow-sm"
@@ -125,13 +146,13 @@ export default function ForumPage() {
               }`}
             >
               <IconComponent size={18} />
-              {room.label}
+              {r.label}
               {isActive && posts.length > 0 && (
                 <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
                   {posts.length}
                 </span>
               )}
-            </button>
+            </Link>
           );
         })}
       </div>
@@ -139,7 +160,7 @@ export default function ForumPage() {
       {/* New Post Form */}
       {showNewPost && (
         <NewPostForm
-          room={selectedRoom}
+          room={room}
           authorName={session?.user.name || ""}
           onCreated={() => {
             setShowNewPost(false);

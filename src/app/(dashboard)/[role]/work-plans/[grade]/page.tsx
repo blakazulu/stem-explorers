@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRouter } from "next/navigation";
 import {
   getUnitsByGrade,
   createUnit,
@@ -12,7 +13,6 @@ import {
 import { uploadImage } from "@/lib/utils/imageUpload";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { GradeSelector } from "@/components/ui/GradeSelector";
 import { Card } from "@/components/ui/Card";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { SkeletonList } from "@/components/ui/Skeleton";
@@ -31,13 +31,20 @@ import {
   CheckCircle,
   AlertCircle,
   RefreshCw,
+  ArrowRight,
 } from "lucide-react";
-import type { Unit, Grade } from "@/types";
+import type { Unit, Grade, UserRole } from "@/types";
 
-export default function WorkPlansPage() {
+const VALID_GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
+
+export default function WorkPlansGradePage() {
   const { session } = useAuth();
+  const params = useParams();
   const router = useRouter();
-  const [selectedGrade, setSelectedGrade] = useState<Grade>("א");
+
+  const role = params.role as UserRole;
+  const grade = decodeURIComponent(params.grade as string) as Grade;
+
   const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -56,25 +63,33 @@ export default function WorkPlansPage() {
   const isTeacher = session?.user.role === "teacher";
   const canManage = isAdmin || isTeacher;
 
+  // Validate grade
+  useEffect(() => {
+    if (!VALID_GRADES.includes(grade)) {
+      router.replace(`/${role}/work-plans`);
+    }
+  }, [grade, role, router]);
+
   const loadUnits = useCallback(async () => {
+    if (!VALID_GRADES.includes(grade)) return;
     setLoading(true);
     setError(null);
     try {
-      const data = await getUnitsByGrade(selectedGrade);
+      const data = await getUnitsByGrade(grade);
       setUnits(data);
     } catch {
       setError("שגיאה בטעינת יחידות הלימוד");
     }
     setLoading(false);
-  }, [selectedGrade]);
+  }, [grade]);
 
   useEffect(() => {
     if (!canManage) {
-      router.push("/dashboard");
+      router.push(`/${role}`);
       return;
     }
     loadUnits();
-  }, [canManage, router, loadUnits]);
+  }, [canManage, router, loadUnits, role]);
 
   function resetForm() {
     setName("");
@@ -102,12 +117,12 @@ export default function WorkPlansPage() {
       let unitFileUrl = editingUnit?.unitFileUrl || "";
 
       if (introFile) {
-        const path = `units/${selectedGrade}/intro_${Date.now()}.webp`;
+        const path = `units/${grade}/intro_${Date.now()}.webp`;
         introFileUrl = await uploadImage(introFile, path);
       }
 
       if (unitFile) {
-        const path = `units/${selectedGrade}/unit_${Date.now()}.webp`;
+        const path = `units/${grade}/unit_${Date.now()}.webp`;
         unitFileUrl = await uploadImage(unitFile, path);
       }
 
@@ -120,7 +135,7 @@ export default function WorkPlansPage() {
         });
       } else {
         await createUnit({
-          gradeId: selectedGrade,
+          gradeId: grade,
           name,
           order,
           introFileUrl,
@@ -149,7 +164,7 @@ export default function WorkPlansPage() {
     }
   }
 
-  if (!canManage) {
+  if (!canManage || !VALID_GRADES.includes(grade)) {
     return null;
   }
 
@@ -158,14 +173,21 @@ export default function WorkPlansPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
+          <Link
+            href={`/${role}/work-plans`}
+            className="p-2 hover:bg-surface-2 rounded-lg transition-colors cursor-pointer"
+            title="חזרה לבחירת כיתה"
+          >
+            <ArrowRight size={20} className="text-gray-500" />
+          </Link>
           <div className="p-3 bg-role-teacher/10 rounded-xl">
             <FileText size={24} className="text-role-teacher" />
           </div>
           <div>
             <h1 className="text-xl md:text-2xl font-rubik font-bold text-foreground">
-              תוכניות עבודה
+              תוכניות עבודה - כיתה {grade}
             </h1>
-            <p className="text-sm text-gray-500">ניהול יחידות לימוד לפי כיתות</p>
+            <p className="text-sm text-gray-500">ניהול יחידות לימוד</p>
           </div>
         </div>
         {!showForm && (
@@ -198,11 +220,6 @@ export default function WorkPlansPage() {
         </div>
       )}
 
-      {/* Grade Selector */}
-      <Card>
-        <GradeSelector selected={selectedGrade} onSelect={setSelectedGrade} />
-      </Card>
-
       {/* Unit Form */}
       {showForm && (
         <Card padding="none" className="overflow-hidden animate-slide-up">
@@ -220,9 +237,7 @@ export default function WorkPlansPage() {
                 <h2 className="text-lg font-rubik font-semibold text-foreground">
                   {editingUnit ? "עריכת יחידה" : "יחידה חדשה"}
                 </h2>
-                <p className="text-sm text-gray-500">
-                  כיתה {selectedGrade}
-                </p>
+                <p className="text-sm text-gray-500">כיתה {grade}</p>
               </div>
             </div>
           </div>
@@ -281,9 +296,7 @@ export default function WorkPlansPage() {
                     <p className="text-sm font-medium text-foreground">
                       {introFile ? introFile.name : "גרור קובץ או לחץ לבחירה"}
                     </p>
-                    <p className="text-xs text-gray-500">
-                      תמונה או PDF
-                    </p>
+                    <p className="text-xs text-gray-500">תמונה או PDF</p>
                   </div>
                 </div>
               </div>
@@ -316,9 +329,7 @@ export default function WorkPlansPage() {
                     <p className="text-sm font-medium text-foreground">
                       {unitFile ? unitFile.name : "גרור קובץ או לחץ לבחירה"}
                     </p>
-                    <p className="text-xs text-gray-500">
-                      תמונה או PDF
-                    </p>
+                    <p className="text-xs text-gray-500">תמונה או PDF</p>
                   </div>
                 </div>
               </div>
@@ -348,7 +359,7 @@ export default function WorkPlansPage() {
       ) : units.length === 0 ? (
         <EmptyState
           icon="book-open"
-          title={`אין יחידות לכיתה ${selectedGrade}`}
+          title={`אין יחידות לכיתה ${grade}`}
           description="צור יחידה חדשה להתחלת העבודה"
           action={
             <Button onClick={() => setShowForm(true)} rightIcon={Plus}>

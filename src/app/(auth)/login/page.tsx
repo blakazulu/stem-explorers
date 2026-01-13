@@ -44,8 +44,8 @@ export default function LoginPage() {
 
     const result = await login(name, password);
 
-    if (result.success) {
-      router.push("/dashboard");
+    if (result.success && result.role) {
+      router.push(`/${result.role}`);
     } else {
       setError(result.error || "שגיאה בהתחברות");
     }

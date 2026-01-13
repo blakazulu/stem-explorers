@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { GradeSelector } from "@/components/ui/GradeSelector";
 import { UnitTree } from "@/components/pedagogical/UnitTree";
 import { Card } from "@/components/ui/Card";
 import {
@@ -12,48 +13,64 @@ import {
   FileText,
   ExternalLink,
 } from "lucide-react";
-import type { Grade, Unit } from "@/types";
+import type { Grade, Unit, UserRole } from "@/types";
 
-export default function PedagogicalPage() {
+const VALID_GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
+
+export default function PedagogicalGradePage() {
   const { session } = useAuth();
-  const [selectedGrade, setSelectedGrade] = useState<Grade | null>(
-    session?.user.grade || null
-  );
+  const params = useParams();
+  const router = useRouter();
+
+  const role = params.role as UserRole;
+  const grade = decodeURIComponent(params.grade as string) as Grade;
   const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
 
-  const isTeacherOrAdmin = session?.user.role === "teacher" || session?.user.role === "admin";
+  const isTeacherOrAdmin =
+    session?.user.role === "teacher" || session?.user.role === "admin";
+
+  // Validate grade
+  useEffect(() => {
+    if (!VALID_GRADES.includes(grade)) {
+      router.replace(`/${role}/pedagogical`);
+    }
+  }, [grade, role, router]);
+
+  if (!VALID_GRADES.includes(grade)) {
+    return null;
+  }
 
   return (
     <div className="space-y-6 max-w-4xl">
       {/* Page Header */}
       <div className="flex items-center gap-3">
+        {isTeacherOrAdmin && (
+          <Link
+            href={`/${role}/pedagogical`}
+            className="p-2 hover:bg-surface-2 rounded-lg transition-colors cursor-pointer"
+            title="חזרה לבחירת כיתה"
+          >
+            <ArrowRight size={20} className="text-gray-500" />
+          </Link>
+        )}
         <div className="p-3 bg-accent/10 rounded-xl">
           <Lightbulb size={24} className="text-accent" />
         </div>
         <div>
           <h1 className="text-xl md:text-2xl font-rubik font-bold text-foreground">
-            מודל פדגוגי
+            מודל פדגוגי - כיתה {grade}
           </h1>
-          <p className="text-sm text-gray-500">
-            צפייה בתכני היחידות ומבואות
-          </p>
+          <p className="text-sm text-gray-500">צפייה בתכני היחידות ומבואות</p>
         </div>
       </div>
 
-      {/* Grade Selector for Teachers/Admins */}
-      {isTeacherOrAdmin && (
-        <Card>
-          <GradeSelector selected={selectedGrade} onSelect={setSelectedGrade} />
-        </Card>
-      )}
-
       {/* Unit Selection */}
-      {selectedGrade && !selectedUnit && (
+      {!selectedUnit && (
         <div className="space-y-4">
           <h2 className="text-lg font-rubik font-semibold text-foreground">
-            יחידות לימוד - כיתה {selectedGrade}
+            יחידות לימוד
           </h2>
-          <UnitTree grade={selectedGrade} onSelectUnit={setSelectedUnit} />
+          <UnitTree grade={grade} onSelectUnit={setSelectedUnit} />
         </div>
       )}
 
@@ -96,7 +113,9 @@ export default function PedagogicalPage() {
                       <BookOpen size={24} className="text-secondary" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-rubik font-semibold text-foreground">מבוא ליחידה</h3>
+                      <h3 className="font-rubik font-semibold text-foreground">
+                        מבוא ליחידה
+                      </h3>
                       <p className="text-sm text-gray-500">רקע והקדמה לנושא</p>
                     </div>
                     <ExternalLink size={18} className="text-gray-400" />
@@ -117,7 +136,9 @@ export default function PedagogicalPage() {
                       <FileText size={24} className="text-primary" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-rubik font-semibold text-foreground">תוכן היחידה</h3>
+                      <h3 className="font-rubik font-semibold text-foreground">
+                        תוכן היחידה
+                      </h3>
                       <p className="text-sm text-gray-500">חומר הלימוד המלא</p>
                     </div>
                     <ExternalLink size={18} className="text-gray-400" />
@@ -129,7 +150,10 @@ export default function PedagogicalPage() {
 
           {/* No files available */}
           {!selectedUnit.introFileUrl && !selectedUnit.unitFileUrl && (
-            <Card variant="outlined" className="bg-surface-1/50 text-center py-8">
+            <Card
+              variant="outlined"
+              className="bg-surface-1/50 text-center py-8"
+            >
               <div className="p-3 bg-gray-100 rounded-xl w-fit mx-auto mb-3">
                 <FileText size={24} className="text-gray-400" />
               </div>

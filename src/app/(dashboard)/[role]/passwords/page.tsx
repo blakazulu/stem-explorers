@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { getAllUsers, updateUserPassword, UserDocument } from "@/lib/services/users";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -39,7 +39,6 @@ const roleSingular: Record<UserRole, string> = {
   student: "תלמיד",
 };
 
-// Animated collapsible section
 function CollapsibleSection({
   role,
   users,
@@ -84,7 +83,6 @@ function CollapsibleSection({
 
   return (
     <Card padding="none" className="overflow-hidden">
-      {/* Section Header */}
       <button
         onClick={onToggle}
         className={`w-full flex items-center justify-between p-4 transition-colors duration-200 cursor-pointer hover:bg-surface-1 ${
@@ -112,7 +110,6 @@ function CollapsibleSection({
         />
       </button>
 
-      {/* Animated Content */}
       <div
         className="transition-all duration-300 ease-out overflow-hidden"
         style={{
@@ -130,11 +127,10 @@ function CollapsibleSection({
               {users.map((user, index) => (
                 <div
                   key={`${role}-${user.password}-${index}`}
-                  className={`bg-surface-1 rounded-xl p-4 transition-all duration-200 hover:bg-surface-2 hover:shadow-sm animate-slide-up`}
+                  className="bg-surface-1 rounded-xl p-4 transition-all duration-200 hover:bg-surface-2 hover:shadow-sm animate-slide-up"
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
                   {editingUser?.password === user.password ? (
-                    // Edit mode
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">
                         <Edit2 size={14} className={config.color} />
@@ -167,7 +163,6 @@ function CollapsibleSection({
                       </div>
                     </div>
                   ) : (
-                    // View mode
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
@@ -220,7 +215,10 @@ function CollapsibleSection({
 
 export default function PasswordsPage() {
   const { session, logout } = useAuth();
+  const params = useParams();
   const router = useRouter();
+  const role = params.role as UserRole;
+
   const [users, setUsers] = useState<UserDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState<UserDocument | null>(null);
@@ -256,14 +254,14 @@ export default function PasswordsPage() {
 
   useEffect(() => {
     if (session?.user.role !== "admin") {
-      router.push("/dashboard");
+      router.push(`/${role}`);
       return;
     }
     loadUsers();
-  }, [session, router, loadUsers]);
+  }, [session, router, loadUsers, role]);
 
-  function toggleSection(role: string) {
-    setOpenSections((prev) => ({ ...prev, [role]: !prev[role] }));
+  function toggleSection(sectionRole: string) {
+    setOpenSections((prev) => ({ ...prev, [sectionRole]: !prev[sectionRole] }));
   }
 
   function startEdit(user: UserDocument) {
@@ -339,7 +337,6 @@ export default function PasswordsPage() {
 
   return (
     <div className="space-y-6 max-w-4xl">
-      {/* Page Header */}
       <div className="flex items-center gap-3">
         <div className="p-3 bg-role-admin/10 rounded-xl">
           <Key size={24} className="text-role-admin" />
@@ -354,7 +351,6 @@ export default function PasswordsPage() {
         </div>
       </div>
 
-      {/* Alerts */}
       {error && (
         <div className="flex items-center gap-3 bg-error/10 text-error p-4 rounded-xl animate-slide-up">
           <AlertCircle size={20} />
@@ -381,18 +377,17 @@ export default function PasswordsPage() {
         </div>
       )}
 
-      {/* User Sections */}
       {loading ? (
         <SkeletonList count={4} />
       ) : (
         <div className="space-y-4">
-          {(Object.keys(groupedUsers) as UserRole[]).map((role) => (
+          {(Object.keys(groupedUsers) as UserRole[]).map((sectionRole) => (
             <CollapsibleSection
-              key={role}
-              role={role}
-              users={groupedUsers[role]}
-              isOpen={openSections[role]}
-              onToggle={() => toggleSection(role)}
+              key={sectionRole}
+              role={sectionRole}
+              users={groupedUsers[sectionRole]}
+              isOpen={openSections[sectionRole]}
+              onToggle={() => toggleSection(sectionRole)}
               editingUser={editingUser}
               onStartEdit={startEdit}
               onCancelEdit={cancelEdit}
@@ -406,7 +401,6 @@ export default function PasswordsPage() {
         </div>
       )}
 
-      {/* Summary */}
       {!loading && (
         <Card variant="outlined" className="bg-surface-1/50">
           <div className="flex items-center justify-center gap-6 text-sm text-gray-500">

@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRoleStyles } from "@/contexts/ThemeContext";
 import { Card } from "@/components/ui/Card";
-import { Icon } from "@/components/ui/Icon";
 import {
   BookOpen,
   FileText,
@@ -33,7 +33,7 @@ interface QuickAction {
   color: string;
 }
 
-// Role-specific quick actions
+// Role-specific quick actions - hrefs will be prefixed with role
 const quickActionsByRole: Record<UserRole, QuickAction[]> = {
   student: [
     {
@@ -129,7 +129,7 @@ const quickActionsByRole: Record<UserRole, QuickAction[]> = {
     {
       label: "הגדרות",
       description: "הגדרות מערכת ודוחות",
-      href: "/admin",
+      href: "/settings",
       icon: Settings,
       color: "bg-secondary",
     },
@@ -163,11 +163,12 @@ const greetingsByRole: Record<UserRole, { title: string; subtitle: string }> = {
   },
 };
 
-export default function DashboardPage() {
+export default function RoleDashboardPage() {
   const { session } = useAuth();
+  const params = useParams();
   const roleStyles = useRoleStyles();
 
-  const role = session?.user.role || "teacher";
+  const role = (params.role as UserRole) || "teacher";
   const quickActions = quickActionsByRole[role];
   const greeting = greetingsByRole[role];
 
@@ -209,8 +210,10 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {quickActions.map((action, index) => {
             const ActionIcon = action.icon;
+            // Prefix href with role
+            const fullHref = `/${role}${action.href}`;
             return (
-              <Link key={action.href} href={action.href}>
+              <Link key={action.href} href={fullHref}>
                 <Card
                   interactive
                   padding="md"
@@ -269,7 +272,7 @@ export default function DashboardPage() {
               שתפו רעיונות והתייעצו עם עמיתים בפורום המורים
             </p>
             <Link
-              href="/forum"
+              href={`/${role}/forum`}
               className="inline-flex items-center mt-3 text-sm text-primary font-medium hover:underline cursor-pointer"
             >
               לפורום
@@ -287,7 +290,7 @@ export default function DashboardPage() {
               הוסיפו תיעודי תמונות מפעילויות בכיתה
             </p>
             <Link
-              href="/documentation"
+              href={`/${role}/documentation`}
               className="inline-flex items-center mt-3 text-sm text-secondary font-medium hover:underline cursor-pointer"
             >
               לתיעודים
@@ -330,7 +333,7 @@ export default function DashboardPage() {
               צפה ביחידות הלימוד של כל הכיתות
             </p>
             <Link
-              href="/pedagogical"
+              href={`/${role}/pedagogical`}
               className="inline-flex items-center mt-3 text-sm text-primary font-medium hover:underline cursor-pointer"
             >
               למודל הפדגוגי
@@ -348,7 +351,7 @@ export default function DashboardPage() {
               צפה בדוחות AI לכל היחידות והכיתות
             </p>
             <Link
-              href="/reports"
+              href={`/${role}/reports`}
               className="inline-flex items-center mt-3 text-sm text-secondary font-medium hover:underline cursor-pointer"
             >
               לדוחות

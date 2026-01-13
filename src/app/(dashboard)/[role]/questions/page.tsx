@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   getAllQuestions,
   createQuestion,
@@ -30,7 +30,7 @@ import {
   BookOpen,
   Hash,
 } from "lucide-react";
-import type { Question, QuestionType, Grade, Unit } from "@/types";
+import type { Question, QuestionType, Grade, Unit, UserRole } from "@/types";
 
 const grades: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
 const questionTypes: {
@@ -47,7 +47,10 @@ const questionTypes: {
 
 export default function QuestionsPage() {
   const { session } = useAuth();
+  const params = useParams();
   const router = useRouter();
+  const role = params.role as UserRole;
+
   const [questions, setQuestions] = useState<Question[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
@@ -78,11 +81,11 @@ export default function QuestionsPage() {
 
   useEffect(() => {
     if (session?.user.role !== "admin") {
-      router.push("/dashboard");
+      router.push(`/${role}`);
       return;
     }
     loadData();
-  }, [session, router, loadData]);
+  }, [session, router, loadData, role]);
 
   function resetForm() {
     setFormData({
@@ -171,6 +174,10 @@ export default function QuestionsPage() {
     });
   }
 
+  if (session?.user.role !== "admin") {
+    return null;
+  }
+
   if (loading) {
     return (
       <div className="space-y-6 max-w-4xl">
@@ -240,7 +247,7 @@ export default function QuestionsPage() {
           </div>
 
           <div className="p-4 md:p-6 space-y-6">
-            {/* Question Type Selector - Visual Cards */}
+            {/* Question Type Selector */}
             <div>
               <label className="block text-sm font-medium text-foreground mb-3">
                 סוג שאלה
@@ -449,14 +456,9 @@ export default function QuestionsPage() {
               >
                 <div className="flex flex-col md:flex-row justify-between items-start gap-4">
                   <div className="flex items-start gap-4 flex-1">
-                    {/* Type Icon */}
-                    <div
-                      className={`shrink-0 p-2 rounded-lg bg-surface-1`}
-                    >
+                    <div className="shrink-0 p-2 rounded-lg bg-surface-1">
                       <TypeIcon size={20} className={typeConfig?.color} />
                     </div>
-
-                    {/* Question Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2">
                         <span
@@ -492,8 +494,6 @@ export default function QuestionsPage() {
                       </div>
                     </div>
                   </div>
-
-                  {/* Actions */}
                   <div className="flex gap-2 shrink-0">
                     <button
                       onClick={() => handleEdit(q)}
