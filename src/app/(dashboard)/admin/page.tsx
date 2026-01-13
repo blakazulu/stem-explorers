@@ -47,6 +47,15 @@ const tabConfig: { id: Tab; label: string; icon: typeof Settings }[] = [
   { id: "report", label: "הגדרות דוח", icon: FileBarChart },
 ];
 
+// Predefined report elements - no manual input needed
+const REPORT_ELEMENTS = [
+  { id: "summary", label: "סיכום כללי", defaultTeacher: true, defaultParent: true },
+  { id: "patterns", label: "דפוסים ומגמות", defaultTeacher: true, defaultParent: false },
+  { id: "challenges", label: "אתגרים וקשיים", defaultTeacher: true, defaultParent: false },
+  { id: "suggestions", label: "המלצות להמשך", defaultTeacher: true, defaultParent: true },
+  { id: "perStudent", label: "פירוט לפי תלמיד", defaultTeacher: true, defaultParent: false },
+] as const;
+
 export default function AdminSettingsPage() {
   const { session } = useAuth();
   const router = useRouter();
@@ -65,9 +74,14 @@ export default function AdminSettingsPage() {
   });
   const [newEmail, setNewEmail] = useState("");
 
-  // Report Config state
+  // Report Config state - initialized with predefined elements
   const [reportConfig, setReportConfig] = useState<ReportConfig>({
-    elements: [],
+    elements: REPORT_ELEMENTS.map((el) => ({
+      id: el.id,
+      label: el.label,
+      enabledForTeacher: el.defaultTeacher,
+      enabledForParent: el.defaultParent,
+    })),
     aiPromptInstructions: "",
   });
 
@@ -86,7 +100,19 @@ export default function AdminSettingsPage() {
       ]);
       setButtons(btns);
       if (email) setEmailConfig(email);
-      if (report) setReportConfig(report);
+      // Merge saved config with predefined elements (ensures new elements are added)
+      if (report) {
+        const mergedElements = REPORT_ELEMENTS.map((el) => {
+          const saved = report.elements.find((e) => e.id === el.id);
+          return saved || {
+            id: el.id,
+            label: el.label,
+            enabledForTeacher: el.defaultTeacher,
+            enabledForParent: el.defaultParent,
+          };
+        });
+        setReportConfig({ ...report, elements: mergedElements });
+      }
       setLoading(false);
     }
     load();
@@ -148,32 +174,12 @@ export default function AdminSettingsPage() {
     });
   }
 
-  function addReportElement() {
+  function toggleReportElement(id: string, field: "enabledForTeacher" | "enabledForParent") {
     setReportConfig({
       ...reportConfig,
-      elements: [
-        ...reportConfig.elements,
-        {
-          id: `elem_${Date.now()}`,
-          label: "",
-          enabledForTeacher: true,
-          enabledForParent: true,
-        },
-      ],
-    });
-  }
-
-  function updateReportElement(id: string, updates: Partial<ReportConfig["elements"][0]>) {
-    setReportConfig({
-      ...reportConfig,
-      elements: reportConfig.elements.map((e) => (e.id === id ? { ...e, ...updates } : e)),
-    });
-  }
-
-  function removeReportElement(id: string) {
-    setReportConfig({
-      ...reportConfig,
-      elements: reportConfig.elements.filter((e) => e.id !== id),
+      elements: reportConfig.elements.map((e) =>
+        e.id === id ? { ...e, [field]: !e[field] } : e
+      ),
     });
   }
 
@@ -476,96 +482,59 @@ export default function AdminSettingsPage() {
       {/* Report Tab */}
       {activeTab === "report" && (
         <div className="space-y-4 animate-fade-in">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <FileBarChart size={20} className="text-role-admin" />
-              <h2 className="text-lg font-rubik font-semibold text-foreground">
-                הגדרות דוח AI
-              </h2>
-            </div>
-            <Button onClick={addReportElement} rightIcon={Plus} size="sm">
-              הוסף אלמנט
-            </Button>
+          <div className="flex items-center gap-2">
+            <FileBarChart size={20} className="text-role-admin" />
+            <h2 className="text-lg font-rubik font-semibold text-foreground">
+              הגדרות דוח AI
+            </h2>
           </div>
 
-          <Card className="space-y-6">
-            {/* AI Instructions */}
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                הנחיות ל-AI
-              </label>
-              <textarea
-                value={reportConfig.aiPromptInstructions}
-                onChange={(e) =>
-                  setReportConfig({
-                    ...reportConfig,
-                    aiPromptInstructions: e.target.value,
-                  })
-                }
-                className="w-full p-4 border-2 border-surface-3 rounded-xl bg-surface-0 text-foreground placeholder:text-gray-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none"
-                rows={4}
-                placeholder="הנחיות מותאמות לייצור דוחות"
-              />
+          <p className="text-sm text-gray-500">
+            בחר אילו אלמנטים יופיעו בדוחות למורים ולהורים
+          </p>
+
+          <Card className="overflow-hidden">
+            {/* Header Row */}
+            <div className="grid grid-cols-[1fr_auto_auto] gap-4 p-4 bg-surface-1 border-b border-surface-2 font-medium text-sm">
+              <span className="text-foreground">אלמנט</span>
+              <span className="text-role-teacher w-20 text-center">מורים</span>
+              <span className="text-role-parent w-20 text-center">הורים</span>
             </div>
 
-            {/* Report Elements */}
-            <div className="space-y-3">
-              <h3 className="font-medium text-foreground">אלמנטים בדוח</h3>
-              {reportConfig.elements.length === 0 ? (
-                <div className="text-center py-6 bg-surface-1 rounded-xl">
-                  <p className="text-sm text-gray-400">לא הוגדרו אלמנטים</p>
-                </div>
-              ) : (
-                reportConfig.elements.map((elem, index) => (
-                  <div
-                    key={elem.id}
-                    className={`flex flex-col md:flex-row md:items-center gap-3 md:gap-4 p-4 bg-surface-1 rounded-xl animate-slide-up stagger-${Math.min(index + 1, 6)}`}
+            {/* Element Rows */}
+            <div className="divide-y divide-surface-2">
+              {reportConfig.elements.map((elem, index) => (
+                <div
+                  key={elem.id}
+                  className={`grid grid-cols-[1fr_auto_auto] gap-4 p-4 items-center animate-slide-up stagger-${Math.min(index + 1, 6)}`}
+                >
+                  <span className="font-medium text-foreground">{elem.label}</span>
+
+                  {/* Teacher Toggle */}
+                  <button
+                    onClick={() => toggleReportElement(elem.id, "enabledForTeacher")}
+                    className={`w-20 py-2 rounded-lg font-medium text-sm transition-all duration-200 cursor-pointer ${
+                      elem.enabledForTeacher
+                        ? "bg-role-teacher text-white shadow-sm"
+                        : "bg-surface-2 text-gray-400 hover:bg-surface-3"
+                    }`}
                   >
-                    <Input
-                      value={elem.label}
-                      onChange={(e) =>
-                        updateReportElement(elem.id, { label: e.target.value })
-                      }
-                      placeholder="שם האלמנט"
-                      className="flex-1"
-                    />
-                    <div className="flex items-center gap-4">
-                      <label className="inline-flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={elem.enabledForTeacher}
-                          onChange={(e) =>
-                            updateReportElement(elem.id, {
-                              enabledForTeacher: e.target.checked,
-                            })
-                          }
-                          className="w-4 h-4 rounded border-2 border-surface-3 text-role-teacher focus:ring-role-teacher"
-                        />
-                        <span className="text-sm text-gray-600">מורה</span>
-                      </label>
-                      <label className="inline-flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={elem.enabledForParent}
-                          onChange={(e) =>
-                            updateReportElement(elem.id, {
-                              enabledForParent: e.target.checked,
-                            })
-                          }
-                          className="w-4 h-4 rounded border-2 border-surface-3 text-role-parent focus:ring-role-parent"
-                        />
-                        <span className="text-sm text-gray-600">הורה</span>
-                      </label>
-                      <button
-                        onClick={() => removeReportElement(elem.id)}
-                        className="p-2 text-gray-400 hover:text-error hover:bg-error/10 rounded-lg transition-all duration-200 cursor-pointer"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
+                    {elem.enabledForTeacher ? "מוצג" : "מוסתר"}
+                  </button>
+
+                  {/* Parent Toggle */}
+                  <button
+                    onClick={() => toggleReportElement(elem.id, "enabledForParent")}
+                    className={`w-20 py-2 rounded-lg font-medium text-sm transition-all duration-200 cursor-pointer ${
+                      elem.enabledForParent
+                        ? "bg-role-parent text-white shadow-sm"
+                        : "bg-surface-2 text-gray-400 hover:bg-surface-3"
+                    }`}
+                  >
+                    {elem.enabledForParent ? "מוצג" : "מוסתר"}
+                  </button>
+                </div>
+              ))}
             </div>
           </Card>
 
