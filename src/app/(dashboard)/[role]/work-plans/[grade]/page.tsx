@@ -4,22 +4,18 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { getUnitsByGrade, deleteUnit } from "@/lib/services/units";
+import { getUnitsByGrade } from "@/lib/services/units";
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
-import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
-import { SkeletonList } from "@/components/ui/Skeleton";
+import { SkeletonGrid } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useToastActions } from "@/components/ui/Toast";
+import { Icon, getStemIconForId } from "@/components/ui/Icon";
 import {
   FileText,
   Plus,
   BookOpen,
-  File,
-  Download,
-  Edit2,
-  Trash2,
   ArrowRight,
+  ChevronLeft,
 } from "lucide-react";
 import type { Unit, Grade, UserRole } from "@/types";
 
@@ -35,16 +31,13 @@ export default function WorkPlansGradePage() {
 
   const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
   const toast = useToastActions();
 
   const isAdmin = session?.user.role === "admin";
-  const canManage = isAdmin; // Only admins can create/edit/delete units
+  const canManage = isAdmin;
   const newUnitUrl = `/${role}/work-plans/${encodeURIComponent(grade)}/new`;
-  // Only show back button for admins (others are restricted to their grade)
   const showBackButton = isAdmin;
 
-  // Validate grade
   useEffect(() => {
     if (!VALID_GRADES.includes(grade)) {
       router.replace(`/${role}/work-plans`);
@@ -66,18 +59,6 @@ export default function WorkPlansGradePage() {
   useEffect(() => {
     loadUnits();
   }, [loadUnits]);
-
-  async function handleDelete() {
-    if (!deleteId) return;
-    try {
-      await deleteUnit(deleteId);
-      setDeleteId(null);
-      await loadUnits();
-    } catch {
-      toast.error("שגיאה", "שגיאה במחיקת היחידה");
-      setDeleteId(null);
-    }
-  }
 
   if (!VALID_GRADES.includes(grade)) {
     return null;
@@ -116,9 +97,9 @@ export default function WorkPlansGradePage() {
         )}
       </div>
 
-      {/* Units List */}
+      {/* Units Grid */}
       {loading ? (
-        <SkeletonList count={4} />
+        <SkeletonGrid count={6} columns={3} />
       ) : units.length === 0 ? (
         <EmptyState
           icon="book-open"
@@ -133,90 +114,57 @@ export default function WorkPlansGradePage() {
           }
         />
       ) : (
-        <div className="space-y-3">
-          {units.map((unit, index) => (
-            <Card
-              key={unit.id}
-              interactive={canManage}
-              className={`animate-slide-up stagger-${Math.min(index + 1, 6)}`}
-            >
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          {units.map((unit, index) => {
+            const stemIcon = getStemIconForId(unit.id);
+            return (
+              <Link
+                key={unit.id}
+                href={`/${role}/work-plans/${encodeURIComponent(grade)}/${unit.id}`}
+                className={`group block w-full text-right p-4 md:p-5 bg-surface-0 rounded-xl border-2 border-surface-2 hover:border-primary hover:shadow-lg transition-all duration-200 cursor-pointer animate-slide-up stagger-${Math.min(index + 1, 6)}`}
+              >
                 <div className="flex items-start gap-4">
-                  {/* Unit Icon */}
-                  <div className="p-3 bg-primary/10 rounded-xl">
-                    <BookOpen size={24} className="text-primary" />
+                  {/* STEM Icon */}
+                  <div className="p-3 rounded-xl bg-primary/10 group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-200">
+                    <Icon name={stemIcon} size="lg" className="text-primary" />
                   </div>
 
-                  {/* Unit Info */}
-                  <div>
-                    <h3 className="font-rubik font-semibold text-foreground">
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-rubik font-semibold text-lg text-foreground group-hover:text-primary transition-colors">
                       {unit.name}
                     </h3>
                     <p className="text-sm text-gray-500 mt-1">
-                      כיתה {unit.gradeId}{canManage && ` • סדר: ${unit.order}`}
+                      לחץ לצפייה בקבצים
                     </p>
 
-                    {/* Download Links */}
-                    <div className="flex gap-4 mt-3">
+                    {/* File indicators */}
+                    <div className="flex items-center gap-3 mt-3">
                       {unit.introFileUrl && (
-                        <a
-                          href={unit.introFileUrl}
-                          download
-                          className="inline-flex items-center gap-1.5 text-sm text-secondary hover:text-secondary/80 transition-colors"
-                        >
-                          <BookOpen size={14} />
-                          קובץ מבוא
-                          <Download size={12} />
-                        </a>
+                        <span className="inline-flex items-center gap-1 text-xs text-secondary">
+                          <BookOpen size={12} />
+                          מבוא
+                        </span>
                       )}
                       {unit.unitFileUrl && (
-                        <a
-                          href={unit.unitFileUrl}
-                          download
-                          className="inline-flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 transition-colors"
-                        >
-                          <File size={14} />
-                          קובץ יחידה
-                          <Download size={12} />
-                        </a>
+                        <span className="inline-flex items-center gap-1 text-xs text-primary">
+                          <FileText size={12} />
+                          תוכן
+                        </span>
                       )}
                     </div>
                   </div>
-                </div>
 
-                {/* Actions - Admin only */}
-                {canManage && (
-                  <div className="flex gap-2 shrink-0">
-                    <Link
-                      href={`/${role}/work-plans/${encodeURIComponent(grade)}/${unit.id}/edit`}
-                      className="p-2 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all duration-200 cursor-pointer"
-                      title="ערוך"
-                    >
-                      <Edit2 size={18} />
-                    </Link>
-                    <button
-                      onClick={() => setDeleteId(unit.id)}
-                      className="p-2 text-gray-400 hover:text-error hover:bg-error/10 rounded-lg transition-all duration-200 cursor-pointer"
-                      title="מחק"
-                    >
-                      <Trash2 size={18} />
-                    </button>
+                  {/* Arrow indicator */}
+                  <div className="self-center opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-200">
+                    <ChevronLeft size={20} className="text-primary" />
                   </div>
-                )}
-              </div>
-            </Card>
-          ))}
+                </div>
+              </Link>
+            );
+          })}
         </div>
       )}
-
-      <ConfirmDialog
-        isOpen={deleteId !== null}
-        title="מחיקת יחידה"
-        message="האם אתה בטוח שברצונך למחוק יחידה זו? כל התוכן המשויך ימחק גם כן."
-        confirmLabel="מחק"
-        onConfirm={handleDelete}
-        onCancel={() => setDeleteId(null)}
-      />
     </div>
   );
 }

@@ -14,6 +14,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Edit unit page**: Editing a unit now navigates to a separate page (`/[role]/work-plans/[grade]/[unitId]/edit`) instead of expanding inline form
 - **Improved back button behavior**: Back button from create/edit pages returns to the units list for that grade
 
+#### Pedagogical Tree View
+- **Beautiful tree visualization**: Pedagogical page now displays units in a vertical timeline/tree format
+  - Connected nodes with gradient lines showing learning journey
+  - Alternating color themes (primary, secondary, accent) for visual variety
+  - Animated entrance with staggered delays
+  - "מסע הלמידה" (Learning Journey) header decoration
+  - End-of-journey decoration with bouncing dot and spinning atom
+- **Click-through navigation**: Clicking a unit navigates to work-plans detail page
+
+#### Nested Routing for Units
+- **Unit detail pages**: Added `/[role]/work-plans/[grade]/[unitId]` route for viewing individual units
+- **URL-based state**: Unit selection now uses URL routing instead of component state
+- **Improved navigation**: Back button returns to units grid, browser back/forward works correctly
+- **Admin actions**: Edit/delete buttons shown in unit detail view for admins
+
 #### Teacher Grade Restriction
 - **Teachers now restricted to assigned grade**: Teachers with a grade assigned in their user document are automatically redirected to that grade instead of seeing the grade selector
 - **Affected pages**: work-plans, pedagogical, documentation, reports
