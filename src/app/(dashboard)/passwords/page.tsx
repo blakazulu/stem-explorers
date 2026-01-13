@@ -161,23 +161,21 @@ export default function PasswordsPage() {
                   {roleUsers.map((user) => (
                     <div
                       key={user.password}
-                      className="bg-white rounded-lg p-4 shadow-sm"
+                      className="bg-white rounded-lg p-3 md:p-4 shadow-sm"
                     >
                       {editingUser?.password === user.password ? (
                         // Edit mode
                         <div className="space-y-3">
-                          <div className="flex items-center gap-3">
-                            <span className="font-medium">
-                              {roleLabels[user.role]}
-                              {user.grade && ` כיתה ${user.grade}`}
-                            </span>
+                          <div className="font-medium">
+                            {roleLabels[user.role]}
+                            {user.grade && ` כיתה ${user.grade}`}
                           </div>
-                          <div className="flex items-center gap-3">
-                            <label className="text-sm text-gray-600">סיסמה:</label>
+                          <div className="space-y-2">
+                            <label className="text-sm text-gray-600">סיסמה חדשה:</label>
                             <Input
                               value={newPassword}
                               onChange={(e) => setNewPassword(e.target.value)}
-                              className="flex-1 max-w-xs"
+                              className="w-full md:max-w-xs"
                               dir="ltr"
                               autoFocus
                             />
@@ -192,26 +190,29 @@ export default function PasswordsPage() {
                           </div>
                         </div>
                       ) : (
-                        // View mode
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <span className="font-medium min-w-[120px]">
+                        // View mode - mobile stacked, desktop row
+                        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                          <div className="flex flex-col gap-1 md:flex-row md:items-center md:gap-4">
+                            <span className="font-medium">
                               {roleLabels[user.role]}
                               {user.grade && ` כיתה ${user.grade}`}
+                              {user.password === session?.documentId && (
+                                <span className="text-xs text-primary mr-2">(את/ה)</span>
+                              )}
                             </span>
-                            <span className="text-gray-400">|</span>
-                            <span className="text-sm text-gray-600">סיסמה:</span>
-                            <code className="font-mono bg-gray-100 px-2 py-1 rounded text-sm">
-                              {user.password}
-                            </code>
-                            {user.password === session?.documentId && (
-                              <span className="text-xs text-primary">(את/ה)</span>
-                            )}
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm text-gray-500 hidden md:inline">|</span>
+                              <span className="text-xs text-gray-500 md:text-sm">סיסמה:</span>
+                              <code className="font-mono bg-gray-100 px-2 py-1 rounded text-xs md:text-sm">
+                                {user.password}
+                              </code>
+                            </div>
                           </div>
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => startEdit(user)}
+                            className="self-start md:self-auto"
                           >
                             ערוך
                           </Button>
