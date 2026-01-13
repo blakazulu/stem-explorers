@@ -11,6 +11,13 @@ interface JournalWizardProps {
   onCancel: () => void;
 }
 
+function isAnswerValid(answer: string | number | string[] | undefined): boolean {
+  if (answer === undefined) return false;
+  if (Array.isArray(answer)) return answer.length > 0;
+  if (typeof answer === "string") return answer.trim().length > 0;
+  return true; // number (rating) - any number is valid including 0
+}
+
 export function JournalWizard({ questions, onSubmit, onCancel }: JournalWizardProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | number | string[]>>({});
@@ -18,7 +25,7 @@ export function JournalWizard({ questions, onSubmit, onCancel }: JournalWizardPr
 
   const currentQuestion = questions[currentStep];
   const isLastStep = currentStep === questions.length - 1;
-  const canProceed = answers[currentQuestion?.id] !== undefined;
+  const canProceed = isAnswerValid(answers[currentQuestion?.id]);
 
   const handleNext = async () => {
     if (isLastStep) {
