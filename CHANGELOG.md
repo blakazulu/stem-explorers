@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+#### Unit Form Navigation
+- **Separate pages for unit creation/editing**: New unit form now opens on a dedicated page (`/[role]/work-plans/[grade]/new`) instead of inline on the units list page
+- **Edit unit page**: Editing a unit now navigates to a separate page (`/[role]/work-plans/[grade]/[unitId]/edit`) instead of expanding inline form
+- **Improved back button behavior**: Back button from create/edit pages returns to the units list for that grade
+
 #### Layout Improvements
 - **Fixed sidebar and header**: Sidebar now spans full viewport height on desktop; header stays fixed at top of content area
 - **Scrollable main content**: Only the `<main>` element scrolls; sidebar and header remain visible during scroll
