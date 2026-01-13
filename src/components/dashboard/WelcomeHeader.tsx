@@ -91,7 +91,7 @@ export function WelcomeHeader({ role }: WelcomeHeaderProps) {
           `}
         >
           <Image
-            src="/icons/logo-full.png"
+            src="/logo/logo-full.png"
             alt="חוקרי STEM"
             width={100}
             height={100}

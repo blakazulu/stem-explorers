@@ -76,7 +76,7 @@ export default function LoginPage() {
             {/* Logo */}
             <div className="mb-6 animate-scale-in">
               <Image
-                src="/icons/logo-full.png"
+                src="/logo/logo-full.png"
                 alt="חוקרי STEM"
                 width={200}
                 height={200}
@@ -131,7 +131,7 @@ export default function LoginPage() {
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-8">
             <Image
-              src="/icons/logo-full.png"
+              src="/logo/logo-full.png"
               alt="חוקרי STEM"
               width={150}
               height={150}

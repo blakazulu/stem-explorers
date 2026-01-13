@@ -23,18 +23,19 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
   title: "STEM Explorers - חוקרי STEM",
   description: "מרחב למידה לבית ספר יסודי",
-  manifest: "/manifest.json",
+  manifest: "/site.webmanifest",
   icons: {
     icon: [
-      { url: "/icons/logo-32.png", sizes: "32x32", type: "image/png" },
-      { url: "/icons/logo-64.png", sizes: "64x64", type: "image/png" },
+      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
     ],
-    apple: "/icons/logo-192.png",
+    apple: "/apple-touch-icon.png",
+    shortcut: "/favicon.ico",
   },
   openGraph: {
     title: "STEM Explorers - חוקרי STEM",
     description: "מרחב למידה לבית ספר יסודי",
-    images: ["/icons/logo-512.png"],
+    images: ["/web-app-manifest-512x512.png"],
   },
 };
 
