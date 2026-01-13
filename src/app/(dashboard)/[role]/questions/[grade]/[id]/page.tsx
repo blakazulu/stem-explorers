@@ -233,9 +233,18 @@ export default function EditQuestionnairePage() {
         .filter((q) => q.id !== deleteQuestionId)
         .map((q, i) => ({ ...q, order: i + 1 })); // Re-order
 
-      await updateQuestionnaire(questionnaire.id, { questions: updatedQuestions });
-      setQuestionnaire({ ...questionnaire, questions: updatedQuestions });
-      toast.success("שאלונים", "השאלה נמחקה");
+      // If questionnaire was active and now has no questions, deactivate it
+      const shouldDeactivate = questionnaire.isActive && updatedQuestions.length === 0;
+
+      if (shouldDeactivate) {
+        await updateQuestionnaire(questionnaire.id, { questions: updatedQuestions, isActive: false });
+        setQuestionnaire({ ...questionnaire, questions: updatedQuestions, isActive: false });
+        toast.success("שאלונים", "השאלה נמחקה והשאלון הושבת");
+      } else {
+        await updateQuestionnaire(questionnaire.id, { questions: updatedQuestions });
+        setQuestionnaire({ ...questionnaire, questions: updatedQuestions });
+        toast.success("שאלונים", "השאלה נמחקה");
+      }
       setDeleteQuestionId(null);
     } catch {
       toast.error("שגיאה", "לא הצלחנו למחוק את השאלה");
