@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Important Rules
+
+- **Every change must update CHANGELOG.md** - When making any code changes, add an entry to the appropriate section (Added, Changed, Fixed, etc.) under `[Unreleased]`.
+
 ## Commands
 
 ```bash
