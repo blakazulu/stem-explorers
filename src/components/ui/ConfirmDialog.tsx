@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { Button } from "./Button";
+import { AlertTriangle, Trash2, Info, X } from "lucide-react";
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -13,6 +14,27 @@ interface ConfirmDialogProps {
   onConfirm: () => void;
   onCancel: () => void;
 }
+
+const variantConfig = {
+  danger: {
+    icon: Trash2,
+    iconBg: "bg-error/10",
+    iconColor: "text-error",
+    buttonClass: "bg-error hover:bg-error/90 focus:ring-error",
+  },
+  warning: {
+    icon: AlertTriangle,
+    iconBg: "bg-accent/10",
+    iconColor: "text-accent",
+    buttonClass: "bg-accent hover:bg-accent/90 focus:ring-accent",
+  },
+  info: {
+    icon: Info,
+    iconBg: "bg-secondary/10",
+    iconColor: "text-secondary",
+    buttonClass: "bg-secondary hover:bg-secondary/90 focus:ring-secondary",
+  },
+};
 
 export function ConfirmDialog({
   isOpen,
@@ -51,30 +73,51 @@ export function ConfirmDialog({
     return () => dialog.removeEventListener("keydown", handleKeyDown);
   }, [onCancel]);
 
-  const variantStyles = {
-    danger: "bg-red-500 hover:bg-red-600 focus:ring-red-500",
-    warning: "bg-yellow-500 hover:bg-yellow-600 focus:ring-yellow-500",
-    info: "bg-blue-500 hover:bg-blue-600 focus:ring-blue-500",
-  };
+  const config = variantConfig[variant];
+  const IconComponent = config.icon;
 
   if (!isOpen) return null;
 
   return (
     <dialog
       ref={dialogRef}
-      className="rounded-xl p-0 backdrop:bg-black/50 max-w-md w-full"
+      className="rounded-2xl p-0 backdrop:bg-black/50 backdrop:animate-fade-in max-w-md w-full shadow-2xl animate-scale-in border-0"
       onClose={onCancel}
     >
       <div className="p-6" dir="rtl">
-        <h2 className="text-xl font-rubik font-bold mb-2">{title}</h2>
-        <p className="text-gray-600 mb-6">{message}</p>
-        <div className="flex gap-3 justify-end">
+        {/* Close button */}
+        <button
+          onClick={onCancel}
+          className="absolute top-4 left-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-surface-2 rounded-lg transition-all duration-200 cursor-pointer"
+        >
+          <X size={18} />
+        </button>
+
+        {/* Icon */}
+        <div className="flex justify-center mb-4">
+          <div
+            className={`w-16 h-16 rounded-full ${config.iconBg} flex items-center justify-center`}
+          >
+            <IconComponent size={32} className={config.iconColor} />
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="text-center mb-6">
+          <h2 className="text-xl font-rubik font-bold text-foreground mb-2">
+            {title}
+          </h2>
+          <p className="text-gray-500">{message}</p>
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-3 justify-center">
           <Button variant="outline" onClick={onCancel}>
             {cancelLabel}
           </Button>
           <button
             onClick={onConfirm}
-            className={`font-rubik font-medium rounded-lg px-4 py-2 text-white transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 ${variantStyles[variant]}`}
+            className={`font-rubik font-medium rounded-xl px-6 py-2.5 text-white transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-[0.98] ${config.buttonClass}`}
           >
             {confirmLabel}
           </button>

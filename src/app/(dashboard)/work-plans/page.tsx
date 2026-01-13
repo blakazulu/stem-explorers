@@ -13,7 +13,23 @@ import { uploadImage } from "@/lib/utils/imageUpload";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { GradeSelector } from "@/components/ui/GradeSelector";
+import { Card } from "@/components/ui/Card";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { SkeletonList } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
+import {
+  FileText,
+  Plus,
+  Upload,
+  BookOpen,
+  File,
+  ExternalLink,
+  Edit2,
+  Trash2,
+  X,
+  Hash,
+  CheckCircle,
+} from "lucide-react";
 import type { Unit, Grade } from "@/types";
 
 export default function WorkPlansPage() {
@@ -125,133 +141,259 @@ export default function WorkPlansPage() {
 
   return (
     <div className="space-y-6 max-w-4xl">
+      {/* Page Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-xl md:text-2xl font-rubik font-bold">תוכניות עבודה</h1>
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-role-teacher/10 rounded-xl">
+            <FileText size={24} className="text-role-teacher" />
+          </div>
+          <div>
+            <h1 className="text-xl md:text-2xl font-rubik font-bold text-foreground">
+              תוכניות עבודה
+            </h1>
+            <p className="text-sm text-gray-500">ניהול יחידות לימוד לפי כיתות</p>
+          </div>
+        </div>
         {!showForm && (
-          <Button onClick={() => setShowForm(true)}>יחידה חדשה</Button>
+          <Button onClick={() => setShowForm(true)} rightIcon={Plus}>
+            יחידה חדשה
+          </Button>
         )}
       </div>
 
-      <GradeSelector selected={selectedGrade} onSelect={setSelectedGrade} />
+      {/* Grade Selector */}
+      <Card>
+        <GradeSelector selected={selectedGrade} onSelect={setSelectedGrade} />
+      </Card>
 
+      {/* Unit Form */}
       {showForm && (
-        <div className="bg-white rounded-xl p-4 md:p-6 shadow-sm space-y-4">
-          <h2 className="text-lg font-semibold">
-            {editingUnit ? "עריכת יחידה" : "יחידה חדשה"}
-          </h2>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">שם היחידה</label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="הקלד שם יחידה"
-            />
+        <Card padding="none" className="overflow-hidden animate-slide-up">
+          {/* Form Header */}
+          <div className="bg-gradient-to-l from-role-teacher/10 to-primary/10 px-4 md:px-6 py-4 border-b border-surface-2">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-role-teacher/20 rounded-lg">
+                {editingUnit ? (
+                  <Edit2 size={20} className="text-role-teacher" />
+                ) : (
+                  <Plus size={20} className="text-role-teacher" />
+                )}
+              </div>
+              <div>
+                <h2 className="text-lg font-rubik font-semibold text-foreground">
+                  {editingUnit ? "עריכת יחידה" : "יחידה חדשה"}
+                </h2>
+                <p className="text-sm text-gray-500">
+                  כיתה {selectedGrade}
+                </p>
+              </div>
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">סדר תצוגה</label>
-            <Input
-              type="number"
-              value={order}
-              onChange={(e) => setOrder(parseInt(e.target.value) || 0)}
-              className="w-24"
-            />
-          </div>
+          <div className="p-4 md:p-6 space-y-6">
+            {/* Unit Name */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                שם היחידה
+              </label>
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="הקלד שם יחידה"
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              קובץ מבוא {editingUnit?.introFileUrl && "(קיים קובץ)"}
-            </label>
-            <input
-              type="file"
-              accept="image/*,.pdf"
-              onChange={(e) => setIntroFile(e.target.files?.[0] || null)}
-              className="block w-full text-sm text-gray-500 file:ml-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
-            />
-          </div>
+            {/* Display Order */}
+            <div>
+              <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
+                <Hash size={16} className="text-gray-500" />
+                סדר תצוגה
+              </label>
+              <Input
+                type="number"
+                value={order}
+                onChange={(e) => setOrder(parseInt(e.target.value) || 0)}
+                className="w-24"
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              קובץ יחידה {editingUnit?.unitFileUrl && "(קיים קובץ)"}
-            </label>
-            <input
-              type="file"
-              accept="image/*,.pdf"
-              onChange={(e) => setUnitFile(e.target.files?.[0] || null)}
-              className="block w-full text-sm text-gray-500 file:ml-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
-            />
-          </div>
+            {/* Intro File Upload */}
+            <div className="p-4 bg-surface-1 rounded-xl space-y-3">
+              <label className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <BookOpen size={16} className="text-secondary" />
+                קובץ מבוא
+                {editingUnit?.introFileUrl && (
+                  <span className="inline-flex items-center gap-1 text-xs text-success bg-success/10 px-2 py-0.5 rounded-full">
+                    <CheckCircle size={12} />
+                    קיים קובץ
+                  </span>
+                )}
+              </label>
+              <div className="relative">
+                <input
+                  type="file"
+                  accept="image/*,.pdf"
+                  onChange={(e) => setIntroFile(e.target.files?.[0] || null)}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+                <div className="flex items-center gap-3 p-4 border-2 border-dashed border-surface-3 rounded-xl hover:border-secondary hover:bg-secondary/5 transition-all duration-200">
+                  <div className="p-2 bg-secondary/10 rounded-lg">
+                    <Upload size={20} className="text-secondary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-foreground">
+                      {introFile ? introFile.name : "גרור קובץ או לחץ לבחירה"}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      תמונה או PDF
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-          <div className="flex gap-2">
-            <Button onClick={handleSubmit} disabled={saving}>
-              {saving ? "שומר..." : editingUnit ? "עדכן" : "צור יחידה"}
-            </Button>
-            <Button variant="outline" onClick={resetForm}>
-              ביטול
-            </Button>
+            {/* Unit File Upload */}
+            <div className="p-4 bg-surface-1 rounded-xl space-y-3">
+              <label className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <File size={16} className="text-primary" />
+                קובץ יחידה
+                {editingUnit?.unitFileUrl && (
+                  <span className="inline-flex items-center gap-1 text-xs text-success bg-success/10 px-2 py-0.5 rounded-full">
+                    <CheckCircle size={12} />
+                    קיים קובץ
+                  </span>
+                )}
+              </label>
+              <div className="relative">
+                <input
+                  type="file"
+                  accept="image/*,.pdf"
+                  onChange={(e) => setUnitFile(e.target.files?.[0] || null)}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+                <div className="flex items-center gap-3 p-4 border-2 border-dashed border-surface-3 rounded-xl hover:border-primary hover:bg-primary/5 transition-all duration-200">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <Upload size={20} className="text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-foreground">
+                      {unitFile ? unitFile.name : "גרור קובץ או לחץ לבחירה"}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      תמונה או PDF
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Form Actions */}
+            <div className="flex items-center justify-between pt-4 border-t border-surface-2">
+              <Button variant="ghost" onClick={resetForm} leftIcon={X}>
+                ביטול
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                disabled={saving || !name.trim()}
+                loading={saving}
+                loadingText="שומר..."
+              >
+                {editingUnit ? "עדכן יחידה" : "צור יחידה"}
+              </Button>
+            </div>
           </div>
-        </div>
+        </Card>
       )}
 
+      {/* Units List */}
       {loading ? (
-        <div className="text-gray-500">טוען יחידות...</div>
+        <SkeletonList count={4} />
       ) : units.length === 0 ? (
-        <p className="text-gray-500 text-center py-8">
-          אין יחידות לכיתה {selectedGrade}
-        </p>
+        <EmptyState
+          icon="book-open"
+          title={`אין יחידות לכיתה ${selectedGrade}`}
+          description="צור יחידה חדשה להתחלת העבודה"
+          action={
+            <Button onClick={() => setShowForm(true)} rightIcon={Plus}>
+              יחידה חדשה
+            </Button>
+          }
+        />
       ) : (
         <div className="space-y-3">
-          {units.map((unit) => (
-            <div
+          {units.map((unit, index) => (
+            <Card
               key={unit.id}
-              className="bg-white rounded-xl p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3 transition-all duration-200 hover:shadow-md"
+              interactive
+              className={`animate-slide-up stagger-${Math.min(index + 1, 6)}`}
             >
-              <div>
-                <h3 className="font-medium">{unit.name}</h3>
-                <p className="text-sm text-gray-500">
-                  כיתה {unit.gradeId} | סדר: {unit.order}
-                </p>
-                <div className="flex gap-4 mt-2 text-xs">
-                  {unit.introFileUrl && (
-                    <a
-                      href={unit.introFileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline cursor-pointer transition-colors hover:text-primary/80"
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex items-start gap-4">
+                  {/* Unit Icon */}
+                  <div className="p-3 bg-primary/10 rounded-xl">
+                    <BookOpen size={24} className="text-primary" />
+                  </div>
+
+                  {/* Unit Info */}
+                  <div>
+                    <h3 className="font-rubik font-semibold text-foreground">
+                      {unit.name}
+                    </h3>
+                    <p className="text-sm text-gray-500 mt-1">
+                      כיתה {unit.gradeId} • סדר: {unit.order}
+                    </p>
+
+                    {/* File Links */}
+                    <div className="flex gap-4 mt-3">
+                      {unit.introFileUrl && (
+                        <a
+                          href={unit.introFileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-sm text-secondary hover:text-secondary/80 transition-colors"
+                        >
+                          <BookOpen size={14} />
+                          קובץ מבוא
+                          <ExternalLink size={12} />
+                        </a>
+                      )}
+                      {unit.unitFileUrl && (
+                        <a
+                          href={unit.unitFileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 transition-colors"
+                        >
+                          <File size={14} />
+                          קובץ יחידה
+                          <ExternalLink size={12} />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-2 shrink-0">
+                  <button
+                    onClick={() => handleEdit(unit)}
+                    className="p-2 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all duration-200 cursor-pointer"
+                    title="ערוך"
+                  >
+                    <Edit2 size={18} />
+                  </button>
+                  {isAdmin && (
+                    <button
+                      onClick={() => setDeleteId(unit.id)}
+                      className="p-2 text-gray-400 hover:text-error hover:bg-error/10 rounded-lg transition-all duration-200 cursor-pointer"
+                      title="מחק"
                     >
-                      קובץ מבוא
-                    </a>
-                  )}
-                  {unit.unitFileUrl && (
-                    <a
-                      href={unit.unitFileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline cursor-pointer transition-colors hover:text-primary/80"
-                    >
-                      קובץ יחידה
-                    </a>
+                      <Trash2 size={18} />
+                    </button>
                   )}
                 </div>
               </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleEdit(unit)}
-                  className="text-sm text-primary hover:underline cursor-pointer transition-colors hover:text-primary/80"
-                >
-                  ערוך
-                </button>
-                {isAdmin && (
-                  <button
-                    onClick={() => setDeleteId(unit.id)}
-                    className="text-sm text-error hover:underline cursor-pointer transition-colors hover:text-error/80"
-                  >
-                    מחק
-                  </button>
-                )}
-              </div>
-            </div>
+            </Card>
           ))}
         </div>
       )}

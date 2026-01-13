@@ -4,6 +4,8 @@ import { useState } from "react";
 import { createPost } from "@/lib/services/forum";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Card } from "@/components/ui/Card";
+import { PenLine, Send, X } from "lucide-react";
 import type { ForumRoom } from "@/types";
 
 interface NewPostFormProps {
@@ -34,37 +36,72 @@ export function NewPostForm({ room, authorName, onCreated, onCancel }: NewPostFo
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-xl p-4 md:p-6 shadow-sm space-y-4">
-      <h3 className="font-rubik font-semibold text-lg">פוסט חדש</h3>
+    <Card padding="none" className="overflow-hidden animate-slide-up">
+      {/* Header */}
+      <div className="bg-gradient-to-l from-primary/10 to-secondary/10 px-4 md:px-6 py-4 border-b border-surface-2">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-primary/10 rounded-lg">
+            <PenLine size={20} className="text-primary" />
+          </div>
+          <div>
+            <h3 className="font-rubik font-semibold text-lg text-foreground">
+              פוסט חדש
+            </h3>
+            <p className="text-sm text-gray-500">שתף את המחשבות שלך עם הקהילה</p>
+          </div>
+        </div>
+      </div>
 
-      <Input
-        label="כותרת"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        required
-      />
-
-      <div>
-        <label className="block text-sm font-medium text-foreground mb-1">
-          תוכן
-        </label>
-        <textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          className="w-full p-3 border rounded-lg"
-          rows={5}
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-4">
+        <Input
+          label="כותרת"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="נושא הפוסט..."
           required
         />
-      </div>
 
-      <div className="flex gap-2">
-        <Button type="submit" disabled={submitting}>
-          {submitting ? "שולח..." : "פרסם"}
-        </Button>
-        <Button type="button" variant="outline" onClick={onCancel}>
-          ביטול
-        </Button>
-      </div>
-    </form>
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-2">
+            תוכן
+          </label>
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            className="w-full p-4 border-2 border-surface-3 rounded-xl bg-surface-0 text-foreground placeholder:text-gray-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none"
+            placeholder="כתוב את תוכן הפוסט כאן..."
+            rows={5}
+            required
+          />
+          {content.length > 0 && (
+            <p className="text-xs text-gray-400 mt-1 text-left">
+              {content.length} תווים
+            </p>
+          )}
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center justify-between pt-2">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onCancel}
+            leftIcon={X}
+          >
+            ביטול
+          </Button>
+          <Button
+            type="submit"
+            disabled={submitting || !title.trim() || !content.trim()}
+            loading={submitting}
+            loadingText="שולח..."
+            rightIcon={Send}
+          >
+            פרסם
+          </Button>
+        </div>
+      </form>
+    </Card>
   );
 }

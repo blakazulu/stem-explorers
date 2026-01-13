@@ -6,11 +6,19 @@ import { getPostsByRoom, deletePost } from "@/lib/services/forum";
 import { PostCard } from "@/components/forum/PostCard";
 import { NewPostForm } from "@/components/forum/NewPostForm";
 import { Button } from "@/components/ui/Button";
+import { SkeletonList } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
+import {
+  MessageSquare,
+  Plus,
+  HelpCircle,
+  Users,
+} from "lucide-react";
 import type { ForumPost, ForumRoom } from "@/types";
 
-const rooms: { id: ForumRoom; label: string }[] = [
-  { id: "requests", label: "בקשות" },
-  { id: "consultations", label: "התייעצויות" },
+const rooms: { id: ForumRoom; label: string; icon: typeof HelpCircle }[] = [
+  { id: "requests", label: "בקשות", icon: HelpCircle },
+  { id: "consultations", label: "התייעצויות", icon: Users },
 ];
 
 export default function ForumPage() {
@@ -39,29 +47,60 @@ export default function ForumPage() {
     await loadPosts();
   }
 
+  const currentRoom = rooms.find((r) => r.id === selectedRoom);
+
   return (
     <div className="space-y-6 max-w-4xl">
+      {/* Page Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-xl md:text-2xl font-rubik font-bold">פורום</h1>
-        <Button onClick={() => setShowNewPost(true)}>פוסט חדש</Button>
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-role-teacher/10 rounded-xl">
+            <MessageSquare size={24} className="text-role-teacher" />
+          </div>
+          <div>
+            <h1 className="text-xl md:text-2xl font-rubik font-bold text-foreground">
+              פורום
+            </h1>
+            <p className="text-sm text-gray-500">
+              שיתוף ודיונים עם צוות המורים
+            </p>
+          </div>
+        </div>
+        {!showNewPost && (
+          <Button onClick={() => setShowNewPost(true)} rightIcon={Plus}>
+            פוסט חדש
+          </Button>
+        )}
       </div>
 
-      <div className="flex gap-2">
-        {rooms.map((room) => (
-          <button
-            key={room.id}
-            onClick={() => setSelectedRoom(room.id)}
-            className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 cursor-pointer ${
-              selectedRoom === room.id
-                ? "bg-primary text-white"
-                : "bg-white text-foreground hover:bg-gray-100"
-            }`}
-          >
-            {room.label}
-          </button>
-        ))}
+      {/* Room Tabs */}
+      <div className="flex gap-2 p-1 bg-surface-1 rounded-xl">
+        {rooms.map((room) => {
+          const IconComponent = room.icon;
+          const isActive = selectedRoom === room.id;
+          return (
+            <button
+              key={room.id}
+              onClick={() => setSelectedRoom(room.id)}
+              className={`flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all duration-200 cursor-pointer ${
+                isActive
+                  ? "bg-surface-0 text-primary shadow-sm"
+                  : "text-gray-500 hover:text-foreground hover:bg-surface-0/50"
+              }`}
+            >
+              <IconComponent size={18} />
+              {room.label}
+              {isActive && posts.length > 0 && (
+                <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                  {posts.length}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
+      {/* New Post Form */}
       {showNewPost && (
         <NewPostForm
           room={selectedRoom}
@@ -74,13 +113,23 @@ export default function ForumPage() {
         />
       )}
 
+      {/* Posts List */}
       {loading ? (
-        <div className="text-gray-500">טוען פוסטים...</div>
+        <SkeletonList count={3} />
       ) : posts.length === 0 ? (
-        <p className="text-gray-500 text-center py-8">אין פוסטים בחדר זה</p>
+        <EmptyState
+          icon="message-square"
+          title={`אין פוסטים ב${currentRoom?.label || "חדר זה"}`}
+          description="היה הראשון לשתף משהו עם הקהילה"
+          action={
+            <Button onClick={() => setShowNewPost(true)} rightIcon={Plus}>
+              פוסט חדש
+            </Button>
+          }
+        />
       ) : (
         <div className="space-y-4">
-          {posts.map((post) => (
+          {posts.map((post, index) => (
             <PostCard
               key={post.id}
               post={post}
@@ -88,6 +137,7 @@ export default function ForumPage() {
               isAdmin={isAdmin}
               onDelete={handleDelete}
               onReplyAdded={loadPosts}
+              index={index}
             />
           ))}
         </div>

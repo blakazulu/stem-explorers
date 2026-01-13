@@ -253,13 +253,29 @@ Admin-configurable content pages:
 
 ### Color Palette
 ```
-Primary:     #0F766E (Teal - science/tech feel)
-Secondary:   #0284C7 (Blue - trust/knowledge)
-Accent:      #F59E0B (Amber - energy/creativity)
-Success:     #22C55E (Green)
-Error:       #EF4444 (Red)
-Background:  #F8FAFC (Light gray)
-Text:        #1E293B (Dark slate)
+Primary:       #0F766E (Teal - science/tech feel)
+Primary Light: #14B8A6
+Primary Dark:  #0D5D56
+Secondary:     #0284C7 (Blue - trust/knowledge)
+Secondary Light: #38BDF8
+Accent:        #F59E0B (Amber - energy/creativity)
+Accent Light:  #FBBF24
+Success:       #22C55E (Green)
+Error:         #EF4444 (Red)
+Background:    #F8FAFC (Light gray)
+Text:          #1E293B (Dark slate)
+
+Surface Colors (for depth):
+Surface-0:     #FFFFFF
+Surface-1:     #F8FAFC
+Surface-2:     #F1F5F9
+Surface-3:     #E2E8F0
+
+Role Colors:
+Admin:         #6366F1 (Indigo - professional)
+Teacher:       #0284C7 (Blue - knowledge)
+Parent:        #F59E0B (Amber - warmth)
+Student:       #10B981 (Emerald - growth/fun)
 ```
 
 ### Typography
@@ -268,15 +284,42 @@ Text:        #1E293B (Dark slate)
 | Headers | Rubik (Bold, modern, geometric) |
 | Body | Heebo (Clean, readable, friendly) |
 
-### Adaptive Themes by Role
-Each role has a slightly different feel:
+### UI Component Library
+The platform includes a comprehensive set of reusable UI components:
 
-| Role | Feel | Accent Colors |
-|------|------|---------------|
-| **Admin** | Professional, dashboard-like | Teal + Gray |
-| **Teacher** | Clean, efficient, knowledge-focused | Teal + Blue |
-| **Parent** | Warm, transparent, trustworthy | Teal + Amber |
-| **Student** | Fun, engaging, interactive | Bright teal + Amber + playful icons |
+| Component | Description |
+|-----------|-------------|
+| `Button` | Multiple variants (primary, outline, ghost, destructive), icon support, loading states |
+| `Card` | Elevated/outlined variants, interactive hover effects |
+| `Icon` | STEM-themed Lucide icons (atom, flask, rocket, brain, lightbulb, etc.) |
+| `GradeSelector` | Grade selection with Hebrew numeral indicators and ring glow |
+| `Progress` | Animated progress bar with step indicators |
+| `Skeleton` | Shimmer loading placeholders for cards, text, grids |
+| `Toast` | Slide-in notifications with auto-dismiss |
+| `EmptyState` | Consistent empty state displays with STEM illustrations |
+| `ConfirmDialog` | Animated modal with variant-specific icons |
+
+### Role-Based Theming System
+Each role has a distinct visual theme applied via React Context:
+
+| Role | Theme | Icon | Characteristics |
+|------|-------|------|-----------------|
+| **Admin** | Indigo | Shield | Professional, dashboard-focused, clean data layouts |
+| **Teacher** | Blue | GraduationCap | Calm tones, organized interfaces, knowledge icons |
+| **Parent** | Amber | Users | Warm highlights, friendly rounded elements |
+| **Student** | Emerald | Rocket | Vibrant colors, playful animations, celebration effects |
+
+### Animations
+Custom Tailwind animations defined in `tailwind.config.ts`:
+
+```
+fadeIn     - Opacity fade (200ms)
+slideUp    - Slide from bottom with fade (300ms)
+scaleIn    - Scale from 0.95 with fade (200ms)
+shimmer    - Loading shimmer effect (2s infinite)
+celebrate  - Scale pulse for achievements (500ms)
+bounce     - Playful bounce for student elements
+```
 
 ### Design Principles
 
@@ -295,21 +338,28 @@ Each role has a slightly different feel:
 - Focus states with ring indicators
 
 **Animations & Transitions:**
-- Smooth transitions on all interactive elements
-- Collapsible sections with animated expand/collapse icons
-- Progress bars with `duration-300` animations
+- Smooth transitions on all interactive elements (200-300ms)
+- Staggered slide-up animations on page load
+- Collapsible sections with height/opacity transitions
+- Progress bars with animated fill
 - Hover shadow transitions on cards
 
 **Collapsible Sections:**
 - Use collapsible accordions where it makes sense (grouped lists, settings)
-- Animated rotation on expand/collapse icons (`rotate-45` with transition)
-- Smooth content reveal animations
+- ChevronDown icon with 180° rotation animation
+- Smooth maxHeight/opacity transitions (300ms)
+
+**Page Structure:**
+- Consistent page headers with icon, title, and subtitle
+- Role-colored icon backgrounds (e.g., `bg-role-admin/10`)
+- Skeleton loading during data fetches
+- EmptyState components for no-data scenarios
 
 **General:**
 - RTL Hebrew layout
 - Minimum 16px fonts
 - Modern, clean, not cluttered
-- STEM-themed icons (atoms, gears, lightbulbs)
+- STEM-themed icons (atoms, gears, lightbulbs, rockets)
 - Cards-based layout with rounded corners (8px-12px)
 - Subtle shadows that enhance on hover
 
@@ -394,6 +444,16 @@ stem-explorers/
 │   │   └── layout.tsx
 │   ├── components/
 │   │   ├── ui/                 # Reusable UI components
+│   │   │   ├── Button.tsx      # Button with variants, icons, loading
+│   │   │   ├── Card.tsx        # Card container component
+│   │   │   ├── ConfirmDialog.tsx # Confirmation modal
+│   │   │   ├── EmptyState.tsx  # Empty state displays
+│   │   │   ├── GradeSelector.tsx # Grade selection component
+│   │   │   ├── Icon.tsx        # STEM icon component
+│   │   │   ├── Input.tsx       # Form input
+│   │   │   ├── Progress.tsx    # Progress bar
+│   │   │   ├── Skeleton.tsx    # Loading skeletons
+│   │   │   └── Toast.tsx       # Toast notifications
 │   │   ├── dashboard/          # Dashboard components
 │   │   ├── documentation/      # Documentation components
 │   │   ├── forum/              # Forum components
@@ -403,7 +463,9 @@ stem-explorers/
 │   │   ├── firebase.ts         # Firebase config
 │   │   ├── services/           # Firestore services
 │   │   └── utils/              # Utility functions
-│   ├── contexts/               # React contexts (Auth)
+│   ├── contexts/               # React contexts
+│   │   ├── AuthContext.tsx     # Authentication state
+│   │   └── ThemeContext.tsx    # Role-based theming
 │   └── types/                  # TypeScript types
 ├── public/
 │   ├── icons/                  # PWA icons
