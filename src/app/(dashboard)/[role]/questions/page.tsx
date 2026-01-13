@@ -16,6 +16,7 @@ import { Card } from "@/components/ui/Card";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { SkeletonList } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { useToastActions } from "@/components/ui/Toast";
 import {
   HelpCircle,
   Plus,
@@ -54,9 +55,11 @@ export default function QuestionsPage() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const toast = useToastActions();
 
   // Form state
   const [formData, setFormData] = useState<Omit<Question, "id">>({
@@ -70,14 +73,19 @@ export default function QuestionsPage() {
 
   const loadData = useCallback(async () => {
     setLoading(true);
-    const [qs, allUnits] = await Promise.all([
-      getAllQuestions(),
-      Promise.all(grades.map((g) => getUnitsByGrade(g))),
-    ]);
-    setQuestions(qs);
-    setUnits(allUnits.flat());
-    setLoading(false);
-  }, []);
+    try {
+      const [qs, allUnits] = await Promise.all([
+        getAllQuestions(),
+        Promise.all(grades.map((g) => getUnitsByGrade(g))),
+      ]);
+      setQuestions(qs);
+      setUnits(allUnits.flat());
+    } catch {
+      toast.error("שגיאה", "שגיאה בטעינת הנתונים");
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
 
   useEffect(() => {
     if (session?.user.role !== "admin") {
@@ -93,11 +101,24 @@ export default function QuestionsPage() {
       text: "",
       options: [],
       target: { grades: [], units: [] },
-      order: questions.length,
+      order: questions.length + 1,
     });
     setNewOption("");
     setEditingQuestion(null);
     setShowForm(false);
+  }
+
+  function openNewForm() {
+    setFormData({
+      type: "open",
+      text: "",
+      options: [],
+      target: { grades: [], units: [] },
+      order: questions.length + 1,
+    });
+    setNewOption("");
+    setEditingQuestion(null);
+    setShowForm(true);
   }
 
   function handleEdit(q: Question) {
@@ -112,23 +133,46 @@ export default function QuestionsPage() {
     setShowForm(true);
   }
 
-  async function handleSubmit() {
-    if (!formData.text.trim()) return;
+  // Form validation
+  const isChoiceType = formData.type === "single" || formData.type === "multiple";
+  const hasEnoughOptions = !isChoiceType || (formData.options && formData.options.length >= 2);
+  const hasText = formData.text.trim().length > 0;
+  const hasGrade = formData.target.grades.length > 0;
+  const hasUnit = formData.target.units.length > 0;
+  const isFormValid = hasText && hasEnoughOptions && hasGrade && hasUnit;
 
-    if (editingQuestion) {
-      await updateQuestion(editingQuestion.id, formData);
-    } else {
-      await createQuestion(formData);
+  async function handleSubmit() {
+    if (!isFormValid) return;
+
+    setSaving(true);
+    try {
+      if (editingQuestion) {
+        await updateQuestion(editingQuestion.id, formData);
+        toast.success("שאלות", "השאלה עודכנה בהצלחה");
+      } else {
+        await createQuestion(formData);
+        toast.success("שאלות", "השאלה נוצרה בהצלחה");
+      }
+      resetForm();
+      await loadData();
+    } catch {
+      toast.error("שגיאה", "לא הצלחנו לשמור את השאלה");
+    } finally {
+      setSaving(false);
     }
-    resetForm();
-    await loadData();
   }
 
   async function handleDelete() {
     if (!deleteId) return;
-    await deleteQuestion(deleteId);
-    setDeleteId(null);
-    await loadData();
+    try {
+      await deleteQuestion(deleteId);
+      toast.success("שאלות", "השאלה נמחקה בהצלחה");
+      setDeleteId(null);
+      await loadData();
+    } catch {
+      toast.error("שגיאה", "לא הצלחנו למחוק את השאלה");
+      setDeleteId(null);
+    }
   }
 
   function addOption() {
@@ -216,7 +260,7 @@ export default function QuestionsPage() {
           </div>
         </div>
         {!showForm && (
-          <Button onClick={() => setShowForm(true)} rightIcon={Plus}>
+          <Button onClick={openNewForm} rightIcon={Plus}>
             שאלה חדשה
           </Button>
         )}
@@ -351,9 +395,6 @@ export default function QuestionsPage() {
               <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-3">
                 <GraduationCap size={16} className="text-primary" />
                 כיתות יעד
-                <span className="text-gray-400 font-normal">
-                  (ריק = כל הכיתות)
-                </span>
               </label>
               <div className="flex flex-wrap gap-2">
                 {grades.map((g) => (
@@ -377,9 +418,6 @@ export default function QuestionsPage() {
               <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-3">
                 <BookOpen size={16} className="text-secondary" />
                 יחידות יעד
-                <span className="text-gray-400 font-normal">
-                  (ריק = כל היחידות)
-                </span>
               </label>
               <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-3 bg-surface-1 rounded-xl">
                 {units.map((unit) => (
@@ -407,23 +445,31 @@ export default function QuestionsPage() {
               </label>
               <Input
                 type="number"
+                min={1}
+                max={editingQuestion ? questions.length : questions.length + 1}
                 value={formData.order}
-                onChange={(e) =>
+                onChange={(e) => {
+                  const maxOrder = editingQuestion ? questions.length : questions.length + 1;
+                  const value = parseInt(e.target.value) || 1;
+                  const clampedValue = Math.max(1, Math.min(value, maxOrder));
                   setFormData({
                     ...formData,
-                    order: parseInt(e.target.value) || 0,
-                  })
-                }
+                    order: clampedValue,
+                  });
+                }}
                 className="w-24"
               />
+              <p className="text-xs text-gray-400 mt-1">
+                מספר בין 1 ל-{editingQuestion ? questions.length : questions.length + 1}
+              </p>
             </div>
 
             {/* Form Actions */}
             <div className="flex items-center justify-between pt-4 border-t border-surface-2">
-              <Button variant="ghost" onClick={resetForm} leftIcon={X}>
+              <Button variant="ghost" onClick={resetForm} leftIcon={X} disabled={saving}>
                 ביטול
               </Button>
-              <Button onClick={handleSubmit}>
+              <Button onClick={handleSubmit} disabled={!isFormValid || saving} loading={saving}>
                 {editingQuestion ? "עדכן שאלה" : "צור שאלה"}
               </Button>
             </div>
@@ -439,7 +485,7 @@ export default function QuestionsPage() {
             title="אין שאלות עדיין"
             description="צור שאלות חדשות ליומן החוקר"
             action={
-              <Button onClick={() => setShowForm(true)} rightIcon={Plus}>
+              <Button onClick={openNewForm} rightIcon={Plus}>
                 שאלה חדשה
               </Button>
             }

@@ -55,6 +55,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Shows EmptyState with "נסה שוב" button when loading fails
   - Maintains consistent UX with other pages (DocumentationGallery, UnitTree)
 
+#### Questions Page Validation
+- **Form validation**: Added proper form validation for admin questions page
+  - Choice questions (single/multiple) now require at least 2 options
+  - Target validation: must select at least one grade AND one unit
+  - Submit button disabled when form is invalid or saving
+  - Visual validation messages shown when validation fails
+- **Error handling**: All CRUD operations now wrapped in try-catch with toast notifications
+  - Success/error toasts for create, update, and delete operations
+  - Error handling for data loading with toast notification
+- **Loading state**: Submit button shows loading spinner and is disabled while saving
+- **Order defaults**: New questions default to next available order number (1-indexed)
+  - Order input clamped to valid range (1 to total questions)
+  - Helper text shows valid range
+
+#### ConfirmDialog Centering
+- **Fixed dialog positioning**: ConfirmDialog now properly centered on screen using fixed positioning with transform
+
 ### Added
 
 #### Document Upload for Units
