@@ -33,7 +33,7 @@ import {
 import type { Questionnaire, EmbeddedQuestion, QuestionType, RatingStyle, Unit, Grade, UserRole } from "@/types";
 
 const VALID_GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
-const MIN_QUESTIONS = 1;
+const MIN_QUESTIONS = 0;
 const MAX_QUESTIONS = 10;
 
 const questionTypes: {
