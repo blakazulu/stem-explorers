@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useAuth } from "@/contexts/AuthContext";
 import { useRoleStyles } from "@/contexts/ThemeContext";
 import { Card } from "@/components/ui/Card";
+import { WelcomeHeader } from "@/components/dashboard/WelcomeHeader";
 import {
   BookOpen,
   FileText,
@@ -15,12 +15,8 @@ import {
   HelpCircle,
   Key,
   Settings,
-  Rocket,
-  Sparkles,
   ArrowLeft,
   Users,
-  Star,
-  Lightbulb,
 } from "lucide-react";
 import type { UserRole } from "@/types";
 import type { LucideIcon } from "lucide-react";
@@ -143,71 +139,24 @@ const quickActionsByRole: Record<UserRole, QuickAction[]> = {
   ],
 };
 
-// Role-specific greetings
-const greetingsByRole: Record<UserRole, { title: string; subtitle: string }> = {
-  student: {
-    title: "שלום חוקר/ת!",
-    subtitle: "מוכנים להמשיך לחקור ולגלות?",
-  },
-  teacher: {
-    title: "שלום מורה!",
-    subtitle: "הנה סיכום מהיר של המערכת",
-  },
-  parent: {
-    title: "שלום!",
-    subtitle: "ברוכים הבאים למרחב הלמידה של ילדכם",
-  },
-  admin: {
-    title: "שלום מנהל!",
-    subtitle: "ניהול וסקירת מערכת חוקרי STEM",
-  },
-};
-
 export default function RoleDashboardPage() {
-  const { session } = useAuth();
   const params = useParams();
   const roleStyles = useRoleStyles();
 
   const role = (params.role as UserRole) || "teacher";
   const quickActions = quickActionsByRole[role];
-  const greeting = greetingsByRole[role];
 
   return (
-    <div className="max-w-5xl space-y-8">
-      {/* Welcome Section */}
-      <div className="flex items-start gap-4">
-        <div
-          className={`hidden sm:flex items-center justify-center w-16 h-16 rounded-2xl ${roleStyles.bgLight}`}
-        >
-          {role === "student" ? (
-            <Rocket className={`w-8 h-8 ${roleStyles.text}`} />
-          ) : role === "teacher" ? (
-            <Lightbulb className={`w-8 h-8 ${roleStyles.text}`} />
-          ) : role === "parent" ? (
-            <Star className={`w-8 h-8 ${roleStyles.text}`} />
-          ) : (
-            <Settings className={`w-8 h-8 ${roleStyles.text}`} />
-          )}
-        </div>
-        <div>
-          <h1 className="text-2xl md:text-3xl font-rubik font-bold text-foreground">
-            {greeting.title.replace("חוקר/ת", session?.user.name || "חוקר/ת")}
-          </h1>
-          <p className="text-gray-500 mt-1">{greeting.subtitle}</p>
-          {session?.user.grade && (
-            <p className={`text-sm mt-2 ${roleStyles.text} font-medium`}>
-              כיתה {session.user.grade}
-            </p>
-          )}
-        </div>
-      </div>
+    <div className="max-w-theme space-y-8">
+      {/* Welcome Header - role-specific styling and content */}
+      <WelcomeHeader role={role} />
 
-      {/* Quick Actions Grid */}
+      {/* Quick Actions Grid - role-specific columns */}
       <div>
         <h2 className="text-lg font-rubik font-semibold text-foreground mb-4">
           פעולות מהירות
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className={`grid ${roleStyles.gridCols} gap-theme`}>
           {quickActions.map((action, index) => {
             const ActionIcon = action.icon;
             // Prefix href with role
@@ -238,25 +187,6 @@ export default function RoleDashboardPage() {
           })}
         </div>
       </div>
-
-      {/* Student-specific: Encouragement Section */}
-      {role === "student" && (
-        <Card className="bg-gradient-to-l from-role-student/5 to-primary/5 border-role-student/20">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-role-student/10 rounded-xl">
-              <Sparkles className="w-6 h-6 text-role-student" />
-            </div>
-            <div>
-              <h3 className="font-rubik font-semibold text-foreground">
-                המשיכו לחקור!
-              </h3>
-              <p className="text-sm text-gray-500">
-                כל יום הוא הזדמנות לגלות משהו חדש ומרגש
-              </p>
-            </div>
-          </div>
-        </Card>
-      )}
 
       {/* Teacher-specific: Info Cards */}
       {role === "teacher" && (
@@ -298,25 +228,6 @@ export default function RoleDashboardPage() {
             </Link>
           </Card>
         </div>
-      )}
-
-      {/* Parent-specific: Child Info */}
-      {role === "parent" && session?.user.grade && (
-        <Card variant="outlined" padding="md">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-role-parent/10 rounded-xl">
-              <Star className="w-6 h-6 text-role-parent" />
-            </div>
-            <div>
-              <h3 className="font-rubik font-semibold text-foreground">
-                כיתה {session.user.grade}
-              </h3>
-              <p className="text-sm text-gray-500">
-                צפו בתכנים ובדוחות של ילדכם בכיתה {session.user.grade}
-              </p>
-            </div>
-          </div>
-        </Card>
       )}
 
       {/* Admin-specific: Additional Tools */}

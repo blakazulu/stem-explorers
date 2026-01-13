@@ -36,6 +36,22 @@ const config: Config = {
       borderRadius: {
         DEFAULT: "8px",
         lg: "12px",
+        theme: "var(--theme-card-radius)",
+      },
+      boxShadow: {
+        theme: "var(--theme-card-shadow)",
+      },
+      transitionDuration: {
+        theme: "var(--theme-animation-duration)",
+      },
+      transitionTimingFunction: {
+        theme: "var(--theme-animation-easing)",
+      },
+      maxWidth: {
+        theme: "var(--theme-content-max-width)",
+      },
+      gap: {
+        theme: "var(--theme-card-gap)",
       },
       keyframes: {
         fadeIn: {
@@ -90,6 +106,18 @@ const config: Config = {
           "0%": { transform: "translateY(0) rotate(0deg)", opacity: "1" },
           "100%": { transform: "translateY(100vh) rotate(720deg)", opacity: "0" },
         },
+        "bounce-playful": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-8px)" },
+        },
+        "pulse-glow": {
+          "0%, 100%": { boxShadow: "0 0 0 0 rgba(16,185,129,0)" },
+          "50%": { boxShadow: "0 0 20px 4px rgba(16,185,129,0.3)" },
+        },
+        wiggle: {
+          "0%, 100%": { transform: "rotate(-2deg)" },
+          "50%": { transform: "rotate(2deg)" },
+        },
       },
       animation: {
         "fade-in": "fadeIn 200ms ease-out",
@@ -105,6 +133,9 @@ const config: Config = {
         pulse: "pulse 2s ease-in-out infinite",
         spin: "spin 1s linear infinite",
         confetti: "confetti 3s ease-out forwards",
+        "bounce-playful": "bounce-playful 600ms var(--theme-animation-easing) infinite",
+        "pulse-glow": "pulse-glow 2s ease-in-out infinite",
+        wiggle: "wiggle 300ms ease-in-out",
       },
     },
   },

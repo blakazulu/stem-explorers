@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -73,13 +74,17 @@ export default function LoginPage() {
         <div className="relative z-10 flex flex-col items-center justify-center w-full p-12 text-white">
           <div className="text-center max-w-md">
             {/* Logo */}
-            <div className="inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-white/10 backdrop-blur-sm mb-8 animate-scale-in">
-              <Atom size={48} strokeWidth={1.5} />
+            <div className="mb-6 animate-scale-in">
+              <Image
+                src="/icons/logo-full.png"
+                alt="חוקרי STEM"
+                width={200}
+                height={200}
+                className="w-48 h-48 object-contain mx-auto drop-shadow-2xl"
+                priority
+              />
             </div>
 
-            <h1 className="text-4xl font-rubik font-bold mb-4 animate-slide-up">
-              חוקרי STEM
-            </h1>
             <p className="text-xl text-white/80 mb-8 animate-slide-up stagger-1">
               מרחב למידה לבית ספר יסודי
             </p>
@@ -125,12 +130,14 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-secondary mb-4">
-              <Atom size={32} className="text-white" />
-            </div>
-            <h1 className="text-2xl font-rubik font-bold text-foreground">
-              חוקרי STEM
-            </h1>
+            <Image
+              src="/icons/logo-full.png"
+              alt="חוקרי STEM"
+              width={150}
+              height={150}
+              className="w-32 h-32 object-contain mx-auto mb-2"
+              priority
+            />
             <p className="text-gray-500">מרחב למידה לבית ספר יסודי</p>
           </div>
 

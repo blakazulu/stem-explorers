@@ -26,8 +26,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
+    // Theme-aware timing - uses CSS variables that change per role
     const baseStyles =
-      "inline-flex items-center justify-center gap-2 font-rubik font-medium rounded-lg transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]";
+      "inline-flex items-center justify-center gap-2 font-rubik font-medium rounded-lg transition-all duration-theme ease-theme cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]";
 
     const variants = {
       primary:
@@ -102,8 +103,9 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
     },
     ref
   ) => {
+    // Theme-aware timing - uses CSS variables that change per role
     const baseStyles =
-      "inline-flex items-center justify-center rounded-lg transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.95]";
+      "inline-flex items-center justify-center rounded-lg transition-all duration-theme ease-theme cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.95]";
 
     const variants = {
       primary:

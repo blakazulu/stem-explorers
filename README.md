@@ -300,25 +300,63 @@ The platform includes a comprehensive set of reusable UI components:
 | `ConfirmDialog` | Animated modal with variant-specific icons |
 
 ### Role-Based Theming System
-Each role has a distinct visual theme applied via React Context:
+Each role has a **completely distinct visual universe** - not just different accent colors, but unique visual properties that cascade through the entire UI. The theme system uses CSS custom properties for automatic cascading.
 
-| Role | Theme | Icon | Characteristics |
-|------|-------|------|-----------------|
-| **Admin** | Indigo | Shield | Professional, dashboard-focused, clean data layouts |
-| **Teacher** | Blue | GraduationCap | Calm tones, organized interfaces, knowledge icons |
-| **Parent** | Amber | Users | Warm highlights, friendly rounded elements |
-| **Student** | Emerald | Rocket | Vibrant colors, playful animations, celebration effects |
+#### Theme Characteristics by Role
+
+| Role | Aesthetic | Card Radius | Animation | Density |
+|------|-----------|-------------|-----------|---------|
+| **Admin** | Command Center | 4px (sharp) | 150ms (snappy) | Dense |
+| **Teacher** | Knowledge Garden | 8px (balanced) | 300ms (smooth) | Comfortable |
+| **Parent** | Family Dashboard | 16px (soft) | 400ms (gentle) | Spacious |
+| **Student** | Explorer's Lab | 16px (playful) | 400ms (bouncy) | Engaging |
+
+#### Visual Elements by Role
+
+| Role | Theme | Icon | Sidebar | Header | Background |
+|------|-------|------|---------|--------|------------|
+| **Admin** | Indigo | Shield | Dark slate (`bg-slate-900`) | Dark header | Grid pattern |
+| **Teacher** | Blue | GraduationCap | Light blue gradient | Blue gradient | Clean |
+| **Parent** | Amber | Heart | Warm amber gradient | Amber gradient | Clean |
+| **Student** | Emerald | Rocket | Emerald gradient | Emerald gradient | Dots pattern |
+
+#### CSS Theme Variables
+```css
+:root {
+  --theme-card-radius: 8px;
+  --theme-card-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  --theme-animation-duration: 300ms;
+  --theme-animation-easing: ease-out;
+  --theme-content-max-width: 1200px;
+  --theme-card-gap: 1.5rem;
+}
+```
+
+#### Tailwind Theme Utilities
+```
+rounded-theme    - Uses --theme-card-radius
+shadow-theme     - Uses --theme-card-shadow
+duration-theme   - Uses --theme-animation-duration
+ease-theme       - Uses --theme-animation-easing
+max-w-theme      - Uses --theme-content-max-width
+gap-theme        - Uses --theme-card-gap
+```
+
+See [System Design Document](docs/system-design.md) for complete implementation details.
 
 ### Animations
 Custom Tailwind animations defined in `tailwind.config.ts`:
 
 ```
-fadeIn     - Opacity fade (200ms)
-slideUp    - Slide from bottom with fade (300ms)
-scaleIn    - Scale from 0.95 with fade (200ms)
-shimmer    - Loading shimmer effect (2s infinite)
-celebrate  - Scale pulse for achievements (500ms)
-bounce     - Playful bounce for student elements
+fadeIn           - Opacity fade (200ms)
+slideUp          - Slide from bottom with fade (300ms)
+scaleIn          - Scale from 0.95 with fade (200ms)
+shimmer          - Loading shimmer effect (2s infinite)
+celebrate        - Scale pulse for achievements (500ms)
+confetti         - Confetti celebration effect
+bounce-playful   - Theme-aware playful bounce (uses --theme-animation-easing)
+pulse-glow       - Glow pulse effect for student role
+wiggle           - Playful wiggle animation
 ```
 
 ### Design Principles
@@ -444,8 +482,8 @@ stem-explorers/
 │   │   └── layout.tsx
 │   ├── components/
 │   │   ├── ui/                 # Reusable UI components
-│   │   │   ├── Button.tsx      # Button with variants, icons, loading
-│   │   │   ├── Card.tsx        # Card container component
+│   │   │   ├── Button.tsx      # Button with variants, icons, loading (theme-aware)
+│   │   │   ├── Card.tsx        # Card container (theme-aware radius/shadow)
 │   │   │   ├── ConfirmDialog.tsx # Confirmation modal
 │   │   │   ├── EmptyState.tsx  # Empty state displays
 │   │   │   ├── GradeSelector.tsx # Grade selection component
@@ -454,7 +492,10 @@ stem-explorers/
 │   │   │   ├── Progress.tsx    # Progress bar
 │   │   │   ├── Skeleton.tsx    # Loading skeletons
 │   │   │   └── Toast.tsx       # Toast notifications
-│   │   ├── dashboard/          # Dashboard components
+│   │   ├── dashboard/          # Dashboard layout components
+│   │   │   ├── Header.tsx      # Role-themed header with badge
+│   │   │   ├── Sidebar.tsx     # Role-themed navigation sidebar
+│   │   │   └── WelcomeHeader.tsx # Role-specific welcome experiences
 │   │   ├── documentation/      # Documentation components
 │   │   ├── forum/              # Forum components
 │   │   ├── journal/            # Journal wizard components
@@ -468,10 +509,16 @@ stem-explorers/
 │   │   └── ThemeContext.tsx    # Role-based theming
 │   └── types/                  # TypeScript types
 ├── public/
-│   ├── icons/                  # PWA icons
+│   ├── icons/                  # Logo and PWA icons
+│   │   ├── logo-full.png       # Full logo (used in login, welcome header)
+│   │   ├── logo-*.png          # Various sizes (32, 64, 192, 512)
+│   ├── patterns/               # SVG background patterns
+│   │   ├── grid.svg            # Admin grid pattern
+│   │   └── dots.svg            # Student dots pattern
 │   └── manifest.json           # PWA manifest
 ├── docs/
 │   ├── idea.pdf                # Original idea document
+│   ├── system-design.md        # Role theming system documentation
 │   └── plans/                  # Design documents
 └── scripts/
     └── seed-users.ts           # Database seeding script
@@ -551,6 +598,7 @@ The app is installable on mobile devices:
 ## Documentation | תיעוד נוסף
 
 - [Original Idea (PDF)](docs/idea.pdf)
+- [System Design - Role Theming](docs/system-design.md)
 - [Design Document](docs/plans/2026-01-12-stem-explorers-design.md)
 
 ---

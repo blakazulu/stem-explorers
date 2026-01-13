@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { Icon, IconName } from "@/components/ui/Icon";
+import { Icon } from "@/components/ui/Icon";
 import {
   BookOpen,
   FileText,
@@ -15,13 +15,17 @@ import {
   Key,
   Settings,
   Atom,
+  Shield,
+  GraduationCap,
+  Heart,
+  Rocket,
 } from "lucide-react";
 import type { UserRole } from "@/types";
 import type { LucideIcon } from "lucide-react";
 
 interface NavItem {
   label: string;
-  href: string; // Base path without role prefix
+  href: string;
   roles: UserRole[];
   icon: LucideIcon;
 }
@@ -39,20 +43,124 @@ const navItems: NavItem[] = [
   { label: "הגדרות", href: "/settings", roles: ["admin"], icon: Settings },
 ];
 
-// Role-specific accent colors
-const roleColors: Record<UserRole, string> = {
-  admin: "text-role-admin",
-  teacher: "text-role-teacher",
-  parent: "text-role-parent",
-  student: "text-role-student",
+// ===== ROLE-SPECIFIC SIDEBAR THEMES =====
+// Each role gets a distinct visual experience
+
+interface SidebarTheme {
+  // Container
+  bg: string;
+  border: string;
+  // Header
+  headerBg: string;
+  headerBorder: string;
+  logoBg: string;
+  logoIcon: LucideIcon;
+  logoColor: string;
+  titleColor: string;
+  subtitleColor: string;
+  // Navigation
+  navItemDefault: string;
+  navItemHover: string;
+  navItemActive: string;
+  navItemActiveText: string;
+  indicatorBg: string;
+  // Section divider
+  dividerColor: string;
+  sectionLabelColor: string;
+  // Footer
+  footerBorder: string;
+  footerIconColor: string;
+}
+
+const sidebarThemes: Record<UserRole, SidebarTheme> = {
+  // Admin: Dark slate command center - professional, efficient
+  admin: {
+    bg: "bg-slate-900",
+    border: "border-slate-800",
+    headerBg: "bg-slate-800/50",
+    headerBorder: "border-slate-700",
+    logoBg: "bg-role-admin/20",
+    logoIcon: Shield,
+    logoColor: "text-role-admin",
+    titleColor: "text-white",
+    subtitleColor: "text-slate-400",
+    navItemDefault: "text-slate-300",
+    navItemHover: "hover:bg-slate-800 hover:text-white",
+    navItemActive: "bg-role-admin/20",
+    navItemActiveText: "text-role-admin font-medium",
+    indicatorBg: "bg-role-admin",
+    dividerColor: "border-slate-700",
+    sectionLabelColor: "text-slate-500",
+    footerBorder: "border-slate-800",
+    footerIconColor: "text-slate-600",
+  },
+  // Teacher: Light blue tint - calm, organized, scholarly
+  teacher: {
+    bg: "bg-gradient-to-b from-blue-50 to-white",
+    border: "border-blue-100",
+    headerBg: "bg-white/80",
+    headerBorder: "border-blue-100",
+    logoBg: "bg-role-teacher/10",
+    logoIcon: GraduationCap,
+    logoColor: "text-role-teacher",
+    titleColor: "text-foreground",
+    subtitleColor: "text-gray-400",
+    navItemDefault: "text-gray-600",
+    navItemHover: "hover:bg-blue-50 hover:text-role-teacher",
+    navItemActive: "bg-role-teacher/10",
+    navItemActiveText: "text-role-teacher font-medium",
+    indicatorBg: "bg-role-teacher",
+    dividerColor: "border-blue-100",
+    sectionLabelColor: "text-gray-400",
+    footerBorder: "border-blue-100",
+    footerIconColor: "text-blue-200",
+  },
+  // Parent: Warm cream/amber - welcoming, family-friendly
+  parent: {
+    bg: "bg-gradient-to-b from-amber-50/80 to-orange-50/30",
+    border: "border-amber-100",
+    headerBg: "bg-white/60",
+    headerBorder: "border-amber-100",
+    logoBg: "bg-role-parent/15",
+    logoIcon: Heart,
+    logoColor: "text-role-parent",
+    titleColor: "text-foreground",
+    subtitleColor: "text-amber-600/60",
+    navItemDefault: "text-gray-600",
+    navItemHover: "hover:bg-amber-100/50 hover:text-role-parent",
+    navItemActive: "bg-role-parent/15",
+    navItemActiveText: "text-role-parent font-medium",
+    indicatorBg: "bg-role-parent",
+    dividerColor: "border-amber-100",
+    sectionLabelColor: "text-amber-600/50",
+    footerBorder: "border-amber-100",
+    footerIconColor: "text-amber-200",
+  },
+  // Student: Emerald playful - fun, engaging, adventurous
+  student: {
+    bg: "bg-gradient-to-b from-emerald-50 to-teal-50/30",
+    border: "border-emerald-200",
+    headerBg: "bg-white/70",
+    headerBorder: "border-emerald-100",
+    logoBg: "bg-role-student/15",
+    logoIcon: Rocket,
+    logoColor: "text-role-student",
+    titleColor: "text-foreground",
+    subtitleColor: "text-emerald-600/60",
+    navItemDefault: "text-gray-600",
+    navItemHover: "hover:bg-emerald-100/50 hover:text-role-student",
+    navItemActive: "bg-role-student/20",
+    navItemActiveText: "text-role-student font-medium",
+    indicatorBg: "bg-role-student",
+    dividerColor: "border-emerald-100",
+    sectionLabelColor: "text-emerald-600/50",
+    footerBorder: "border-emerald-100",
+    footerIconColor: "text-emerald-200",
+  },
 };
 
-const roleBgColors: Record<UserRole, string> = {
-  admin: "bg-role-admin/10",
-  teacher: "bg-role-teacher/10",
-  parent: "bg-role-parent/10",
-  student: "bg-role-student/10",
-};
+// Default theme fallback
+const defaultTheme = sidebarThemes.teacher;
 
 interface SidebarProps {
   onClose?: () => void;
@@ -62,6 +170,10 @@ export function Sidebar({ onClose }: SidebarProps) {
   const { session } = useAuth();
   const pathname = usePathname();
   const role = session?.user.role;
+
+  // Get role-specific theme
+  const theme = role ? sidebarThemes[role] : defaultTheme;
+  const LogoIcon = theme.logoIcon;
 
   const visibleItems = navItems.filter((item) => role && item.roles.includes(role));
 
@@ -82,26 +194,23 @@ export function Sidebar({ onClose }: SidebarProps) {
     return pathname === fullHref || pathname.startsWith(fullHref + "/");
   };
 
-  const roleColor = role ? roleColors[role] : "text-primary";
-  const roleBgColor = role ? roleBgColors[role] : "bg-primary/10";
-
   return (
-    <aside className="w-64 bg-surface-0 border-l border-surface-2 min-h-screen flex flex-col">
+    <aside className={`w-64 ${theme.bg} border-l ${theme.border} min-h-screen flex flex-col transition-colors duration-theme`}>
       {/* Logo Header */}
-      <div className="p-6 border-b border-surface-2">
+      <div className={`p-6 border-b ${theme.headerBorder} ${theme.headerBg}`}>
         <Link
           href={role ? `/${role}` : "/login"}
           className="flex items-center gap-3 group cursor-pointer"
           onClick={onClose}
         >
-          <div className={`p-2 rounded-xl ${roleBgColor} transition-all duration-200 group-hover:scale-105`}>
-            <Atom className={`w-6 h-6 ${roleColor}`} />
+          <div className={`p-2 rounded-theme ${theme.logoBg} transition-all duration-theme group-hover:scale-105`}>
+            <LogoIcon className={`w-6 h-6 ${theme.logoColor}`} />
           </div>
           <div>
-            <h2 className="text-lg font-rubik font-bold text-foreground">
+            <h2 className={`text-lg font-rubik font-bold ${theme.titleColor}`}>
               חוקרי STEM
             </h2>
-            <p className="text-xs text-gray-400">מרחב למידה</p>
+            <p className={`text-xs ${theme.subtitleColor}`}>מרחב למידה</p>
           </div>
         </Link>
       </div>
@@ -120,21 +229,21 @@ export function Sidebar({ onClose }: SidebarProps) {
                 <Link
                   href={fullHref}
                   onClick={onClose}
-                  className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 cursor-pointer relative group ${
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-theme transition-all duration-theme cursor-pointer relative group ${
                     isActive
-                      ? `${roleBgColor} ${roleColor} font-medium`
-                      : "text-foreground hover:bg-surface-2"
+                      ? `${theme.navItemActive} ${theme.navItemActiveText}`
+                      : `${theme.navItemDefault} ${theme.navItemHover}`
                   }`}
                 >
                   {/* Active indicator bar */}
                   {isActive && (
                     <span
-                      className={`absolute right-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-l-full ${roleColor.replace("text-", "bg-")}`}
+                      className={`absolute right-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-l-full ${theme.indicatorBg}`}
                     />
                   )}
                   <ItemIcon
                     size={20}
-                    className={`shrink-0 transition-transform duration-200 ${
+                    className={`shrink-0 transition-transform duration-theme ${
                       isActive ? "" : "group-hover:scale-110"
                     }`}
                   />
@@ -148,8 +257,8 @@ export function Sidebar({ onClose }: SidebarProps) {
         {/* Admin Section */}
         {adminItems.length > 0 && (
           <>
-            <div className="my-4 border-t border-surface-2" />
-            <p className="px-4 mb-2 text-xs font-medium text-gray-400 uppercase tracking-wider">
+            <div className={`my-4 border-t ${theme.dividerColor}`} />
+            <p className={`px-4 mb-2 text-xs font-medium ${theme.sectionLabelColor} uppercase tracking-wider`}>
               ניהול
             </p>
             <ul className="space-y-1">
@@ -163,20 +272,20 @@ export function Sidebar({ onClose }: SidebarProps) {
                     <Link
                       href={fullHref}
                       onClick={onClose}
-                      className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 cursor-pointer relative group ${
+                      className={`flex items-center gap-3 px-4 py-2.5 rounded-theme transition-all duration-theme cursor-pointer relative group ${
                         isActive
-                          ? `${roleBgColor} ${roleColor} font-medium`
-                          : "text-foreground hover:bg-surface-2"
+                          ? `${theme.navItemActive} ${theme.navItemActiveText}`
+                          : `${theme.navItemDefault} ${theme.navItemHover}`
                       }`}
                     >
                       {isActive && (
                         <span
-                          className={`absolute right-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-l-full ${roleColor.replace("text-", "bg-")}`}
+                          className={`absolute right-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-l-full ${theme.indicatorBg}`}
                         />
                       )}
                       <ItemIcon
                         size={20}
-                        className={`shrink-0 transition-transform duration-200 ${
+                        className={`shrink-0 transition-transform duration-theme ${
                           isActive ? "" : "group-hover:scale-110"
                         }`}
                       />
@@ -191,8 +300,8 @@ export function Sidebar({ onClose }: SidebarProps) {
       </nav>
 
       {/* Footer with STEM decoration */}
-      <div className="p-4 border-t border-surface-2">
-        <div className="flex items-center justify-center gap-2 text-gray-300">
+      <div className={`p-4 border-t ${theme.footerBorder}`}>
+        <div className={`flex items-center justify-center gap-2 ${theme.footerIconColor}`}>
           <Icon name="flask" size="sm" />
           <Icon name="lightbulb" size="sm" />
           <Icon name="cog" size="sm" />

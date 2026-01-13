@@ -7,7 +7,66 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+#### Logo Integration
+- **WelcomeHeader**: Logo displayed alongside greeting with role-specific animations (bouncy for students)
+- **Login Page**: Full logo on desktop illustration panel and mobile header (replaces Atom icon)
+
+#### Role-Specific Theming System
+- **CSS Theme Variables**: Each role now has distinct visual properties that cascade through the app
+  - `--theme-card-radius`: 4px (admin) → 16px (parent/student)
+  - `--theme-card-shadow`: Role-tinted shadows with varying intensity
+  - `--theme-animation-duration`: 150ms (admin) → 400ms (parent/student)
+  - `--theme-animation-easing`: Linear (admin) → Spring-bounce (student)
+  - `--theme-content-max-width`: 1400px (admin) → 1000px (parent)
+  - `--theme-card-gap`: 1rem (admin) → 2rem (parent)
+
+- **Theme-Aware Tailwind Utilities**: New utility classes that use CSS variables
+  - `rounded-theme`, `shadow-theme`, `duration-theme`, `ease-theme`
+  - `max-w-theme`, `gap-theme`
+  - New animations: `animate-bounce-playful`, `animate-pulse-glow`, `animate-wiggle`
+
+- **Enhanced ThemeContext**: `useRoleStyles()` now returns extended tokens
+  - `cardClass`, `animationClass` for theme-aware component styling
+  - `headerStyle` semantic token (dense/balanced/warm/playful)
+  - `iconStyle` semantic token (sharp/outlined/soft/filled)
+  - `gridCols` for role-specific grid layouts
+
+- **WelcomeHeader Component**: New reusable component with role-specific welcome experiences
+  - Student: Playful animations, streak counter, encouragement card
+  - Parent: Warm greeting, child progress indicator
+  - Teacher: Balanced layout, date display
+  - Admin: Compact header, efficient design
+
+- **Role-Specific Sidebar Themes**: Full visual differentiation for sidebar
+  - Admin: Dark slate command center (bg-slate-900, Shield icon, indigo accents)
+  - Teacher: Light blue gradient (calm, GraduationCap icon, blue accents)
+  - Parent: Warm amber gradient (welcoming, Heart icon, amber accents)
+  - Student: Emerald gradient (playful, Rocket icon, emerald accents)
+
+- **Role-Specific Header Themes**: Matching header styling for visual consistency
+  - Admin: Dark header (bg-slate-800) with light text
+  - Teacher: Blue gradient header with blue accents
+  - Parent: Amber gradient header with warm accents
+  - Student: Emerald gradient header with fresh accents
+
+- **Background Patterns**: Subtle SVG patterns for visual differentiation
+  - Admin: Grid pattern (command center aesthetic)
+  - Student: Dots pattern (playful lab aesthetic)
+  - CSS utility classes: `.dashboard-pattern`, `.dashboard-bg`
+
 ### Changed
+
+#### UI Components - Theme-Aware Updates
+- **Card**: Uses `rounded-theme` and `shadow-theme` (radius/shadow now vary by role)
+- **Card**: New `roleAccent` prop adds role-colored right border
+- **Button**: Uses `duration-theme` and `ease-theme` (animation timing varies by role)
+- **Dashboard Page**: Uses `roleStyles.gridCols` and `gap-theme` for role-specific layouts
+- **Dashboard Page**: Role-specific header sizes (compact for admin, large for student)
+- **Dashboard Page**: Refactored to use WelcomeHeader component
+- **Sidebar**: Complete visual overhaul with role-specific themes, icons, colors, and backgrounds
+- **Header**: Complete visual overhaul with role-specific themes matching sidebar
 
 #### URL Routing - Complete Restructure to Nested Role-Based Routes
 - **Breaking:** All dashboard routes now include role prefix (`/admin/...`, `/teacher/...`, `/parent/...`, `/student/...`)

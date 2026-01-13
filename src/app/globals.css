@@ -29,6 +29,55 @@
     --color-role-teacher: #0284C7;
     --color-role-parent: #F59E0B;
     --color-role-student: #10B981;
+
+    /* ===== ROLE THEME SYSTEM ===== */
+    /* Theme defaults (teacher as base) */
+    --theme-card-radius: 8px;
+    --theme-card-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    --theme-animation-duration: 300ms;
+    --theme-animation-easing: ease-out;
+    --theme-content-max-width: 1200px;
+    --theme-card-gap: 1.5rem;
+  }
+
+  /* Admin theme - Command Center: sharp, snappy, dense */
+  .theme-admin {
+    --theme-card-radius: 4px;
+    --theme-card-shadow: 0 1px 2px rgba(99,102,241,0.08);
+    --theme-animation-duration: 150ms;
+    --theme-animation-easing: ease;
+    --theme-content-max-width: 1400px;
+    --theme-card-gap: 1rem;
+  }
+
+  /* Teacher theme - Knowledge Garden: balanced, smooth, comfortable */
+  .theme-teacher {
+    --theme-card-radius: 8px;
+    --theme-card-shadow: 0 2px 8px rgba(2,132,199,0.08);
+    --theme-animation-duration: 300ms;
+    --theme-animation-easing: ease-out;
+    --theme-content-max-width: 1200px;
+    --theme-card-gap: 1.5rem;
+  }
+
+  /* Parent theme - Family Dashboard: soft, gentle, spacious */
+  .theme-parent {
+    --theme-card-radius: 16px;
+    --theme-card-shadow: 0 4px 12px rgba(245,158,11,0.1);
+    --theme-animation-duration: 400ms;
+    --theme-animation-easing: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --theme-content-max-width: 1000px;
+    --theme-card-gap: 2rem;
+  }
+
+  /* Student theme - Explorer's Lab: playful, bouncy, engaging */
+  .theme-student {
+    --theme-card-radius: 16px;
+    --theme-card-shadow: 0 6px 20px rgba(16,185,129,0.12);
+    --theme-animation-duration: 400ms;
+    --theme-animation-easing: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --theme-content-max-width: 1100px;
+    --theme-card-gap: 1.5rem;
   }
 }
 
@@ -69,4 +118,36 @@
   .stagger-4 { animation-delay: 200ms; }
   .stagger-5 { animation-delay: 250ms; }
   .stagger-6 { animation-delay: 300ms; }
+
+  /* ===== ROLE BACKGROUND PATTERNS ===== */
+  /* Apply to dashboard content areas for subtle visual differentiation */
+
+  .theme-admin .dashboard-pattern {
+    background-image: url('/patterns/grid.svg');
+    background-size: 40px 40px;
+    background-position: center;
+  }
+
+  .theme-student .dashboard-pattern {
+    background-image: url('/patterns/dots.svg');
+    background-size: 20px 20px;
+    background-position: center;
+  }
+
+  /* Subtle tinted backgrounds per role */
+  .theme-admin .dashboard-bg {
+    background-color: rgba(99, 102, 241, 0.02);
+  }
+
+  .theme-teacher .dashboard-bg {
+    background-color: rgba(2, 132, 199, 0.02);
+  }
+
+  .theme-parent .dashboard-bg {
+    background-color: rgba(245, 158, 11, 0.02);
+  }
+
+  .theme-student .dashboard-bg {
+    background-color: rgba(16, 185, 129, 0.02);
+  }
 }

@@ -57,17 +57,46 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// Role style configuration type
+interface RoleStyleConfig {
+  // Color classes
+  accent: string;
+  bg: string;
+  bgLight: string;
+  text: string;
+  border: string;
+  // Theme-aware classes (use CSS variables)
+  cardClass: string;
+  animationClass: string;
+  // Semantic tokens
+  headerStyle: "dense" | "balanced" | "warm" | "playful";
+  iconStyle: "sharp" | "outlined" | "soft" | "filled";
+  // Layout hints
+  gridCols: string;
+  contentWidth: string;
+}
+
 // Utility hook for role-specific styling
-export function useRoleStyles() {
+export function useRoleStyles(): RoleStyleConfig {
   const { role } = useTheme();
 
-  const colors = {
+  const styles: Record<UserRole, RoleStyleConfig> = {
     admin: {
+      // Colors
       accent: "role-admin",
       bg: "bg-role-admin",
       bgLight: "bg-role-admin/10",
       text: "text-role-admin",
       border: "border-role-admin",
+      // Theme-aware (uses CSS variables that change per theme)
+      cardClass: "rounded-theme shadow-theme",
+      animationClass: "duration-theme ease-theme",
+      // Semantic
+      headerStyle: "dense",
+      iconStyle: "sharp",
+      // Layout
+      gridCols: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4",
+      contentWidth: "max-w-theme",
     },
     teacher: {
       accent: "role-teacher",
@@ -75,6 +104,12 @@ export function useRoleStyles() {
       bgLight: "bg-role-teacher/10",
       text: "text-role-teacher",
       border: "border-role-teacher",
+      cardClass: "rounded-theme shadow-theme",
+      animationClass: "duration-theme ease-theme",
+      headerStyle: "balanced",
+      iconStyle: "outlined",
+      gridCols: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
+      contentWidth: "max-w-theme",
     },
     parent: {
       accent: "role-parent",
@@ -82,6 +117,12 @@ export function useRoleStyles() {
       bgLight: "bg-role-parent/10",
       text: "text-role-parent",
       border: "border-role-parent",
+      cardClass: "rounded-theme shadow-theme",
+      animationClass: "duration-theme ease-theme",
+      headerStyle: "warm",
+      iconStyle: "soft",
+      gridCols: "grid-cols-1 sm:grid-cols-2",
+      contentWidth: "max-w-theme",
     },
     student: {
       accent: "role-student",
@@ -89,10 +130,16 @@ export function useRoleStyles() {
       bgLight: "bg-role-student/10",
       text: "text-role-student",
       border: "border-role-student",
+      cardClass: "rounded-theme shadow-theme",
+      animationClass: "duration-theme ease-theme",
+      headerStyle: "playful",
+      iconStyle: "filled",
+      gridCols: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
+      contentWidth: "max-w-theme",
     },
   };
 
-  return role ? colors[role] : colors.teacher; // Default to teacher colors
+  return role ? styles[role] : styles.teacher;
 }
 
 // Check if current user is a student (for special animations/effects)

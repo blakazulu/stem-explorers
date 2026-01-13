@@ -1,14 +1,18 @@
 import { HTMLAttributes, forwardRef } from "react";
+import { useRoleStyles } from "@/contexts/ThemeContext";
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
   variant?: "default" | "elevated" | "outlined";
   interactive?: boolean;
   padding?: "none" | "sm" | "md" | "lg";
+  /** Adds a role-colored left border accent */
+  roleAccent?: boolean;
 }
 
+// Theme-aware variant styles using CSS variables
 const variantStyles = {
-  default: "bg-surface-0 shadow-sm",
-  elevated: "bg-surface-0 shadow-md hover:shadow-lg",
+  default: "bg-surface-0 shadow-theme",
+  elevated: "bg-surface-0 shadow-theme hover:shadow-lg",
   outlined: "bg-surface-0 border-2 border-surface-3",
 };
 
@@ -26,20 +30,29 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       variant = "default",
       interactive = false,
       padding = "md",
+      roleAccent = false,
       children,
       ...props
     },
     ref
   ) => {
-    const baseStyles = "rounded-xl transition-all duration-200";
+    const roleStyles = useRoleStyles();
+
+    // Theme-aware base styles - radius and timing come from CSS variables
+    const baseStyles = "rounded-theme transition-all duration-theme ease-theme";
     const interactiveStyles = interactive
       ? "cursor-pointer hover:shadow-md active:scale-[0.99]"
+      : "";
+
+    // Role accent adds a colored left border
+    const accentStyles = roleAccent
+      ? `border-r-4 ${roleStyles.border}`
       : "";
 
     return (
       <div
         ref={ref}
-        className={`${baseStyles} ${variantStyles[variant]} ${paddingStyles[padding]} ${interactiveStyles} ${className}`}
+        className={`${baseStyles} ${variantStyles[variant]} ${paddingStyles[padding]} ${interactiveStyles} ${accentStyles} ${className}`}
         {...props}
       >
         {children}
