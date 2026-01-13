@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Document Upload for Units
+- **New `uploadDocument` utility**: Uploads PDF and Word files (.pdf, .doc, .docx) to Firebase Storage
+  - Preserves original file extension
+  - Validates file type before upload
+- **Work Plans page**: Updated file upload to accept only PDF and Word documents (removed image support)
+- **Work Plans page**: Added download links for all users; only admins can create/edit/delete units
+- **Firebase Storage rules**: Added `storage.rules` with path-based permissions for units, documentation, and journals
+
 #### Pedagogical UX Improvement
 - **UnitTree Component**: Added "הוסף יחידה" (Add Unit) button to empty state when no units exist for a grade
   - Button only visible to teachers and admins
@@ -116,6 +124,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - AuthContext login return type now includes `role` property for redirect
 - GradeSelector prop validation (added required `selected` prop)
+- **Unit display order**: Now starts at 1 instead of 0, defaults to next available number when adding new units, and prevents values outside valid range (1 to total units)
 
 ## [0.1.0] - 2026-01-13
 

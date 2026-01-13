@@ -10,7 +10,7 @@ import {
   updateUnit,
   deleteUnit,
 } from "@/lib/services/units";
-import { uploadImage } from "@/lib/utils/imageUpload";
+import { uploadDocument } from "@/lib/utils/fileUpload";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
@@ -23,7 +23,7 @@ import {
   Upload,
   BookOpen,
   File,
-  ExternalLink,
+  Download,
   Edit2,
   Trash2,
   X,
@@ -55,13 +55,12 @@ export default function WorkPlansGradePage() {
 
   // Form state
   const [name, setName] = useState("");
-  const [order, setOrder] = useState(0);
+  const [order, setOrder] = useState(1);
   const [introFile, setIntroFile] = useState<File | null>(null);
   const [unitFile, setUnitFile] = useState<File | null>(null);
 
   const isAdmin = session?.user.role === "admin";
-  const isTeacher = session?.user.role === "teacher";
-  const canManage = isAdmin || isTeacher;
+  const canManage = isAdmin; // Only admins can create/edit/delete units
 
   // Validate grade
   useEffect(() => {
@@ -84,20 +83,25 @@ export default function WorkPlansGradePage() {
   }, [grade]);
 
   useEffect(() => {
-    if (!canManage) {
-      router.push(`/${role}`);
-      return;
-    }
     loadUnits();
-  }, [canManage, router, loadUnits, role]);
+  }, [loadUnits]);
 
   function resetForm() {
     setName("");
-    setOrder(units.length);
+    setOrder(units.length + 1);
     setIntroFile(null);
     setUnitFile(null);
     setEditingUnit(null);
     setShowForm(false);
+  }
+
+  function openNewUnitForm() {
+    setEditingUnit(null);
+    setName("");
+    setOrder(units.length + 1);
+    setIntroFile(null);
+    setUnitFile(null);
+    setShowForm(true);
   }
 
   function handleEdit(unit: Unit) {
@@ -117,13 +121,11 @@ export default function WorkPlansGradePage() {
       let unitFileUrl = editingUnit?.unitFileUrl || "";
 
       if (introFile) {
-        const path = `units/${grade}/intro_${Date.now()}.webp`;
-        introFileUrl = await uploadImage(introFile, path);
+        introFileUrl = await uploadDocument(introFile, `units/${grade}/intro`);
       }
 
       if (unitFile) {
-        const path = `units/${grade}/unit_${Date.now()}.webp`;
-        unitFileUrl = await uploadImage(unitFile, path);
+        unitFileUrl = await uploadDocument(unitFile, `units/${grade}/unit`);
       }
 
       if (editingUnit) {
@@ -164,7 +166,7 @@ export default function WorkPlansGradePage() {
     }
   }
 
-  if (!canManage || !VALID_GRADES.includes(grade)) {
+  if (!VALID_GRADES.includes(grade)) {
     return null;
   }
 
@@ -187,11 +189,13 @@ export default function WorkPlansGradePage() {
             <h1 className="text-xl md:text-2xl font-rubik font-bold text-foreground">
               תוכניות עבודה - כיתה {grade}
             </h1>
-            <p className="text-sm text-gray-500">ניהול יחידות לימוד</p>
+            <p className="text-sm text-gray-500">
+              {canManage ? "ניהול יחידות לימוד" : "צפייה והורדת יחידות לימוד"}
+            </p>
           </div>
         </div>
-        {!showForm && (
-          <Button onClick={() => setShowForm(true)} rightIcon={Plus}>
+        {canManage && !showForm && (
+          <Button onClick={openNewUnitForm} rightIcon={Plus}>
             יחידה חדשה
           </Button>
         )}
@@ -220,8 +224,8 @@ export default function WorkPlansGradePage() {
         </div>
       )}
 
-      {/* Unit Form */}
-      {showForm && (
+      {/* Unit Form - Admin only */}
+      {canManage && showForm && (
         <Card padding="none" className="overflow-hidden animate-slide-up">
           {/* Form Header */}
           <div className="bg-gradient-to-l from-role-teacher/10 to-primary/10 px-4 md:px-6 py-4 border-b border-surface-2">
@@ -264,7 +268,13 @@ export default function WorkPlansGradePage() {
               <Input
                 type="number"
                 value={order}
-                onChange={(e) => setOrder(parseInt(e.target.value) || 0)}
+                onChange={(e) => {
+                  const maxOrder = editingUnit ? units.length : units.length + 1;
+                  const val = parseInt(e.target.value) || 1;
+                  setOrder(Math.min(maxOrder, Math.max(1, val)));
+                }}
+                min={1}
+                max={editingUnit ? units.length : units.length + 1}
                 className="w-24"
               />
             </div>
@@ -284,7 +294,7 @@ export default function WorkPlansGradePage() {
               <div className="relative">
                 <input
                   type="file"
-                  accept="image/*,.pdf"
+                  accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                   onChange={(e) => setIntroFile(e.target.files?.[0] || null)}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 />
@@ -296,7 +306,7 @@ export default function WorkPlansGradePage() {
                     <p className="text-sm font-medium text-foreground">
                       {introFile ? introFile.name : "גרור קובץ או לחץ לבחירה"}
                     </p>
-                    <p className="text-xs text-gray-500">תמונה או PDF</p>
+                    <p className="text-xs text-gray-500">PDF או Word</p>
                   </div>
                 </div>
               </div>
@@ -317,7 +327,7 @@ export default function WorkPlansGradePage() {
               <div className="relative">
                 <input
                   type="file"
-                  accept="image/*,.pdf"
+                  accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                   onChange={(e) => setUnitFile(e.target.files?.[0] || null)}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 />
@@ -329,7 +339,7 @@ export default function WorkPlansGradePage() {
                     <p className="text-sm font-medium text-foreground">
                       {unitFile ? unitFile.name : "גרור קובץ או לחץ לבחירה"}
                     </p>
-                    <p className="text-xs text-gray-500">תמונה או PDF</p>
+                    <p className="text-xs text-gray-500">PDF או Word</p>
                   </div>
                 </div>
               </div>
@@ -360,11 +370,13 @@ export default function WorkPlansGradePage() {
         <EmptyState
           icon="book-open"
           title={`אין יחידות לכיתה ${grade}`}
-          description="צור יחידה חדשה להתחלת העבודה"
+          description={canManage ? "צור יחידה חדשה להתחלת העבודה" : "עדיין לא הועלו יחידות לימוד לכיתה זו"}
           action={
-            <Button onClick={() => setShowForm(true)} rightIcon={Plus}>
-              יחידה חדשה
-            </Button>
+            canManage ? (
+              <Button onClick={openNewUnitForm} rightIcon={Plus}>
+                יחידה חדשה
+              </Button>
+            ) : undefined
           }
         />
       ) : (
@@ -372,7 +384,7 @@ export default function WorkPlansGradePage() {
           {units.map((unit, index) => (
             <Card
               key={unit.id}
-              interactive
+              interactive={canManage}
               className={`animate-slide-up stagger-${Math.min(index + 1, 6)}`}
             >
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -388,49 +400,47 @@ export default function WorkPlansGradePage() {
                       {unit.name}
                     </h3>
                     <p className="text-sm text-gray-500 mt-1">
-                      כיתה {unit.gradeId} • סדר: {unit.order}
+                      כיתה {unit.gradeId}{canManage && ` • סדר: ${unit.order}`}
                     </p>
 
-                    {/* File Links */}
+                    {/* Download Links */}
                     <div className="flex gap-4 mt-3">
                       {unit.introFileUrl && (
                         <a
                           href={unit.introFileUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          download
                           className="inline-flex items-center gap-1.5 text-sm text-secondary hover:text-secondary/80 transition-colors"
                         >
                           <BookOpen size={14} />
                           קובץ מבוא
-                          <ExternalLink size={12} />
+                          <Download size={12} />
                         </a>
                       )}
                       {unit.unitFileUrl && (
                         <a
                           href={unit.unitFileUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          download
                           className="inline-flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 transition-colors"
                         >
                           <File size={14} />
                           קובץ יחידה
-                          <ExternalLink size={12} />
+                          <Download size={12} />
                         </a>
                       )}
                     </div>
                   </div>
                 </div>
 
-                {/* Actions */}
-                <div className="flex gap-2 shrink-0">
-                  <button
-                    onClick={() => handleEdit(unit)}
-                    className="p-2 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all duration-200 cursor-pointer"
-                    title="ערוך"
-                  >
-                    <Edit2 size={18} />
-                  </button>
-                  {isAdmin && (
+                {/* Actions - Admin only */}
+                {canManage && (
+                  <div className="flex gap-2 shrink-0">
+                    <button
+                      onClick={() => handleEdit(unit)}
+                      className="p-2 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all duration-200 cursor-pointer"
+                      title="ערוך"
+                    >
+                      <Edit2 size={18} />
+                    </button>
                     <button
                       onClick={() => setDeleteId(unit.id)}
                       className="p-2 text-gray-400 hover:text-error hover:bg-error/10 rounded-lg transition-all duration-200 cursor-pointer"
@@ -438,8 +448,8 @@ export default function WorkPlansGradePage() {
                     >
                       <Trash2 size={18} />
                     </button>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </Card>
           ))}
