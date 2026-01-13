@@ -1,5 +1,5 @@
-import { Star, Check, Circle, CircleDot, Square, CheckSquare, PenLine } from "lucide-react";
-import type { Question } from "@/types";
+import { Star, Heart, ThumbsUp, ThumbsDown, Check, Circle, CircleDot, Square, CheckSquare, PenLine } from "lucide-react";
+import type { Question, RatingStyle } from "@/types";
 
 interface QuestionRendererProps {
   question: Question;
@@ -7,7 +7,20 @@ interface QuestionRendererProps {
   onChange: (value: string | number | string[]) => void;
 }
 
+// Emoji sequence for rating (1=sad, 5=happy)
+const ratingEmojis = ["😢", "😕", "😐", "🙂", "😊"];
+
+// Labels for different rating styles
+const ratingLabels: Record<RatingStyle, { low: string; high: string }> = {
+  stars: { low: "לא טוב", high: "מצוין!" },
+  hearts: { low: "פחות", high: "הרבה!" },
+  emojis: { low: "עצוב", high: "שמח!" },
+  thumbs: { low: "לא מסכים", high: "מסכים מאוד!" },
+};
+
 export function QuestionRenderer({ question, value, onChange }: QuestionRendererProps) {
+  const style: RatingStyle = question.ratingStyle || "stars";
+
   switch (question.type) {
     case "rating":
       return (
@@ -19,39 +32,115 @@ export function QuestionRenderer({ question, value, onChange }: QuestionRenderer
             {[1, 2, 3, 4, 5].map((n) => {
               const isSelected = typeof value === "number" && value >= n;
               const isExact = value === n;
+
+              // Render based on style
+              let content: React.ReactNode;
+              let selectedBg: string;
+              let selectedColor: string;
+              let hoverColor: string;
+
+              switch (style) {
+                case "hearts":
+                  selectedBg = "bg-error/20";
+                  selectedColor = "fill-error text-error";
+                  hoverColor = "text-error/50";
+                  content = (
+                    <Heart
+                      size={32}
+                      className={`transition-all duration-200 ${
+                        isSelected ? selectedColor : `text-gray-300 group-hover:${hoverColor}`
+                      }`}
+                    />
+                  );
+                  break;
+
+                case "emojis":
+                  selectedBg = "bg-accent/20";
+                  content = (
+                    <span
+                      className={`text-3xl transition-all duration-200 ${
+                        isExact ? "scale-110" : isSelected ? "" : "grayscale opacity-50 group-hover:opacity-75"
+                      }`}
+                    >
+                      {ratingEmojis[n - 1]}
+                    </span>
+                  );
+                  break;
+
+                case "thumbs": {
+                  // Gradient from red (thumbs down) to green (thumbs up)
+                  const thumbColors = [
+                    "text-error", // 1 - red
+                    "text-orange-500", // 2 - orange
+                    "text-yellow-500", // 3 - yellow
+                    "text-lime-500", // 4 - lime
+                    "text-success", // 5 - green
+                  ];
+                  const bgColors = [
+                    "bg-error/20",
+                    "bg-orange-500/20",
+                    "bg-yellow-500/20",
+                    "bg-lime-500/20",
+                    "bg-success/20",
+                  ];
+                  selectedBg = bgColors[n - 1];
+                  const ThumbIcon = n <= 2 ? ThumbsDown : ThumbsUp;
+                  const thumbRotation = n === 3 ? "rotate-90" : "";
+                  content = (
+                    <ThumbIcon
+                      size={32}
+                      className={`transition-all duration-200 ${thumbRotation} ${
+                        isSelected
+                          ? `${thumbColors[n - 1]} fill-current`
+                          : "text-gray-300 group-hover:text-gray-400"
+                      }`}
+                    />
+                  );
+                  break;
+                }
+
+                case "stars":
+                default:
+                  selectedBg = "bg-accent/20";
+                  selectedColor = "fill-accent text-accent";
+                  hoverColor = "text-accent/50";
+                  content = (
+                    <Star
+                      size={32}
+                      className={`transition-all duration-200 ${
+                        isSelected ? selectedColor : `text-gray-300 group-hover:${hoverColor}`
+                      }`}
+                    />
+                  );
+                  break;
+              }
+
               return (
                 <button
                   key={n}
                   type="button"
                   onClick={() => onChange(n)}
                   className={`group relative p-2 md:p-3 rounded-xl transition-all duration-200 cursor-pointer ${
-                    isExact
-                      ? "bg-accent/20 scale-110"
-                      : "hover:bg-surface-2"
+                    isExact ? `${selectedBg} scale-110` : "hover:bg-surface-2"
                   }`}
                 >
-                  <Star
-                    size={32}
-                    className={`transition-all duration-200 ${
-                      isSelected
-                        ? "fill-accent text-accent"
-                        : "text-gray-300 group-hover:text-accent/50"
-                    }`}
-                  />
-                  <span
-                    className={`absolute -bottom-1 left-1/2 -translate-x-1/2 text-xs font-medium transition-opacity ${
-                      isExact ? "opacity-100 text-accent" : "opacity-0"
-                    }`}
-                  >
-                    {n}
-                  </span>
+                  {content}
+                  {style !== "emojis" && (
+                    <span
+                      className={`absolute -bottom-1 left-1/2 -translate-x-1/2 text-xs font-medium transition-opacity ${
+                        isExact ? "opacity-100 text-foreground" : "opacity-0"
+                      }`}
+                    >
+                      {n}
+                    </span>
+                  )}
                 </button>
               );
             })}
           </div>
           <div className="flex justify-between text-xs text-gray-400 px-2">
-            <span>לא טוב</span>
-            <span>מצוין!</span>
+            <span>{ratingLabels[style].low}</span>
+            <span>{ratingLabels[style].high}</span>
           </div>
         </div>
       );

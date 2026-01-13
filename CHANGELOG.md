@@ -91,6 +91,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Rating Style Selection for Questions
+- **New `RatingStyle` type**: 4 visual styles for rating questions (stars, hearts, emojis, thumbs)
+- **Admin questionnaire editor**: Rating style selector shown when creating/editing rating questions
+- **Student journal wizard**: Rating questions now display in the selected style
+  - **Stars (כוכבים)**: Classic 5-star rating with amber fill
+  - **Hearts (לבבות)**: 5-heart rating with red fill
+  - **Emojis (אימוג'י)**: 😢😕😐🙂😊 progression for younger students
+  - **Thumbs (אגודלים)**: ThumbsDown→ThumbsUp with color gradient (red→green)
+
 #### Questionnaires Service (`src/lib/services/questionnaires.ts`)
 - `getQuestionnairesByGrade(gradeId)` - List all questionnaires for a grade
 - `getActiveQuestionnaire(gradeId, unitId)` - Get active questionnaire for grade+unit

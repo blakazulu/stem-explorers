@@ -53,11 +53,15 @@ export interface JournalAnswer {
 // Question types for research journal
 export type QuestionType = "rating" | "single" | "multiple" | "open";
 
+// Rating visual styles
+export type RatingStyle = "stars" | "hearts" | "emojis" | "thumbs";
+
 export interface Question {
   id: string;
   type: QuestionType;
   text: string;
   options?: string[];
+  ratingStyle?: RatingStyle; // Only used when type === "rating"
   target: {
     grades: Grade[];
     units: string[];
@@ -71,6 +75,7 @@ export interface EmbeddedQuestion {
   type: QuestionType;
   text: string;
   options?: string[];
+  ratingStyle?: RatingStyle; // Only used when type === "rating"
   order: number;
 }
 

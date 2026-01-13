@@ -34,6 +34,7 @@ export async function getQuestionsForUnit(
         type: eq.type,
         text: eq.text,
         options: eq.options,
+        ratingStyle: eq.ratingStyle,
         target: { grades: [gradeId], units: [unitId] },
         order: eq.order,
       }));

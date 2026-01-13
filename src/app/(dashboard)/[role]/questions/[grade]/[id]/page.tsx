@@ -27,8 +27,10 @@ import {
   PenLine,
   BookOpen,
   Save,
+  Heart,
+  ThumbsUp,
 } from "lucide-react";
-import type { Questionnaire, EmbeddedQuestion, QuestionType, Unit, Grade, UserRole } from "@/types";
+import type { Questionnaire, EmbeddedQuestion, QuestionType, RatingStyle, Unit, Grade, UserRole } from "@/types";
 
 const VALID_GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
 const MIN_QUESTIONS = 1;
@@ -44,6 +46,19 @@ const questionTypes: {
   { value: "single", label: "בחירה יחידה", icon: CircleDot, color: "text-primary" },
   { value: "multiple", label: "בחירה מרובה", icon: CheckSquare, color: "text-secondary" },
   { value: "open", label: "שאלה פתוחה", icon: PenLine, color: "text-role-student" },
+];
+
+const ratingStyles: {
+  value: RatingStyle;
+  label: string;
+  icon: typeof Star | null;
+  emoji: string | null;
+  color: string;
+}[] = [
+  { value: "stars", label: "כוכבים", icon: Star, emoji: null, color: "text-accent" },
+  { value: "hearts", label: "לבבות", icon: Heart, emoji: null, color: "text-error" },
+  { value: "emojis", label: "אימוג'י", icon: null, emoji: "😊", color: "" },
+  { value: "thumbs", label: "אגודלים", icon: ThumbsUp, emoji: null, color: "text-success" },
 ];
 
 function generateId(): string {
@@ -70,6 +85,7 @@ export default function EditQuestionnairePage() {
   const [questionType, setQuestionType] = useState<QuestionType>("open");
   const [questionText, setQuestionText] = useState("");
   const [questionOptions, setQuestionOptions] = useState<string[]>([]);
+  const [ratingStyle, setRatingStyle] = useState<RatingStyle>("stars");
   const [newOption, setNewOption] = useState("");
   const [deleteQuestionId, setDeleteQuestionId] = useState<string | null>(null);
 
@@ -78,6 +94,7 @@ export default function EditQuestionnairePage() {
   const backUrl = `/${role}/questions/${encodeURIComponent(grade)}`;
 
   const isChoiceType = questionType === "single" || questionType === "multiple";
+  const isRatingType = questionType === "rating";
   const hasEnoughOptions = !isChoiceType || questionOptions.length >= 2;
   const isQuestionFormValid = questionText.trim().length > 0 && hasEnoughOptions;
   const canAddQuestion = questionnaire && questionnaire.questions.length < MAX_QUESTIONS;
@@ -124,6 +141,7 @@ export default function EditQuestionnairePage() {
     setQuestionType("open");
     setQuestionText("");
     setQuestionOptions([]);
+    setRatingStyle("stars");
     setNewOption("");
   }
 
@@ -132,6 +150,7 @@ export default function EditQuestionnairePage() {
     setQuestionType(q.type);
     setQuestionText(q.text);
     setQuestionOptions(q.options || []);
+    setRatingStyle(q.ratingStyle || "stars");
     setShowQuestionForm(true);
   }
 
@@ -168,6 +187,12 @@ export default function EditQuestionnairePage() {
           } else {
             delete updated.options;
           }
+          // Only include ratingStyle for rating type
+          if (isRatingType) {
+            updated.ratingStyle = ratingStyle;
+          } else {
+            delete updated.ratingStyle;
+          }
           return updated;
         });
       } else {
@@ -181,6 +206,10 @@ export default function EditQuestionnairePage() {
         // Only include options for choice types (Firebase doesn't support undefined)
         if (isChoiceType) {
           newQuestion.options = questionOptions;
+        }
+        // Only include ratingStyle for rating type
+        if (isRatingType) {
+          newQuestion.ratingStyle = ratingStyle;
         }
         updatedQuestions = [...questionnaire.questions, newQuestion];
       }
@@ -384,6 +413,46 @@ export default function EditQuestionnairePage() {
               />
             </div>
 
+            {/* Rating Style selector */}
+            {isRatingType && (
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-medium text-foreground">
+                  <Star size={14} className="text-accent" />
+                  סגנון דירוג
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  {ratingStyles.map((style) => {
+                    const isSelected = ratingStyle === style.value;
+                    return (
+                      <button
+                        key={style.value}
+                        type="button"
+                        onClick={() => setRatingStyle(style.value)}
+                        disabled={saving}
+                        className={`p-3 rounded-lg border-2 text-center transition-all duration-200 cursor-pointer ${
+                          isSelected
+                            ? "border-primary bg-primary/5"
+                            : "border-surface-3 hover:border-primary/50"
+                        }`}
+                      >
+                        {style.icon ? (
+                          <style.icon
+                            size={20}
+                            className={`mx-auto mb-1 ${isSelected ? style.color : "text-gray-400"}`}
+                          />
+                        ) : (
+                          <span className="text-xl block mb-1">{style.emoji}</span>
+                        )}
+                        <span className={`text-xs ${isSelected ? "text-foreground" : "text-gray-500"}`}>
+                          {style.label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Options for choice types */}
             {isChoiceType && (
               <div className="space-y-2">
@@ -458,6 +527,7 @@ export default function EditQuestionnairePage() {
               .map((q, index) => {
                 const typeConfig = questionTypes.find((t) => t.value === q.type);
                 const TypeIcon = typeConfig?.icon || PenLine;
+                const styleConfig = q.type === "rating" ? ratingStyles.find((s) => s.value === (q.ratingStyle || "stars")) : null;
                 return (
                   <div
                     key={q.id}
@@ -470,6 +540,11 @@ export default function EditQuestionnairePage() {
                       <div className="flex items-center gap-2 mb-1">
                         <TypeIcon size={16} className={typeConfig?.color} />
                         <span className="text-xs text-gray-500">{typeConfig?.label}</span>
+                        {styleConfig && (
+                          <span className="text-xs text-gray-400">
+                            ({styleConfig.emoji || styleConfig.label})
+                          </span>
+                        )}
                       </div>
                       <p className="text-foreground">{q.text}</p>
                       {q.options && q.options.length > 0 && (
