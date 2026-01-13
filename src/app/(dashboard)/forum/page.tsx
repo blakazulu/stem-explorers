@@ -13,6 +13,9 @@ import {
   Plus,
   HelpCircle,
   Users,
+  AlertCircle,
+  RefreshCw,
+  X,
 } from "lucide-react";
 import type { ForumPost, ForumRoom } from "@/types";
 
@@ -27,13 +30,19 @@ export default function ForumPage() {
   const [posts, setPosts] = useState<ForumPost[]>([]);
   const [showNewPost, setShowNewPost] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const isAdmin = session?.user.role === "admin";
 
   const loadPosts = useCallback(async () => {
     setLoading(true);
-    const data = await getPostsByRoom(selectedRoom);
-    setPosts(data);
+    setError(null);
+    try {
+      const data = await getPostsByRoom(selectedRoom);
+      setPosts(data);
+    } catch {
+      setError("שגיאה בטעינת הפוסטים");
+    }
     setLoading(false);
   }, [selectedRoom]);
 
@@ -43,8 +52,12 @@ export default function ForumPage() {
 
   async function handleDelete(id: string) {
     if (!confirm("האם למחוק פוסט זה?")) return;
-    await deletePost(id);
-    await loadPosts();
+    try {
+      await deletePost(id);
+      await loadPosts();
+    } catch {
+      setError("שגיאה במחיקת הפוסט");
+    }
   }
 
   const currentRoom = rooms.find((r) => r.id === selectedRoom);
@@ -72,6 +85,29 @@ export default function ForumPage() {
           </Button>
         )}
       </div>
+
+      {/* Error Alert */}
+      {error && (
+        <div className="flex items-center gap-3 bg-error/10 text-error p-4 rounded-xl animate-slide-up">
+          <AlertCircle size={20} />
+          <span className="text-sm font-medium flex-1">{error}</span>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={loadPosts}
+            rightIcon={RefreshCw}
+            className="text-error hover:bg-error/20"
+          >
+            נסה שוב
+          </Button>
+          <button
+            onClick={() => setError(null)}
+            className="p-1 hover:bg-error/20 rounded-lg transition-colors cursor-pointer"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
 
       {/* Room Tabs */}
       <div className="flex gap-2 p-1 bg-surface-1 rounded-xl">
@@ -116,7 +152,7 @@ export default function ForumPage() {
       {/* Posts List */}
       {loading ? (
         <SkeletonList count={3} />
-      ) : posts.length === 0 ? (
+      ) : posts.length === 0 && !error ? (
         <EmptyState
           icon="message-square"
           title={`אין פוסטים ב${currentRoom?.label || "חדר זה"}`}

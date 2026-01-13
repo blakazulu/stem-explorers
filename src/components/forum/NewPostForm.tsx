@@ -5,7 +5,7 @@ import { createPost } from "@/lib/services/forum";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
-import { PenLine, Send, X } from "lucide-react";
+import { PenLine, Send, X, AlertCircle } from "lucide-react";
 import type { ForumRoom } from "@/types";
 
 interface NewPostFormProps {
@@ -19,20 +19,26 @@ export function NewPostForm({ room, authorName, onCreated, onCancel }: NewPostFo
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim() || !content.trim()) return;
 
     setSubmitting(true);
-    await createPost({
-      room,
-      authorName,
-      title,
-      content,
-    });
+    setError(null);
+    try {
+      await createPost({
+        room,
+        authorName,
+        title,
+        content,
+      });
+      onCreated();
+    } catch {
+      setError("שגיאה בפרסום הפוסט");
+    }
     setSubmitting(false);
-    onCreated();
   }
 
   return (
@@ -54,6 +60,21 @@ export function NewPostForm({ room, authorName, onCreated, onCancel }: NewPostFo
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-4">
+        {/* Error Alert */}
+        {error && (
+          <div className="flex items-center gap-2 bg-error/10 text-error p-3 rounded-lg text-sm">
+            <AlertCircle size={16} />
+            <span className="flex-1">{error}</span>
+            <button
+              type="button"
+              onClick={() => setError(null)}
+              className="p-1 hover:bg-error/20 rounded transition-colors cursor-pointer"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        )}
+
         <Input
           label="כותרת"
           value={title}

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { addReply } from "@/lib/services/forum";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { Trash2, MessageCircle, Calendar, Send } from "lucide-react";
+import { Trash2, MessageCircle, Calendar, Send, AlertCircle, X } from "lucide-react";
 import type { ForumPost } from "@/types";
 
 interface PostCardProps {
@@ -45,20 +45,26 @@ export function PostCard({
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyContent, setReplyContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const canDelete = isAdmin || post.authorName === currentUserName;
 
   async function handleReply() {
     if (!replyContent.trim()) return;
     setSubmitting(true);
-    await addReply(post.id, {
-      authorName: currentUserName,
-      content: replyContent,
-    });
-    setReplyContent("");
-    setShowReplyForm(false);
+    setError(null);
+    try {
+      await addReply(post.id, {
+        authorName: currentUserName,
+        content: replyContent,
+      });
+      setReplyContent("");
+      setShowReplyForm(false);
+      onReplyAdded();
+    } catch {
+      setError("שגיאה בשליחת התגובה");
+    }
     setSubmitting(false);
-    onReplyAdded();
   }
 
   return (
@@ -140,6 +146,18 @@ export function PostCard({
         {/* Reply form */}
         {showReplyForm ? (
           <div className="mt-4 space-y-3 animate-slide-up">
+            {error && (
+              <div className="flex items-center gap-2 bg-error/10 text-error p-3 rounded-lg text-sm">
+                <AlertCircle size={16} />
+                <span className="flex-1">{error}</span>
+                <button
+                  onClick={() => setError(null)}
+                  className="p-1 hover:bg-error/20 rounded transition-colors cursor-pointer"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            )}
             <textarea
               value={replyContent}
               onChange={(e) => setReplyContent(e.target.value)}

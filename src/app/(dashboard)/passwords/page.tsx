@@ -129,7 +129,7 @@ function CollapsibleSection({
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {users.map((user, index) => (
                 <div
-                  key={user.password}
+                  key={`${role}-${user.password}-${index}`}
                   className={`bg-surface-1 rounded-xl p-4 transition-all duration-200 hover:bg-surface-2 hover:shadow-sm animate-slide-up`}
                   style={{ animationDelay: `${index * 50}ms` }}
                 >

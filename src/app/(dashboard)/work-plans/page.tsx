@@ -29,6 +29,8 @@ import {
   X,
   Hash,
   CheckCircle,
+  AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 import type { Unit, Grade } from "@/types";
 
@@ -42,6 +44,7 @@ export default function WorkPlansPage() {
   const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Form state
   const [name, setName] = useState("");
@@ -55,8 +58,13 @@ export default function WorkPlansPage() {
 
   const loadUnits = useCallback(async () => {
     setLoading(true);
-    const data = await getUnitsByGrade(selectedGrade);
-    setUnits(data);
+    setError(null);
+    try {
+      const data = await getUnitsByGrade(selectedGrade);
+      setUnits(data);
+    } catch {
+      setError("שגיאה בטעינת יחידות הלימוד");
+    }
     setLoading(false);
   }, [selectedGrade]);
 
@@ -87,6 +95,7 @@ export default function WorkPlansPage() {
   async function handleSubmit() {
     if (!name.trim()) return;
     setSaving(true);
+    setError(null);
 
     try {
       let introFileUrl = editingUnit?.introFileUrl || "";
@@ -121,8 +130,8 @@ export default function WorkPlansPage() {
 
       resetForm();
       await loadUnits();
-    } catch (error) {
-      console.error("Error saving unit:", error);
+    } catch {
+      setError("שגיאה בשמירת היחידה");
     } finally {
       setSaving(false);
     }
@@ -130,9 +139,14 @@ export default function WorkPlansPage() {
 
   async function handleDelete() {
     if (!deleteId) return;
-    await deleteUnit(deleteId);
-    setDeleteId(null);
-    await loadUnits();
+    try {
+      await deleteUnit(deleteId);
+      setDeleteId(null);
+      await loadUnits();
+    } catch {
+      setError("שגיאה במחיקת היחידה");
+      setDeleteId(null);
+    }
   }
 
   if (!canManage) {
@@ -160,6 +174,29 @@ export default function WorkPlansPage() {
           </Button>
         )}
       </div>
+
+      {/* Error Alert */}
+      {error && (
+        <div className="flex items-center gap-3 bg-error/10 text-error p-4 rounded-xl animate-slide-up">
+          <AlertCircle size={20} />
+          <span className="text-sm font-medium flex-1">{error}</span>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={loadUnits}
+            rightIcon={RefreshCw}
+            className="text-error hover:bg-error/20"
+          >
+            נסה שוב
+          </Button>
+          <button
+            onClick={() => setError(null)}
+            className="p-1 hover:bg-error/20 rounded-lg transition-colors cursor-pointer"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
 
       {/* Grade Selector */}
       <Card>

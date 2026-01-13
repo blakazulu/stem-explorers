@@ -8,6 +8,19 @@ import { DocumentationGallery } from "@/components/documentation/DocumentationGa
 import { createDocumentation } from "@/lib/services/documentation";
 import { uploadImage } from "@/lib/utils/imageUpload";
 import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { SkeletonGrid } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
+import {
+  Camera,
+  Upload,
+  ArrowRight,
+  AlertCircle,
+  X,
+  BookOpen,
+  Image,
+  FileText,
+} from "lucide-react";
 import type { Grade, Unit } from "@/types";
 
 export default function DocumentationPage() {
@@ -19,6 +32,7 @@ export default function DocumentationPage() {
   const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -30,6 +44,7 @@ export default function DocumentationPage() {
 
   const loadUnits = useCallback(async () => {
     if (!selectedGrade) return;
+    setLoading(true);
     try {
       setError(null);
       const data = await getUnitsByGrade(selectedGrade);
@@ -37,6 +52,7 @@ export default function DocumentationPage() {
     } catch {
       setError("שגיאה בטעינת יחידות");
     }
+    setLoading(false);
   }, [selectedGrade]);
 
   useEffect(() => {
@@ -85,96 +101,183 @@ export default function DocumentationPage() {
 
   return (
     <div className="space-y-6 max-w-5xl">
-      <h1 className="text-xl md:text-2xl font-rubik font-bold">תיעודים</h1>
+      {/* Page Header */}
+      <div className="flex items-center gap-3">
+        <div className="p-3 bg-secondary/10 rounded-xl">
+          <Camera size={24} className="text-secondary" />
+        </div>
+        <div>
+          <h1 className="text-xl md:text-2xl font-rubik font-bold text-foreground">
+            תיעודים
+          </h1>
+          <p className="text-sm text-gray-500">
+            תיעוד פעילויות ותוצרים מיחידות הלימוד
+          </p>
+        </div>
+      </div>
 
+      {/* Error Alert */}
       {error && (
-        <div className="bg-error/10 text-error p-4 rounded-lg">{error}</div>
+        <div className="flex items-center gap-3 bg-error/10 text-error p-4 rounded-xl animate-slide-up">
+          <AlertCircle size={20} />
+          <span className="text-sm font-medium">{error}</span>
+          <button
+            onClick={() => setError(null)}
+            className="mr-auto p-1 hover:bg-error/20 rounded-lg transition-colors cursor-pointer"
+          >
+            <X size={16} />
+          </button>
+        </div>
       )}
 
+      {/* Grade Selector for Teachers/Admins */}
       {isTeacherOrAdmin && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            בחר שכבה
-          </label>
+        <Card>
           <GradeSelector selected={selectedGrade} onSelect={setSelectedGrade} />
-        </div>
+        </Card>
       )}
 
+      {/* Unit Selection */}
       {selectedGrade && !selectedUnit && (
-        <div>
-          <h2 className="text-lg font-rubik font-semibold mb-4">בחר יחידה</h2>
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            {units.map((unit) => (
-              <button
-                key={unit.id}
-                onClick={() => setSelectedUnit(unit)}
-                className="text-right p-4 bg-white rounded-xl border-2 border-gray-100 hover:border-primary hover:shadow-md transition-all duration-200 cursor-pointer"
-              >
-                <h3 className="font-rubik font-semibold">{unit.name}</h3>
-              </button>
-            ))}
-          </div>
+        <div className="space-y-4">
+          <h2 className="text-lg font-rubik font-semibold text-foreground">בחר יחידה</h2>
+
+          {loading ? (
+            <SkeletonGrid count={6} />
+          ) : units.length === 0 ? (
+            <EmptyState
+              icon="book-open"
+              title={`אין יחידות לכיתה ${selectedGrade}`}
+              description="יש ליצור יחידות לימוד בדף תוכניות עבודה"
+            />
+          ) : (
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+              {units.map((unit, index) => (
+                <Card
+                  key={unit.id}
+                  interactive
+                  onClick={() => setSelectedUnit(unit)}
+                  className={`animate-slide-up`}
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <BookOpen size={20} className="text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-rubik font-semibold text-foreground">{unit.name}</h3>
+                      <p className="text-sm text-gray-500">לחץ לצפייה בתיעודים</p>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
+      {/* Selected Unit View */}
       {selectedUnit && selectedGrade && (
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-rubik font-bold">
-              תיעודים - {selectedUnit.name}
-            </h2>
-            <button
-              onClick={() => setSelectedUnit(null)}
-              className="text-gray-500 hover:text-gray-700 cursor-pointer transition-colors"
-            >
-              חזור לרשימה
-            </button>
-          </div>
-
-          {showAddForm && isTeacherOrAdmin && (
-            <div className="bg-white rounded-xl p-4 md:p-6 shadow-sm mb-6 space-y-4">
-              <h3 className="font-rubik font-semibold">הוסף תיעוד חדש</h3>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  תמונות
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={(e) => setImages(Array.from(e.target.files || []))}
-                  className="w-full"
-                />
-                {images.length > 0 && (
-                  <p className="text-sm text-gray-500 mt-1">
-                    {images.length} תמונות נבחרו
-                  </p>
-                )}
+        <div className="space-y-4 animate-slide-up">
+          {/* Unit Header */}
+          <Card>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <BookOpen size={20} className="text-primary" />
+                </div>
+                <h2 className="text-lg font-rubik font-bold text-foreground">
+                  תיעודים - {selectedUnit.name}
+                </h2>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  תיאור
-                </label>
-                <textarea
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  className="w-full p-3 border rounded-lg"
-                  rows={3}
-                  placeholder="הוסף תיאור לתיעוד..."
-                />
-              </div>
-
-              <div className="flex gap-2">
-                <Button onClick={handleAddDocumentation} disabled={uploading}>
-                  {uploading ? "מעלה..." : "שמור תיעוד"}
-                </Button>
-                <Button variant="outline" onClick={() => setShowAddForm(false)}>
-                  ביטול
-                </Button>
-              </div>
+              <button
+                onClick={() => setSelectedUnit(null)}
+                className="flex items-center gap-2 text-gray-500 hover:text-foreground cursor-pointer transition-colors"
+              >
+                <ArrowRight size={18} />
+                <span className="text-sm">חזור לרשימה</span>
+              </button>
             </div>
+          </Card>
+
+          {/* Add Documentation Form */}
+          {showAddForm && isTeacherOrAdmin && (
+            <Card padding="none" className="overflow-hidden animate-slide-up">
+              {/* Form Header */}
+              <div className="bg-gradient-to-l from-secondary/10 to-primary/10 px-4 md:px-6 py-4 border-b border-surface-2">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-secondary/20 rounded-lg">
+                    <Camera size={20} className="text-secondary" />
+                  </div>
+                  <div>
+                    <h3 className="font-rubik font-semibold text-foreground">הוסף תיעוד חדש</h3>
+                    <p className="text-sm text-gray-500">העלה תמונות ותיאור</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 md:p-6 space-y-4">
+                {/* Images Upload */}
+                <div className="p-4 bg-surface-1 rounded-xl space-y-3">
+                  <label className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    <Image size={16} className="text-secondary" />
+                    תמונות
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={(e) => setImages(Array.from(e.target.files || []))}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                    <div className="flex items-center gap-3 p-4 border-2 border-dashed border-surface-3 rounded-xl hover:border-secondary hover:bg-secondary/5 transition-all duration-200">
+                      <div className="p-2 bg-secondary/10 rounded-lg">
+                        <Upload size={20} className="text-secondary" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-foreground">
+                          {images.length > 0 ? `${images.length} תמונות נבחרו` : "גרור תמונות או לחץ לבחירה"}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          ניתן לבחור מספר תמונות
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Text Description */}
+                <div className="p-4 bg-surface-1 rounded-xl space-y-3">
+                  <label className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    <FileText size={16} className="text-primary" />
+                    תיאור
+                  </label>
+                  <textarea
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                    className="w-full p-3 border border-surface-2 rounded-xl bg-surface-0 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+                    rows={3}
+                    placeholder="הוסף תיאור לתיעוד..."
+                  />
+                </div>
+
+                {/* Form Actions */}
+                <div className="flex items-center justify-between pt-4 border-t border-surface-2">
+                  <Button variant="ghost" onClick={() => setShowAddForm(false)} leftIcon={X}>
+                    ביטול
+                  </Button>
+                  <Button
+                    onClick={handleAddDocumentation}
+                    disabled={uploading}
+                    loading={uploading}
+                    loadingText="מעלה..."
+                  >
+                    שמור תיעוד
+                  </Button>
+                </div>
+              </div>
+            </Card>
           )}
 
           <DocumentationGallery

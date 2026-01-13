@@ -61,11 +61,17 @@ export function JournalWizard({ questions, onSubmit, onCancel }: JournalWizardPr
       const journalAnswers: JournalAnswer[] = Object.entries(answers).map(
         ([questionId, answer]) => ({ questionId, answer })
       );
-      await onSubmit(journalAnswers);
+      try {
+        await onSubmit(journalAnswers);
+        setSubmitted(true);
+        setShowConfetti(true);
+        setTimeout(() => setShowConfetti(false), 4000);
+      } catch (error) {
+        // Re-throw so parent component can handle error display
+        setSubmitting(false);
+        throw error;
+      }
       setSubmitting(false);
-      setSubmitted(true);
-      setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 4000);
     } else {
       // Show encouragement
       setEncouragementText(
