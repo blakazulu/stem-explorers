@@ -53,7 +53,6 @@ const REPORT_ELEMENTS = [
   { id: "patterns", label: "דפוסים ומגמות", defaultTeacher: true, defaultParent: false },
   { id: "challenges", label: "אתגרים וקשיים", defaultTeacher: true, defaultParent: false },
   { id: "suggestions", label: "המלצות להמשך", defaultTeacher: true, defaultParent: true },
-  { id: "perStudent", label: "פירוט לפי תלמיד", defaultTeacher: true, defaultParent: false },
 ] as const;
 
 export default function AdminSettingsPage() {
