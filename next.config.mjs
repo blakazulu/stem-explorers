@@ -6,6 +6,9 @@ const withPWA = withPWAInit({
 });
 
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+  // Use webpack for PWA support (next-pwa requires webpack)
+  turbopack: {},
+};
 
 export default withPWA(nextConfig);

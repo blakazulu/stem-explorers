@@ -51,7 +51,7 @@ export function QuestionRenderer({ question, value, onChange }: QuestionRenderer
         </div>
       );
 
-    case "multiple":
+    case "multiple": {
       const selectedValues = (value as string[]) || [];
       return (
         <div className="space-y-2">
@@ -77,6 +77,7 @@ export function QuestionRenderer({ question, value, onChange }: QuestionRenderer
           </div>
         </div>
       );
+    }
 
     case "open":
       return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getUnitsByGrade } from "@/lib/services/units";
 import { getQuestionsForUnit } from "@/lib/services/questions";
@@ -20,18 +20,17 @@ export default function JournalPage() {
 
   const grade = session?.user.grade as Grade;
 
-  useEffect(() => {
-    if (grade) {
-      loadUnits();
-    }
-  }, [grade]);
-
-  async function loadUnits() {
+  const loadUnits = useCallback(async () => {
+    if (!grade) return;
     setLoading(true);
     const data = await getUnitsByGrade(grade);
     setUnits(data);
     setLoading(false);
-  }
+  }, [grade]);
+
+  useEffect(() => {
+    loadUnits();
+  }, [loadUnits]);
 
   async function handleSelectUnit(unit: Unit) {
     setSelectedUnit(unit);

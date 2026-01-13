@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { GradeSelector } from "@/components/ui/GradeSelector";
 import { getUnitsByGrade } from "@/lib/services/units";
@@ -20,16 +20,15 @@ export default function ReportsPage() {
   const isTeacherOrAdmin = session?.user.role === "teacher" || session?.user.role === "admin";
   const isParent = session?.user.role === "parent";
 
-  useEffect(() => {
-    if (selectedGrade) {
-      loadUnits();
-    }
+  const loadUnits = useCallback(async () => {
+    if (!selectedGrade) return;
+    const data = await getUnitsByGrade(selectedGrade);
+    setUnits(data);
   }, [selectedGrade]);
 
-  async function loadUnits() {
-    const data = await getUnitsByGrade(selectedGrade!);
-    setUnits(data);
-  }
+  useEffect(() => {
+    loadUnits();
+  }, [loadUnits]);
 
   async function loadReport(unit: Unit) {
     setSelectedUnit(unit);

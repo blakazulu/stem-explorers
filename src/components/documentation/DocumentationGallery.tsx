@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getDocumentationByUnit, deleteDocumentation } from "@/lib/services/documentation";
 import { DocumentationCard } from "./DocumentationCard";
 import { useAuth } from "@/contexts/AuthContext";
@@ -24,16 +24,16 @@ export function DocumentationGallery({
   const isAdmin = session?.user.role === "admin";
   const isTeacher = session?.user.role === "teacher";
 
-  useEffect(() => {
-    loadDocs();
-  }, [unitId, gradeId]);
-
-  async function loadDocs() {
+  const loadDocs = useCallback(async () => {
     setLoading(true);
     const data = await getDocumentationByUnit(unitId, gradeId);
     setDocs(data);
     setLoading(false);
-  }
+  }, [unitId, gradeId]);
+
+  useEffect(() => {
+    loadDocs();
+  }, [loadDocs]);
 
   async function handleDelete(doc: Documentation) {
     if (!confirm("האם למחוק תיעוד זה?")) return;
