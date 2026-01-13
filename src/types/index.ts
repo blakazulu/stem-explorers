@@ -47,6 +47,7 @@ export interface ResearchJournal {
 
 export interface JournalAnswer {
   questionId: string;
+  questionText: string;
   answer: string | number | string[];
 }
 

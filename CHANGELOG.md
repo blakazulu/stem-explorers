@@ -222,6 +222,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Old flat routes (`/dashboard`, `/pedagogical`, `/work-plans`, `/documentation`, `/reports`, `/journal`, `/forum`, `/questions`, `/passwords`, `/admin`)
 - State-based grade/unit selection (replaced with URL params)
 
+### Changed
+
+#### Journal Answer Storage
+- **Question text now saved with answers**: Each journal answer now includes `questionText` alongside `questionId` for historical accuracy
+- Ensures reports and data remain accurate even if questions are later edited or deleted
+
 ### Fixed
 - AuthContext login return type now includes `role` property for redirect
 - GradeSelector prop validation (added required `selected` prop)

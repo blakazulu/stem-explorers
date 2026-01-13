@@ -59,7 +59,14 @@ export function JournalWizard({ questions, onSubmit, onCancel }: JournalWizardPr
     if (isLastStep) {
       setSubmitting(true);
       const journalAnswers: JournalAnswer[] = Object.entries(answers).map(
-        ([questionId, answer]) => ({ questionId, answer })
+        ([questionId, answer]) => {
+          const question = questions.find((q) => q.id === questionId);
+          return {
+            questionId,
+            questionText: question?.text || "",
+            answer,
+          };
+        }
       );
       try {
         await onSubmit(journalAnswers);
