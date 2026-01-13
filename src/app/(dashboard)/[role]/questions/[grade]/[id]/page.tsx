@@ -155,25 +155,33 @@ export default function EditQuestionnairePage() {
 
       if (editingQuestionId) {
         // Update existing question
-        updatedQuestions = questionnaire.questions.map((q) =>
-          q.id === editingQuestionId
-            ? {
-                ...q,
-                type: questionType,
-                text: questionText.trim(),
-                options: isChoiceType ? questionOptions : undefined,
-              }
-            : q
-        );
+        updatedQuestions = questionnaire.questions.map((q) => {
+          if (q.id !== editingQuestionId) return q;
+          const updated: EmbeddedQuestion = {
+            ...q,
+            type: questionType,
+            text: questionText.trim(),
+          };
+          // Only include options for choice types (Firebase doesn't support undefined)
+          if (isChoiceType) {
+            updated.options = questionOptions;
+          } else {
+            delete updated.options;
+          }
+          return updated;
+        });
       } else {
         // Add new question
         const newQuestion: EmbeddedQuestion = {
           id: generateId(),
           type: questionType,
           text: questionText.trim(),
-          options: isChoiceType ? questionOptions : undefined,
           order: questionnaire.questions.length + 1,
         };
+        // Only include options for choice types (Firebase doesn't support undefined)
+        if (isChoiceType) {
+          newQuestion.options = questionOptions;
+        }
         updatedQuestions = [...questionnaire.questions, newQuestion];
       }
 

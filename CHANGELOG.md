@@ -217,6 +217,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - AuthContext login return type now includes `role` property for redirect
 - GradeSelector prop validation (added required `selected` prop)
 - **Unit display order**: Now starts at 1 instead of 0, defaults to next available number when adding new units, and prevents values outside valid range (1 to total units)
+- **Questionnaire Firebase errors**: Fixed composite index requirement by sorting questionnaires client-side; Fixed undefined field error by conditionally including options field only for choice question types
 
 ## [0.1.0] - 2026-01-13
 

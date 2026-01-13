@@ -2,7 +2,6 @@ import {
   collection,
   query,
   where,
-  orderBy,
   getDocs,
   doc,
   getDoc,
@@ -24,17 +23,23 @@ export async function getQuestionnairesByGrade(
   try {
     const q = query(
       collection(db, COLLECTION),
-      where("gradeId", "==", grade),
-      orderBy("updatedAt", "desc")
+      where("gradeId", "==", grade)
     );
 
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((d) => ({
+    const results = snapshot.docs.map((d) => ({
       id: d.id,
       ...d.data(),
       createdAt: d.data().createdAt?.toDate(),
       updatedAt: d.data().updatedAt?.toDate(),
     })) as Questionnaire[];
+
+    // Sort client-side to avoid requiring a composite index
+    return results.sort((a, b) => {
+      const aTime = a.updatedAt?.getTime() || 0;
+      const bTime = b.updatedAt?.getTime() || 0;
+      return bTime - aTime;
+    });
   } catch (error) {
     handleFirebaseError(error, "getQuestionnairesByGrade");
   }
