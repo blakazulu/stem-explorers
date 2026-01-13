@@ -91,6 +91,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### Student Responses Viewer
+- **New responses pages**: Teachers and admins can now view student journal responses
+  - `/[role]/responses` - Grade selector (teachers auto-redirect to their grade)
+  - `/[role]/responses/[grade]` - Unit selector
+  - `/[role]/responses/[grade]/[unitId]` - List of student responses with expandable cards
+- **Response cards**: Show student name, date, and number of answers; expand to see full Q&A
+- **Admin delete**: Admins can delete individual responses with confirmation
+- **Sidebar navigation**: Added "תגובות תלמידים" menu item for teachers and admins
+
 #### Rating Style Selection for Questions
 - **New `RatingStyle` type**: 4 visual styles for rating questions (stars, hearts, emojis, thumbs)
 - **Admin questionnaire editor**: Rating style selector shown when creating/editing rating questions

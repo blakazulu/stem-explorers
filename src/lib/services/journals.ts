@@ -3,7 +3,9 @@ import {
   query,
   where,
   getDocs,
+  doc,
   addDoc,
+  deleteDoc,
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -48,5 +50,13 @@ export async function submitJournal(data: {
     return docRef.id;
   } catch (error) {
     handleFirebaseError(error, "submitJournal");
+  }
+}
+
+export async function deleteJournal(id: string): Promise<void> {
+  try {
+    await deleteDoc(doc(db, COLLECTION, id));
+  } catch (error) {
+    handleFirebaseError(error, "deleteJournal");
   }
 }

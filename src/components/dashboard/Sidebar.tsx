@@ -19,6 +19,7 @@ import {
   GraduationCap,
   Heart,
   Rocket,
+  ClipboardCheck,
 } from "lucide-react";
 import type { UserRole } from "@/types";
 import type { LucideIcon } from "lucide-react";
@@ -37,6 +38,7 @@ const navItems: NavItem[] = [
   { label: "תיעודים", href: "/documentation", roles: ["admin", "teacher", "parent", "student"], icon: Image },
   { label: "יומן חוקר", href: "/journal", roles: ["student"], icon: PenTool },
   { label: "דוחות", href: "/reports", roles: ["admin", "teacher", "parent"], icon: BarChart2 },
+  { label: "תגובות תלמידים", href: "/responses", roles: ["admin", "teacher"], icon: ClipboardCheck },
   { label: "פורום", href: "/forum", roles: ["admin", "teacher"], icon: MessageSquare },
   { label: "שאלות", href: "/questions", roles: ["admin"], icon: HelpCircle },
   { label: "סיסמאות", href: "/passwords", roles: ["admin"], icon: Key },
