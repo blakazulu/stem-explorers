@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Code review documentation**: Added comprehensive code review document at `docs/code-review-2026-01-14.md` with findings categorized by severity (Critical, Important, Minor), accepted risks documented with rationale, and recommended fixes with code examples
 - **Version display and app refresh**: Header now shows app version number (from package.json) and includes a refresh button that clears cached HTML, CSS, JS, and service workers with an animated 3-second progress modal
 - **Password visibility toggle**: Login page now has a show/hide password button for better UX
 - **Improved social sharing metadata**: Enhanced Open Graph and Twitter card meta tags with proper image dimensions, locale, and site name
