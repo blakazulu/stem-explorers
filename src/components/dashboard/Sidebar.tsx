@@ -1,9 +1,11 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { Icon } from "@/components/ui/Icon";
+import type { Grade } from "@/types";
 import {
   BookOpen,
   FileText,
@@ -168,10 +170,57 @@ interface SidebarProps {
   onClose?: () => void;
 }
 
+// Sections that support grade in URL
+const GRADE_SECTIONS = [
+  "work-plans",
+  "questions",
+  "documentation",
+  "pedagogical",
+  "reports",
+  "responses",
+];
+
+const VALID_GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
+const STORED_GRADE_KEY = "stem-explorers-selected-grade";
+
+function getStoredGradeFromStorage(): Grade | null {
+  if (typeof window === "undefined") return null;
+  const stored = localStorage.getItem(STORED_GRADE_KEY);
+  if (stored && VALID_GRADES.includes(stored as Grade)) {
+    return stored as Grade;
+  }
+  return null;
+}
+
 export function Sidebar({ onClose }: SidebarProps) {
   const { session } = useAuth();
   const pathname = usePathname();
   const role = session?.user.role;
+  const [storedGrade, setStoredGrade] = useState<Grade | null>(null);
+
+  // Load stored grade and listen for changes
+  useEffect(() => {
+    // Initial load
+    setStoredGrade(getStoredGradeFromStorage());
+
+    // Listen for storage changes (from other components)
+    const handleStorageChange = () => {
+      setStoredGrade(getStoredGradeFromStorage());
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    // Also poll for changes since storage event doesn't fire in same tab
+    const interval = setInterval(() => {
+      const current = getStoredGradeFromStorage();
+      setStoredGrade(prev => prev !== current ? current : prev);
+    }, 100);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      clearInterval(interval);
+    };
+  }, []);
 
   // Get role-specific theme
   const theme = role ? sidebarThemes[role] : defaultTheme;
@@ -187,12 +236,22 @@ export function Sidebar({ onClose }: SidebarProps) {
     ["questions", "passwords", "settings"].includes(item.href.slice(1))
   );
 
-  // Get full href with role prefix
-  const getFullHref = (baseHref: string) => `/${role}${baseHref}`;
+  // Get full href with role prefix, preserving grade for grade-relevant sections
+  const getFullHref = (baseHref: string) => {
+    const section = baseHref.slice(1); // Remove leading /
+    const baseUrl = `/${role}${baseHref}`;
+
+    // If navigating to a grade-relevant section and we have a stored grade, include it
+    if (storedGrade && GRADE_SECTIONS.includes(section)) {
+      return `${baseUrl}/${encodeURIComponent(storedGrade)}`;
+    }
+
+    return baseUrl;
+  };
 
   // Check if path is active (starts with the full href)
   const isPathActive = (baseHref: string) => {
-    const fullHref = getFullHref(baseHref);
+    const fullHref = `/${role}${baseHref}`;
     return pathname === fullHref || pathname.startsWith(fullHref + "/");
   };
 

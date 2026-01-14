@@ -1,7 +1,8 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
-import { Button, IconButton } from "@/components/ui/Button";
+import { HeaderGradeSelector } from "@/components/ui/HeaderGradeSelector";
+import { useGradeNavigation } from "@/hooks/useGradeNavigation";
 import {
   LogOut,
   Menu,
@@ -115,10 +116,14 @@ interface HeaderProps {
 export function Header({ onMenuToggle }: HeaderProps) {
   const { session, logout } = useAuth();
   const role = session?.user.role;
+  const { showGradeSelector, selectedGrade, navigateToGrade } = useGradeNavigation();
 
   // Get role-specific theme
   const theme = role ? headerThemes[role] : defaultTheme;
   const BadgeIcon = theme.badgeIcon;
+
+  // Admin can select any grade; users with assigned grade cannot
+  const canSelectGrade = role === "admin" || (role === "teacher" && !session?.user.grade);
 
   return (
     <header className={`${theme.bg} border-b ${theme.border} px-4 md:px-6 py-3 transition-colors duration-theme`}>
@@ -146,12 +151,23 @@ export function Header({ onMenuToggle }: HeaderProps) {
             >
               <BadgeIcon size={14} />
               <span>{roleLabels[role]}</span>
-              {session?.user.grade && (
+              {/* Show user's assigned grade in badge only when grade selector is NOT shown */}
+              {session?.user.grade && !showGradeSelector && (
                 <span className="opacity-70">כיתה {session.user.grade}</span>
               )}
             </div>
           )}
         </div>
+
+        {/* Grade selector - shown on grade-relevant pages */}
+        {showGradeSelector && (
+          <HeaderGradeSelector
+            selectedGrade={selectedGrade}
+            onSelect={navigateToGrade}
+            canSelect={canSelectGrade}
+            isAdminTheme={role === "admin"}
+          />
+        )}
 
         {/* Actions */}
         <div className="flex items-center gap-2">

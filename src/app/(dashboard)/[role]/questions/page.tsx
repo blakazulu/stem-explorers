@@ -3,12 +3,21 @@
 import { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { GradeSelector } from "@/components/ui/GradeSelector";
-import { Card } from "@/components/ui/Card";
-import { ClipboardList } from "lucide-react";
 import type { Grade, UserRole } from "@/types";
 
-export default function QuestionsGradeSelectorPage() {
+const VALID_GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
+const STORED_GRADE_KEY = "stem-explorers-selected-grade";
+
+function getStoredGrade(): Grade | null {
+  if (typeof window === "undefined") return null;
+  const stored = localStorage.getItem(STORED_GRADE_KEY);
+  if (stored && VALID_GRADES.includes(stored as Grade)) {
+    return stored as Grade;
+  }
+  return null;
+}
+
+export default function QuestionsRedirectPage() {
   const { session } = useAuth();
   const params = useParams();
   const router = useRouter();
@@ -17,38 +26,22 @@ export default function QuestionsGradeSelectorPage() {
   const isAdmin = session?.user.role === "admin";
 
   useEffect(() => {
+    if (!session) return;
+
+    // Only admin can access questions management
     if (!isAdmin) {
       router.replace(`/${role}`);
+      return;
     }
-  }, [isAdmin, role, router]);
 
-  function handleGradeSelect(grade: Grade) {
-    router.push(`/${role}/questions/${encodeURIComponent(grade)}`);
-  }
-
-  if (!isAdmin) {
-    return null;
-  }
+    // Use stored grade or default to א
+    const targetGrade = getStoredGrade() || "א";
+    router.replace(`/${role}/questions/${encodeURIComponent(targetGrade)}`);
+  }, [session, isAdmin, role, router]);
 
   return (
-    <div className="space-y-6 max-w-4xl">
-      {/* Page Header */}
-      <div className="flex items-center gap-3">
-        <div className="p-3 bg-role-admin/10 rounded-xl">
-          <ClipboardList size={24} className="text-role-admin" />
-        </div>
-        <div>
-          <h1 className="text-xl md:text-2xl font-rubik font-bold text-foreground">
-            ניהול שאלונים
-          </h1>
-          <p className="text-sm text-gray-500">בחר כיתה לניהול שאלוני יומן החוקר</p>
-        </div>
-      </div>
-
-      {/* Grade Selector */}
-      <Card>
-        <GradeSelector selected={null} onSelect={handleGradeSelect} />
-      </Card>
+    <div className="flex items-center justify-center min-h-[200px]">
+      <div className="animate-pulse text-gray-400">טוען...</div>
     </div>
   );
 }

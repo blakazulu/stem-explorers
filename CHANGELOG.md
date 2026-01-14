@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Password visibility toggle**: Login page now has a show/hide password button for better UX
 - **Improved social sharing metadata**: Enhanced Open Graph and Twitter card meta tags with proper image dimensions, locale, and site name
+- **Header grade selector**: Grade selector is now prominently displayed in the header on grade-relevant pages and admin dashboard. Admin can switch grades with one click; users with assigned grades see their grade displayed. Desktop shows compact buttons, mobile shows dropdown. Selected grade is stored in localStorage and persists across navigation - selecting a grade on the dashboard stores it for later use when navigating to grade-relevant sections via sidebar.
 
 ### Removed
 
