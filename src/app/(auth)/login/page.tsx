@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Icon } from "@/components/ui/Icon";
-import { User, Lock, LogIn, Atom, Lightbulb, Cog, Rocket, FlaskConical, Zap } from "lucide-react";
+import { User, Lock, LogIn, Atom, Lightbulb, Cog, Rocket, FlaskConical, Zap, Eye, EyeOff } from "lucide-react";
 
 // Floating STEM icon component
 function FloatingIcon({
@@ -32,6 +32,7 @@ function FloatingIcon({
 export default function LoginPage() {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -172,18 +173,26 @@ export default function LoginPage() {
                 <Input
                   id="password"
                   label="סיסמה"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="הכנס סיסמה"
                   error={error}
                   required
-                  className="pr-10"
+                  className="pr-10 pl-10"
                 />
                 <Lock
                   size={18}
                   className="absolute right-3 top-9 text-gray-400"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute left-3 top-9 text-gray-400 hover:text-gray-600 transition-colors"
+                  aria-label={showPassword ? "הסתר סיסמה" : "הצג סיסמה"}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
 
               <Button
