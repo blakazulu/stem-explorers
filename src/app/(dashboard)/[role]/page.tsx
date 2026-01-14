@@ -70,17 +70,17 @@ const quickActionsByRole: Record<UserRole, QuickAction[]> = {
       color: "bg-primary",
     },
     {
+      label: "תגובות תלמידים",
+      description: "צפה בתגובות התלמידים ליומן",
+      href: "/responses",
+      icon: Users,
+      color: "bg-secondary",
+    },
+    {
       label: "דוחות",
       description: "צפה בדוחות AI על התלמידים",
       href: "/reports",
       icon: BarChart2,
-      color: "bg-secondary",
-    },
-    {
-      label: "פורום",
-      description: "שתף והתייעץ עם עמיתים",
-      href: "/forum",
-      icon: MessageSquare,
       color: "bg-accent",
     },
   ],
@@ -147,7 +147,7 @@ export default function RoleDashboardPage() {
   const quickActions = quickActionsByRole[role];
 
   return (
-    <div className="max-w-theme space-y-8">
+    <div className="max-w-theme mx-auto space-y-8">
       {/* Welcome Header - role-specific styling and content */}
       <WelcomeHeader role={role} />
 

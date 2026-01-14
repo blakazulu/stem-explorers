@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Teacher dashboard duplication**: Removed duplicate "פורום" from quick actions (already in info cards), replaced with "תגובות תלמידים" for better feature discovery
 - **Netlify 404 on dynamic routes**: Added `netlify.toml` with `@netlify/plugin-nextjs` to properly handle Next.js App Router dynamic routes
 - **Questionnaire activation validation**: Prevent activating questionnaires with 0 questions (button is now disabled with tooltip explaining why)
 - **Grade selector localStorage issues**: Users with assigned grades (teachers, parents, students) now always use their assigned grade, ignoring any stored grade from previous admin sessions. Only admins use the stored grade preference.
