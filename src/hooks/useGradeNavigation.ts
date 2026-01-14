@@ -17,21 +17,31 @@ const GRADE_SECTIONS = [
 
 const VALID_GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
 const STORED_GRADE_KEY = "stem-explorers-selected-grade";
+const GRADE_CHANGE_EVENT = "stem-explorers-grade-change";
 
-// Get stored grade from localStorage
+// Get stored grade from localStorage with error handling
 function getStoredGrade(): Grade | null {
   if (typeof window === "undefined") return null;
-  const stored = localStorage.getItem(STORED_GRADE_KEY);
-  if (stored && VALID_GRADES.includes(stored as Grade)) {
-    return stored as Grade;
+  try {
+    const stored = localStorage.getItem(STORED_GRADE_KEY);
+    if (stored && VALID_GRADES.includes(stored as Grade)) {
+      return stored as Grade;
+    }
+  } catch {
+    // localStorage may be unavailable (private browsing, quota exceeded, etc.)
   }
   return null;
 }
 
-// Store grade in localStorage
+// Store grade in localStorage and dispatch custom event for same-tab listeners
 function storeGrade(grade: Grade) {
-  if (typeof window !== "undefined") {
+  if (typeof window === "undefined") return;
+  try {
     localStorage.setItem(STORED_GRADE_KEY, grade);
+    // Dispatch custom event so other components in the same tab can react
+    window.dispatchEvent(new CustomEvent(GRADE_CHANGE_EVENT));
+  } catch {
+    // localStorage may be unavailable
   }
 }
 
@@ -43,6 +53,7 @@ export function useGradeNavigation() {
 
   const role = params.role as UserRole;
   const isAdmin = session?.user.role === "admin";
+  const userAssignedGrade = session?.user.grade || null;
 
   // Extract section from pathname: /admin/work-plans/א → "work-plans"
   const pathParts = pathname.split("/").filter(Boolean);
@@ -58,7 +69,7 @@ export function useGradeNavigation() {
     ? (decodedGrade as Grade)
     : null;
 
-  // State for stored grade (used on main dashboard)
+  // State for stored grade (used on main dashboard for admins)
   const [storedGrade, setStoredGrade] = useState<Grade | null>(null);
 
   // Load stored grade on mount
@@ -66,16 +77,21 @@ export function useGradeNavigation() {
     setStoredGrade(getStoredGrade());
   }, []);
 
-  // Update stored grade when URL grade changes
+  // Update stored grade when URL grade changes (only for users without assigned grade)
   useEffect(() => {
-    if (gradeFromUrl) {
+    if (gradeFromUrl && !userAssignedGrade) {
       storeGrade(gradeFromUrl);
       setStoredGrade(gradeFromUrl);
     }
-  }, [gradeFromUrl]);
+  }, [gradeFromUrl, userAssignedGrade]);
 
-  // Selected grade: from URL if on grade section, from storage if on dashboard
-  const selectedGrade = gradeFromUrl || (isMainDashboard ? storedGrade : null);
+  // Selected grade shown in header:
+  // - From URL if on a grade section
+  // - User's assigned grade if they have one
+  // - From storage if on dashboard (admin only)
+  const selectedGrade = gradeFromUrl ||
+    (isMainDashboard && userAssignedGrade) ||
+    (isMainDashboard && isAdmin ? storedGrade : null);
 
   // Should we show grade selector in header?
   const isGradeSection = section !== null && GRADE_SECTIONS.includes(section);
@@ -83,21 +99,22 @@ export function useGradeNavigation() {
 
   // Navigate to a specific grade or store it
   const navigateToGrade = useCallback((grade: Grade) => {
-    // Always store the selected grade
-    storeGrade(grade);
-    setStoredGrade(grade);
+    // Only store for users without assigned grades (admins, teachers without grade)
+    if (!userAssignedGrade) {
+      storeGrade(grade);
+      setStoredGrade(grade);
+    }
 
     // Only navigate if we're on a grade section (not main dashboard)
     if (section && GRADE_SECTIONS.includes(section)) {
       router.push(`/${role}/${section}/${encodeURIComponent(grade)}`);
     }
     // On main dashboard, just store it - no navigation
-  }, [section, role, router]);
+  }, [section, role, router, userAssignedGrade]);
 
   return {
     section,
     selectedGrade,
-    storedGrade: storedGrade || gradeFromUrl,
     showGradeSelector,
     navigateToGrade,
     role,

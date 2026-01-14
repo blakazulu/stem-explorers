@@ -10,9 +10,13 @@ const STORED_GRADE_KEY = "stem-explorers-selected-grade";
 
 function getStoredGrade(): Grade | null {
   if (typeof window === "undefined") return null;
-  const stored = localStorage.getItem(STORED_GRADE_KEY);
-  if (stored && VALID_GRADES.includes(stored as Grade)) {
-    return stored as Grade;
+  try {
+    const stored = localStorage.getItem(STORED_GRADE_KEY);
+    if (stored && VALID_GRADES.includes(stored as Grade)) {
+      return stored as Grade;
+    }
+  } catch {
+    // localStorage may be unavailable
   }
   return null;
 }
@@ -22,22 +26,27 @@ export default function QuestionsRedirectPage() {
   const params = useParams();
   const router = useRouter();
 
-  const role = params.role as UserRole;
-  const isAdmin = session?.user.role === "admin";
+  const urlRole = params.role as UserRole;
 
   useEffect(() => {
     if (!session) return;
 
-    // Only admin can access questions management
-    if (!isAdmin) {
-      router.replace(`/${role}`);
+    // Security: Validate URL role matches session role
+    if (urlRole !== session.user.role) {
+      router.replace(`/${session.user.role}`);
       return;
     }
 
-    // Use stored grade or default to א
+    // Only admin can access questions management
+    if (session.user.role !== "admin") {
+      router.replace(`/${session.user.role}`);
+      return;
+    }
+
+    // Use stored grade or default to א (admin only page)
     const targetGrade = getStoredGrade() || "א";
-    router.replace(`/${role}/questions/${encodeURIComponent(targetGrade)}`);
-  }, [session, isAdmin, role, router]);
+    router.replace(`/${urlRole}/questions/${encodeURIComponent(targetGrade)}`);
+  }, [session, urlRole, router]);
 
   return (
     <div className="flex items-center justify-center min-h-[200px]">

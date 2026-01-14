@@ -182,12 +182,17 @@ const GRADE_SECTIONS = [
 
 const VALID_GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
 const STORED_GRADE_KEY = "stem-explorers-selected-grade";
+const GRADE_CHANGE_EVENT = "stem-explorers-grade-change";
 
 function getStoredGradeFromStorage(): Grade | null {
   if (typeof window === "undefined") return null;
-  const stored = localStorage.getItem(STORED_GRADE_KEY);
-  if (stored && VALID_GRADES.includes(stored as Grade)) {
-    return stored as Grade;
+  try {
+    const stored = localStorage.getItem(STORED_GRADE_KEY);
+    if (stored && VALID_GRADES.includes(stored as Grade)) {
+      return stored as Grade;
+    }
+  } catch {
+    // localStorage may be unavailable (private browsing, etc.)
   }
   return null;
 }
@@ -196,29 +201,30 @@ export function Sidebar({ onClose }: SidebarProps) {
   const { session } = useAuth();
   const pathname = usePathname();
   const role = session?.user.role;
+  const userAssignedGrade = session?.user.grade || null;
   const [storedGrade, setStoredGrade] = useState<Grade | null>(null);
 
-  // Load stored grade and listen for changes
+  // Load stored grade and listen for changes (no polling - use custom event)
   useEffect(() => {
     // Initial load
     setStoredGrade(getStoredGradeFromStorage());
 
-    // Listen for storage changes (from other components)
+    // Listen for storage changes (from other tabs)
     const handleStorageChange = () => {
       setStoredGrade(getStoredGradeFromStorage());
     };
 
-    window.addEventListener("storage", handleStorageChange);
+    // Listen for custom event (from same tab - dispatched by useGradeNavigation)
+    const handleGradeChange = () => {
+      setStoredGrade(getStoredGradeFromStorage());
+    };
 
-    // Also poll for changes since storage event doesn't fire in same tab
-    const interval = setInterval(() => {
-      const current = getStoredGradeFromStorage();
-      setStoredGrade(prev => prev !== current ? current : prev);
-    }, 100);
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener(GRADE_CHANGE_EVENT, handleGradeChange);
 
     return () => {
       window.removeEventListener("storage", handleStorageChange);
-      clearInterval(interval);
+      window.removeEventListener(GRADE_CHANGE_EVENT, handleGradeChange);
     };
   }, []);
 
@@ -241,8 +247,18 @@ export function Sidebar({ onClose }: SidebarProps) {
     const section = baseHref.slice(1); // Remove leading /
     const baseUrl = `/${role}${baseHref}`;
 
-    // If navigating to a grade-relevant section and we have a stored grade, include it
-    if (storedGrade && GRADE_SECTIONS.includes(section)) {
+    if (!GRADE_SECTIONS.includes(section)) {
+      return baseUrl;
+    }
+
+    // Priority: user's assigned grade > stored grade (for admins/teachers without grade)
+    // Users with assigned grades should ALWAYS use their grade, not the stored one
+    if (userAssignedGrade) {
+      return `${baseUrl}/${encodeURIComponent(userAssignedGrade)}`;
+    }
+
+    // Only use stored grade for users without assigned grades (admins, teachers without grade)
+    if (storedGrade) {
       return `${baseUrl}/${encodeURIComponent(storedGrade)}`;
     }
 

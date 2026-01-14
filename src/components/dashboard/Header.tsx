@@ -1,7 +1,9 @@
 "use client";
 
+import { useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { HeaderGradeSelector } from "@/components/ui/HeaderGradeSelector";
+import { RefreshModal } from "@/components/ui/RefreshModal";
 import { useGradeNavigation } from "@/hooks/useGradeNavigation";
 import {
   LogOut,
@@ -10,9 +12,11 @@ import {
   GraduationCap,
   Heart,
   Rocket,
+  RefreshCw,
 } from "lucide-react";
 import type { UserRole } from "@/types";
 import type { LucideIcon } from "lucide-react";
+import packageJson from "../../../package.json";
 
 const roleLabels: Record<UserRole, string> = {
   admin: "מנהל",
@@ -117,6 +121,7 @@ export function Header({ onMenuToggle }: HeaderProps) {
   const { session, logout } = useAuth();
   const role = session?.user.role;
   const { showGradeSelector, selectedGrade, navigateToGrade } = useGradeNavigation();
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Get role-specific theme
   const theme = role ? headerThemes[role] : defaultTheme;
@@ -124,6 +129,14 @@ export function Header({ onMenuToggle }: HeaderProps) {
 
   // Admin can select any grade; users with assigned grade cannot
   const canSelectGrade = role === "admin" || (role === "teacher" && !session?.user.grade);
+
+  const handleRefresh = useCallback(() => {
+    setIsRefreshing(true);
+  }, []);
+
+  const handleRefreshComplete = useCallback(() => {
+    setIsRefreshing(false);
+  }, []);
 
   return (
     <header className={`${theme.bg} border-b ${theme.border} px-4 md:px-6 py-3 transition-colors duration-theme`}>
@@ -176,6 +189,21 @@ export function Header({ onMenuToggle }: HeaderProps) {
             {session?.user.name}
           </span>
 
+          {/* Version number - desktop only */}
+          <span className={`hidden sm:block text-xs ${role === "admin" ? "text-slate-500" : "text-gray-400"}`}>
+            v{packageJson.version}
+          </span>
+
+          {/* Refresh button */}
+          <button
+            onClick={handleRefresh}
+            className={`p-2 rounded-theme ${theme.logoutText} ${theme.logoutHover} transition-all duration-theme cursor-pointer`}
+            aria-label="רענן אפליקציה"
+            title="רענן אפליקציה"
+          >
+            <RefreshCw size={16} className="sm:w-4 sm:h-4 w-5 h-5" />
+          </button>
+
           <button
             onClick={logout}
             className={`hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-theme text-sm font-medium ${theme.logoutText} ${theme.logoutHover} transition-all duration-theme cursor-pointer`}
@@ -194,6 +222,9 @@ export function Header({ onMenuToggle }: HeaderProps) {
           </button>
         </div>
       </div>
+
+      {/* Refresh Modal */}
+      <RefreshModal isOpen={isRefreshing} onComplete={handleRefreshComplete} />
     </header>
   );
 }
