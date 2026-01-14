@@ -35,6 +35,22 @@ export const metadata: Metadata = {
   openGraph: {
     title: "STEM Explorers - חוקרי STEM",
     description: "מרחב למידה לבית ספר יסודי",
+    siteName: "חוקרי STEM",
+    locale: "he_IL",
+    type: "website",
+    images: [
+      {
+        url: "/web-app-manifest-512x512.png",
+        width: 512,
+        height: 512,
+        alt: "חוקרי STEM לוגו",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: "STEM Explorers - חוקרי STEM",
+    description: "מרחב למידה לבית ספר יסודי",
     images: ["/web-app-manifest-512x512.png"],
   },
 };
