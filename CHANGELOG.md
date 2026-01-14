@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Netlify 404 on dynamic routes**: Added `netlify.toml` with `@netlify/plugin-nextjs` to properly handle Next.js App Router dynamic routes
 - **Questionnaire activation validation**: Prevent activating questionnaires with 0 questions (button is now disabled with tooltip explaining why)
 
 ### Changed
