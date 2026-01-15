@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { usePathname } from "next/navigation";
 import { RefreshCw } from "lucide-react";
 import packageJson from "../../package.json";
 
@@ -9,12 +10,14 @@ const CURRENT_VERSION = packageJson.version;
 
 export function VersionGuard({ children }: { children: React.ReactNode }) {
   const [status, setStatus] = useState<"checking" | "updating" | "ready">("checking");
+  const pathname = usePathname();
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
-    const checkVersion = async () => {
+    const checkVersion = async (isInitialLoad: boolean) => {
       const storedVersion = localStorage.getItem(VERSION_KEY);
 
-      // First visit or same version - proceed normally
+      // First visit - store version and proceed
       if (!storedVersion) {
         localStorage.setItem(VERSION_KEY, CURRENT_VERSION);
         setStatus("ready");
@@ -63,8 +66,18 @@ export function VersionGuard({ children }: { children: React.ReactNode }) {
       }
     };
 
-    checkVersion();
-  }, []);
+    // Check on initial load and on every route change
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      checkVersion(true);
+    } else {
+      // On route change, only show updating screen if version mismatch
+      const storedVersion = localStorage.getItem(VERSION_KEY);
+      if (storedVersion && storedVersion !== CURRENT_VERSION) {
+        checkVersion(false);
+      }
+    }
+  }, [pathname]);
 
   // Show loading screen while checking or updating
   if (status !== "ready") {

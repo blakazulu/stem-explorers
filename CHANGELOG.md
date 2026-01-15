@@ -12,11 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Custom 404 page**: Friendly Hebrew "page not found" page with STEM theme, logo, and back-to-home button
-- **Automatic version check**: App now checks version on load before any content renders
+- **Automatic version check**: App checks version on load and on every route change
   - Compares localStorage stored version with current package.json version
   - On version change: automatically clears service workers and caches, then reloads
   - Shows loading screen ("מעדכן גרסה חדשה...") during cache clearing
-  - Ensures users always run the latest version without manual refresh
+  - Checks on every navigation, so users get updates even while browsing
 
 ## [0.3.0] - 2026-01-15
 
