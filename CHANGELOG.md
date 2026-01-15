@@ -10,15 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Home page landing**: New landing page replaces automatic redirect to login
-  - STEM-themed background illustration (`/bg/bg-home.webp`)
-  - Large centered logo (192px mobile, 224px tablet, 288px desktop)
-  - Hero text "מרכז למידה בית ספרי" with teal-blue-emerald gradient
-  - Four portal cards in modern horizontal layout with gradient borders
-  - Centered vertical layout with logo, title, and cards tightly grouped
-  - Cards feature: gradient border effect, icon with rotation on hover, slide-in arrow
-  - Mobile-first: 1 column on mobile, 2x2 grid on tablet/desktop
-  - Minimum 16px font size throughout for accessibility
-  - Color scheme: emerald (students), blue (faculty), amber (parents), teal (gallery)
+  - STEM-themed background illustration (`/bg/bg-home.webp`) with warm brownish overlay
+  - Large centered logo with glow effect (128px mobile, 160px sm, 224px tablet, 380px desktop)
+  - Hero text "מרכז למידה בית ספרי" in Playpen Sans Hebrew cursive font with indigo glow effect
+  - Four glowing LED-style bubble cards with glass/glassmorphism effects
+  - Responsive layout: 2x2 grid on mobile/tablet, radial corner layout on desktop
+  - Bubble cards feature: gradient backgrounds (70% opacity), multi-layer glow effects, 3D shine highlights, hover scale animation
+  - Color scheme: emerald (students), blue (staff), amber (parents), teal (gallery)
+  - Added Playpen Sans Hebrew font via Google Fonts link tag
   - Logged-in users auto-redirect to their dashboard
 - **New animations**: Added `twinkle`, `float`, and `portal-appear` keyframes and utilities
 - **Radial gradient utility**: Added `bg-gradient-radial` CSS utility class
