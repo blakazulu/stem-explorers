@@ -138,7 +138,7 @@ export default function Home() {
       {/* Content */}
       <div className="relative z-10 min-h-screen flex flex-col p-4">
         {/* Title at top */}
-        <header className="pt-2 sm:pt-4 md:pt-6 lg:pt-8 text-center animate-fade-in">
+        <header className="pt-1 sm:pt-2 md:pt-4 lg:pt-6 text-center animate-fade-in">
           <h1
             className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-playpen text-indigo-900"
             style={{ textShadow: '0 0 20px rgba(99, 102, 241, 0.3), 0 0 40px rgba(99, 102, 241, 0.2)' }}
@@ -149,70 +149,75 @@ export default function Home() {
 
         {/* Main area with logo and cards */}
         <main className="relative flex-1 flex flex-col items-center justify-center gap-6 md:gap-8 lg:gap-0">
-          {/* Mobile/Tablet: Stacked layout | Desktop: Radial layout */}
+          {/* Mobile/Tablet: Stacked layout | Desktop: Radial layout in fixed container */}
 
-          {/* Logo section */}
-          <div className="relative flex items-center justify-center pointer-events-none lg:z-10">
-            {/* Logo glow background */}
-            <div className="absolute w-40 h-40 sm:w-56 sm:h-56 md:w-[320px] md:h-[320px] lg:w-[450px] lg:h-[450px] bg-white/60 rounded-full blur-3xl" />
+          {/* Desktop: Fixed-width container for radial layout */}
+          <div className="hidden lg:flex relative w-[900px] h-[700px] items-center justify-center">
+            {/* Logo section */}
+            <div className="relative flex items-center justify-center pointer-events-none z-10">
+              {/* Logo glow background */}
+              <div className="absolute w-[450px] h-[450px] bg-white/60 rounded-full blur-3xl" />
+              {/* Logo - 512px on desktop */}
+              <div className="relative animate-scale-in">
+                <Image
+                  src="/logo/logo-full.png"
+                  alt="חוקרי STEM"
+                  width={512}
+                  height={512}
+                  className="relative w-[512px] h-[512px] object-contain drop-shadow-2xl"
+                  priority
+                />
+              </div>
+            </div>
 
-            {/* Logo - mobile:160, sm:224, md:380, lg:512 */}
-            <div className="relative animate-scale-in">
-              <Image
-                src="/logo/logo-full.png"
-                alt="חוקרי STEM"
-                width={512}
-                height={512}
-                className="relative w-40 h-40 sm:w-56 sm:h-56 md:w-[380px] md:h-[380px] lg:w-[512px] lg:h-[512px] object-contain drop-shadow-2xl"
-                priority
-              />
+            {/* Bubble Cards - positioned at corners of fixed container */}
+            <div className="absolute top-0 right-0">
+              <GlowingBubble title="תלמידים" icon={GraduationCap} href="/login" color="green" delay={100} />
+            </div>
+            <div className="absolute top-0 left-0">
+              <GlowingBubble title="צוות" icon={Users} href="/login" color="blue" delay={200} />
+            </div>
+            <div className="absolute bottom-0 left-0">
+              <GlowingBubble title="הורים" icon={Heart} href="/login" color="orange" delay={300} />
+            </div>
+            <div className="absolute bottom-0 right-0">
+              <GlowingBubble title="גלריה" icon={Images} href="/gallery" color="teal" delay={400} />
             </div>
           </div>
 
-          {/* Bubble Cards Grid - 2x2 on mobile, radial on lg */}
-          <div className="grid grid-cols-2 gap-4 sm:gap-6 md:gap-8 lg:absolute lg:inset-0 lg:grid-cols-1 lg:gap-0">
-            {/* Students - TOP RIGHT on desktop */}
-            <div className="flex justify-center lg:absolute lg:top-[10%] lg:right-[10%]">
-              <GlowingBubble
-                title="תלמידים"
-                icon={GraduationCap}
-                href="/login"
-                color="green"
-                delay={100}
-              />
+          {/* Mobile/Tablet: Stacked layout */}
+          <div className="flex flex-col items-center gap-4 sm:gap-6 md:gap-8 lg:hidden">
+            {/* Logo section */}
+            <div className="relative flex items-center justify-center pointer-events-none">
+              {/* Logo glow background */}
+              <div className="absolute w-56 h-56 md:w-[320px] md:h-[320px] bg-white/60 rounded-full blur-3xl" />
+              {/* Logo - mobile:224, md:380 */}
+              <div className="relative animate-scale-in">
+                <Image
+                  src="/logo/logo-full.png"
+                  alt="חוקרי STEM"
+                  width={512}
+                  height={512}
+                  className="relative w-56 h-56 md:w-[380px] md:h-[380px] object-contain drop-shadow-2xl"
+                  priority
+                />
+              </div>
             </div>
 
-            {/* Staff - TOP LEFT on desktop */}
-            <div className="flex justify-center lg:absolute lg:top-[10%] lg:left-[10%]">
-              <GlowingBubble
-                title="צוות"
-                icon={Users}
-                href="/login"
-                color="blue"
-                delay={200}
-              />
-            </div>
-
-            {/* Parents - BOTTOM LEFT on desktop */}
-            <div className="flex justify-center lg:absolute lg:bottom-[10%] lg:left-[10%]">
-              <GlowingBubble
-                title="הורים"
-                icon={Heart}
-                href="/login"
-                color="orange"
-                delay={300}
-              />
-            </div>
-
-            {/* Gallery - BOTTOM RIGHT on desktop */}
-            <div className="flex justify-center lg:absolute lg:bottom-[10%] lg:right-[10%]">
-              <GlowingBubble
-                title="גלריה"
-                icon={Images}
-                href="/gallery"
-                color="teal"
-                delay={400}
-              />
+            {/* Bubble Cards Grid - 2x2 */}
+            <div className="grid grid-cols-2 gap-4 sm:gap-6 md:gap-8">
+              <div className="flex justify-center">
+                <GlowingBubble title="תלמידים" icon={GraduationCap} href="/login" color="green" delay={100} />
+              </div>
+              <div className="flex justify-center">
+                <GlowingBubble title="צוות" icon={Users} href="/login" color="blue" delay={200} />
+              </div>
+              <div className="flex justify-center">
+                <GlowingBubble title="הורים" icon={Heart} href="/login" color="orange" delay={300} />
+              </div>
+              <div className="flex justify-center">
+                <GlowingBubble title="גלריה" icon={Images} href="/gallery" color="teal" delay={400} />
+              </div>
             </div>
           </div>
         </main>
