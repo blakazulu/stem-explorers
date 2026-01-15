@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-01-15
+
 ### Added
 
 - **Home page landing**: New landing page replaces automatic redirect to login
@@ -30,6 +32,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Default fallback layout for direct `/login` access without type parameter
   - Role-based login validation: students can only login via student entry, parents via parent entry, staff via staff entry
   - Admins can login from any entry point
+
+### Fixed
+
+- **Logout redirect**: Users are now redirected to home page on logout instead of staying on dashboard
 
 ## [0.2.0] - 2026-01-15
 
