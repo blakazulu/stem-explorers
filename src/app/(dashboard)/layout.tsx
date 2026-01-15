@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, notFound } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ToastProvider } from "@/components/ui/Toast";
@@ -10,6 +10,9 @@ import { Header } from "@/components/dashboard/Header";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Icon } from "@/components/ui/Icon";
 import { X } from "lucide-react";
+import type { UserRole } from "@/types";
+
+const VALID_ROLES: UserRole[] = ["admin", "teacher", "parent", "student"];
 
 export default function DashboardLayout({
   children,
@@ -18,13 +21,26 @@ export default function DashboardLayout({
 }) {
   const { session, loading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Extract role from pathname (e.g., /admin/settings -> admin)
+  const urlRole = pathname.split("/")[1];
+  const isValidRole = VALID_ROLES.includes(urlRole as UserRole);
+
   useEffect(() => {
+    // Don't redirect if role is invalid - let notFound() handle it
+    if (!isValidRole) return;
+
     if (!loading && !session) {
       router.push("/");
     }
-  }, [session, loading, router]);
+  }, [session, loading, router, isValidRole]);
+
+  // Invalid role - show 404
+  if (!isValidRole) {
+    notFound();
+  }
 
   // Close sidebar on route change (mobile)
   useEffect(() => {
