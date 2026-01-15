@@ -461,6 +461,33 @@ export default function LoginPage() {
     const result = await login(name, password);
 
     if (result.success && result.role) {
+      // Admins can login from anywhere
+      if (result.role === "admin") {
+        router.push(`/${result.role}`);
+        setLoading(false);
+        return;
+      }
+
+      // Validate role matches the login type (if type is specified)
+      if (loginType) {
+        const allowedRoles: Record<LoginType, string[]> = {
+          student: ["student"],
+          parent: ["parent"],
+          staff: ["teacher", "admin"],
+        };
+
+        if (!allowedRoles[loginType].includes(result.role)) {
+          const errorMessages: Record<LoginType, string> = {
+            student: "כניסה זו מיועדת לתלמידים בלבד",
+            parent: "כניסה זו מיועדת להורים בלבד",
+            staff: "כניסה זו מיועדת לצוות בלבד",
+          };
+          setError(errorMessages[loginType]);
+          setLoading(false);
+          return;
+        }
+      }
+
       router.push(`/${result.role}`);
     } else {
       setError(result.error || "שגיאה בהתחברות");
