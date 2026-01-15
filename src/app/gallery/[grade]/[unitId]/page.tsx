@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, X, ChevronLeft, ChevronRight, Camera } from "lucide-react";
 import { getUnit } from "@/lib/services/units";
 import { getDocumentationByUnit } from "@/lib/services/documentation";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -22,11 +22,10 @@ const GRADE_LABELS: Record<Grade, string> = {
   "ו": "כיתה ו׳",
 };
 
-interface ImageItem {
-  url: string;
-  docId: string;
-  text?: string;
-  teacherName: string;
+// Lightbox state: which doc and which image within it
+interface LightboxState {
+  docIndex: number;
+  imageIndex: number;
 }
 
 export default function UnitGalleryPage() {
@@ -36,10 +35,10 @@ export default function UnitGalleryPage() {
   const isValidGrade = VALID_GRADES.includes(grade);
 
   const [unit, setUnit] = useState<Unit | null>(null);
-  const [images, setImages] = useState<ImageItem[]>([]);
+  const [docs, setDocs] = useState<Documentation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [lightbox, setLightbox] = useState<LightboxState | null>(null);
 
   useEffect(() => {
     if (!isValidGrade || !unitId) return;
@@ -48,7 +47,7 @@ export default function UnitGalleryPage() {
       setLoading(true);
       setError(null);
       try {
-        const [unitData, docs] = await Promise.all([
+        const [unitData, docsData] = await Promise.all([
           getUnit(unitId),
           getDocumentationByUnit(unitId, grade),
         ]);
@@ -59,20 +58,7 @@ export default function UnitGalleryPage() {
         }
 
         setUnit(unitData);
-
-        // Flatten all images from all documentation records
-        const allImages: ImageItem[] = [];
-        docs.forEach((doc: Documentation) => {
-          doc.images.forEach((url: string) => {
-            allImages.push({
-              url,
-              docId: doc.id,
-              text: doc.text,
-              teacherName: doc.teacherName,
-            });
-          });
-        });
-        setImages(allImages);
+        setDocs(docsData);
       } catch (err) {
         console.error("Failed to load documentation:", err);
         setError("שגיאה בטעינת התיעודים");
@@ -84,22 +70,35 @@ export default function UnitGalleryPage() {
     loadData();
   }, [grade, unitId, isValidGrade]);
 
-  const openLightbox = (index: number) => setLightboxIndex(index);
-  const closeLightbox = () => setLightboxIndex(null);
+  const openLightbox = (docIndex: number, imageIndex: number = 0) => {
+    setLightbox({ docIndex, imageIndex });
+  };
+
+  const closeLightbox = () => setLightbox(null);
+
+  // Get current doc's images for navigation
+  const currentDoc = lightbox ? docs[lightbox.docIndex] : null;
+  const currentImages = currentDoc?.images || [];
 
   // Keyboard navigation for lightbox
   useEffect(() => {
-    if (lightboxIndex === null) return;
+    if (!lightbox || !currentDoc) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        setLightboxIndex(null);
-      } else if (e.key === "ArrowRight") {
+        setLightbox(null);
+      } else if (e.key === "ArrowRight" && currentImages.length > 1) {
         // RTL - right goes to previous
-        setLightboxIndex((prev) => (prev! - 1 + images.length) % images.length);
-      } else if (e.key === "ArrowLeft") {
+        setLightbox((prev) => ({
+          ...prev!,
+          imageIndex: (prev!.imageIndex - 1 + currentImages.length) % currentImages.length,
+        }));
+      } else if (e.key === "ArrowLeft" && currentImages.length > 1) {
         // RTL - left goes to next
-        setLightboxIndex((prev) => (prev! + 1) % images.length);
+        setLightbox((prev) => ({
+          ...prev!,
+          imageIndex: (prev!.imageIndex + 1) % currentImages.length,
+        }));
       }
     };
 
@@ -111,13 +110,31 @@ export default function UnitGalleryPage() {
       window.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "";
     };
-  }, [lightboxIndex, images.length]);
+  }, [lightbox, currentDoc, currentImages.length]);
 
   const nextImage = () => {
-    setLightboxIndex((prev) => (prev! + 1) % images.length);
+    if (!lightbox) return;
+    setLightbox((prev) => ({
+      ...prev!,
+      imageIndex: (prev!.imageIndex + 1) % currentImages.length,
+    }));
   };
+
   const prevImage = () => {
-    setLightboxIndex((prev) => (prev! - 1 + images.length) % images.length);
+    if (!lightbox) return;
+    setLightbox((prev) => ({
+      ...prev!,
+      imageIndex: (prev!.imageIndex - 1 + currentImages.length) % currentImages.length,
+    }));
+  };
+
+  // Format date for display
+  const formatDate = (date: Date) => {
+    return new Intl.DateTimeFormat("he-IL", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }).format(date);
   };
 
   if (!isValidGrade) {
@@ -178,14 +195,9 @@ export default function UnitGalleryPage() {
       {/* Content */}
       <main className="relative z-10 flex-1 p-4 md:p-6 overflow-y-auto">
         {loading ? (
-          <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4">
-            {[...Array(8)].map((_, i) => (
-              <Skeleton
-                key={i}
-                variant="card"
-                className="mb-4 break-inside-avoid"
-                style={{ height: `${150 + (i % 3) * 50}px` }}
-              />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} variant="card" className="h-64" />
             ))}
           </div>
         ) : error ? (
@@ -200,7 +212,7 @@ export default function UnitGalleryPage() {
               }}
             />
           </div>
-        ) : images.length === 0 ? (
+        ) : docs.length === 0 ? (
           <div className="flex items-center justify-center h-full min-h-[400px]">
             <EmptyState
               icon="image"
@@ -209,30 +221,46 @@ export default function UnitGalleryPage() {
             />
           </div>
         ) : (
-          <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4">
-            {images.map((image, index) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {docs.map((doc, docIndex) => (
               <button
-                key={`${image.docId}-${index}`}
+                key={doc.id}
                 type="button"
-                className="mb-4 break-inside-avoid cursor-pointer group w-full text-right"
-                onClick={() => openLightbox(index)}
-                aria-label={`פתח תמונה ${index + 1}: ${image.text || "תיעוד"}`}
+                className="group text-right bg-white/80 backdrop-blur-sm rounded-xl overflow-hidden border border-white/50 shadow-lg shadow-black/5 hover:shadow-xl transition-all duration-300 hover:scale-[1.02]"
+                onClick={() => openLightbox(docIndex)}
+                aria-label={`פתח תיעוד: ${doc.text || `${doc.images.length} תמונות`}`}
               >
-                <div className="relative bg-white/80 backdrop-blur-sm rounded-xl overflow-hidden border border-white/50 shadow-lg shadow-black/5 hover:shadow-xl transition-all duration-300">
+                {/* Thumbnail */}
+                <div className="relative aspect-[4/3] overflow-hidden">
                   <Image
-                    src={image.url}
-                    alt={image.text || "תיעוד"}
-                    width={400}
-                    height={300}
-                    className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-300"
+                    src={doc.images[0]}
+                    alt={doc.text || "תיעוד"}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
                     loading="lazy"
                     unoptimized
                   />
-                  {image.text && (
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
-                      <p className="text-white text-sm line-clamp-2">{image.text}</p>
+
+                  {/* Image count badge */}
+                  {doc.images.length > 1 && (
+                    <div className="absolute top-2 left-2 flex items-center gap-1 bg-black/60 backdrop-blur-sm text-white text-sm px-2 py-1 rounded-full">
+                      <Camera size={14} />
+                      <span>{doc.images.length}</span>
                     </div>
                   )}
+                </div>
+
+                {/* Content */}
+                <div className="p-4">
+                  {doc.text && (
+                    <p className="text-gray-800 text-sm line-clamp-2 mb-2">
+                      {doc.text}
+                    </p>
+                  )}
+                  <div className="flex items-center justify-between text-xs text-gray-500">
+                    <span>{doc.teacherName}</span>
+                    <span>{formatDate(doc.createdAt)}</span>
+                  </div>
                 </div>
               </button>
             ))}
@@ -241,7 +269,7 @@ export default function UnitGalleryPage() {
       </main>
 
       {/* Lightbox */}
-      {lightboxIndex !== null && images[lightboxIndex] && (
+      {lightbox && currentDoc && (
         <div
           role="dialog"
           aria-modal="true"
@@ -259,7 +287,7 @@ export default function UnitGalleryPage() {
           </button>
 
           {/* Navigation - Previous (right side for RTL) */}
-          {images.length > 1 && (
+          {currentImages.length > 1 && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -273,7 +301,7 @@ export default function UnitGalleryPage() {
           )}
 
           {/* Navigation - Next (left side for RTL) */}
-          {images.length > 1 && (
+          {currentImages.length > 1 && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -292,8 +320,8 @@ export default function UnitGalleryPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <Image
-              src={images[lightboxIndex].url}
-              alt={images[lightboxIndex].text || "תיעוד"}
+              src={currentImages[lightbox.imageIndex]}
+              alt={currentDoc.text || "תיעוד"}
               width={1200}
               height={900}
               className="max-w-full max-h-[85vh] object-contain rounded-lg"
@@ -301,22 +329,22 @@ export default function UnitGalleryPage() {
             />
 
             {/* Caption */}
-            {(images[lightboxIndex].text || images[lightboxIndex].teacherName) && (
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 rounded-b-lg">
-                {images[lightboxIndex].text && (
-                  <p className="text-white text-lg mb-1">{images[lightboxIndex].text}</p>
-                )}
-                <p className="text-white/70 text-sm">
-                  צולם ע״י {images[lightboxIndex].teacherName}
-                </p>
-              </div>
-            )}
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 rounded-b-lg">
+              {currentDoc.text && (
+                <p className="text-white text-lg mb-1">{currentDoc.text}</p>
+              )}
+              <p className="text-white/70 text-sm">
+                תועד ע״י {currentDoc.teacherName}
+              </p>
+            </div>
           </div>
 
-          {/* Counter */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/70 text-sm">
-            {lightboxIndex + 1} / {images.length}
-          </div>
+          {/* Counter - only show if multiple images */}
+          {currentImages.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/70 text-sm">
+              {lightbox.imageIndex + 1} / {currentImages.length}
+            </div>
+          )}
         </div>
       )}
     </div>

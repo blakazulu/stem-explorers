@@ -19,12 +19,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Responsive card grid layout
   - Shows unit name and order number
   - Loading skeletons and error handling
-- **Unit documentation gallery**: `/gallery/[grade]/[unitId]` masonry grid of images
-  - CSS columns-based masonry layout (1-4 columns responsive)
+- **Unit documentation gallery**: `/gallery/[grade]/[unitId]` documentation cards
+  - Card grid showing documentation records (not individual images)
+  - Each card: thumbnail, image count badge, text description, teacher name, date
+  - Click card to open lightbox - navigate within that record's images
   - Full-screen lightbox with keyboard navigation (arrows, Escape)
   - RTL-aware navigation (right = previous, left = next)
-  - Shows image caption and teacher name
-  - Lazy loading for performance
+  - Lazy loading thumbnails for performance
   - Loading skeletons and error handling
 
 ## [0.4.1] - 2026-01-15
