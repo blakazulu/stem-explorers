@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -335,111 +335,6 @@ function StaffLayout(props: {
   );
 }
 
-// Default Layout - for when no type is specified
-function DefaultLayout(props: {
-  onSubmit: (e: React.FormEvent) => void;
-  name: string;
-  setName: (v: string) => void;
-  password: string;
-  setPassword: (v: string) => void;
-  showPassword: boolean;
-  setShowPassword: (v: boolean) => void;
-  error: string;
-  loading: boolean;
-}) {
-  return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-sky-50 to-teal-50">
-      {/* Content */}
-      <div className="relative z-10 min-h-screen flex flex-col items-center justify-center p-4">
-        {/* Back button */}
-        <Link
-          href="/"
-          className="absolute top-4 right-4 flex items-center gap-2 text-primary hover:text-primary-dark transition-colors"
-        >
-          <ArrowRight size={20} />
-          <span className="font-medium">חזרה</span>
-        </Link>
-
-        {/* Logo */}
-        <div className="mb-6 animate-scale-in">
-          <Image
-            src="/logo/logo-full.png"
-            alt="חוקרי STEM"
-            width={150}
-            height={150}
-            className="w-32 h-32 md:w-40 md:h-40 object-contain drop-shadow-xl"
-            priority
-          />
-        </div>
-
-        {/* Login card */}
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-surface-2 animate-slide-up">
-          <form onSubmit={props.onSubmit} className="space-y-5">
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-rubik font-bold text-foreground mb-2">
-                ברוכים הבאים
-              </h2>
-              <p className="text-gray-500">התחברו כדי להמשיך למרחב הלמידה</p>
-            </div>
-
-            <div className="relative">
-              <Input
-                id="name"
-                label="שם מלא"
-                type="text"
-                value={props.name}
-                onChange={(e) => props.setName(e.target.value)}
-                placeholder="הכנס את שמך המלא"
-                required
-                className="pr-10"
-              />
-              <User size={18} className="absolute right-3 top-9 text-gray-400" />
-            </div>
-
-            <div className="relative">
-              <Input
-                id="password"
-                label="סיסמה"
-                type={props.showPassword ? "text" : "password"}
-                value={props.password}
-                onChange={(e) => props.setPassword(e.target.value)}
-                placeholder="הכנס סיסמה"
-                error={props.error}
-                required
-                className="pr-10 pl-10"
-              />
-              <Lock size={18} className="absolute right-3 top-9 text-gray-400" />
-              <button
-                type="button"
-                onClick={() => props.setShowPassword(!props.showPassword)}
-                className="absolute left-3 top-9 text-gray-400 hover:text-gray-600 transition-colors"
-                aria-label={props.showPassword ? "הסתר סיסמה" : "הצג סיסמה"}
-              >
-                {props.showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full"
-              size="lg"
-              loading={props.loading}
-              loadingText="מתחבר..."
-              leftIcon={LogIn}
-            >
-              כניסה למערכת
-            </Button>
-
-            <div className="pt-4 border-t border-surface-2 text-center">
-              <p className="text-sm text-gray-400">שכחת את הסיסמה? פנה למנהל המערכת</p>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function LoginPage() {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
@@ -457,6 +352,13 @@ export default function LoginPage() {
     typeParam === "student" || typeParam === "parent" || typeParam === "staff"
       ? typeParam
       : null;
+
+  // Redirect to home if no valid type is specified
+  useEffect(() => {
+    if (!loginType) {
+      router.replace("/");
+    }
+  }, [loginType, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -515,6 +417,15 @@ export default function LoginPage() {
   };
 
   // Render the appropriate layout based on login type
+  // If no valid type, show loading while redirecting to home
+  if (!loginType) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-sky-50">
+        <div className="text-primary text-lg animate-pulse">מעביר לדף הבית...</div>
+      </div>
+    );
+  }
+
   switch (loginType) {
     case "student":
       return <StudentLayout {...formProps} />;
@@ -522,7 +433,5 @@ export default function LoginPage() {
       return <ParentLayout {...formProps} />;
     case "staff":
       return <StaffLayout {...formProps} />;
-    default:
-      return <DefaultLayout {...formProps} />;
   }
 }

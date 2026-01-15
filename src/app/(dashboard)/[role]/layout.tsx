@@ -22,9 +22,9 @@ export default function RoleLayout({ children }: RoleLayoutProps) {
   useEffect(() => {
     if (loading) return;
 
-    // Not authenticated - redirect to login
+    // Not authenticated - redirect to home
     if (!session) {
-      router.replace("/login");
+      router.replace("/");
       return;
     }
 

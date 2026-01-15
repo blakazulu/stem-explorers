@@ -22,7 +22,7 @@ export default function DashboardLayout({
 
   useEffect(() => {
     if (!loading && !session) {
-      router.push("/login");
+      router.push("/");
     }
   }, [session, loading, router]);
 

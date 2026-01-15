@@ -276,7 +276,7 @@ export function Sidebar({ onClose }: SidebarProps) {
       {/* Logo Header */}
       <div className={`p-6 border-b ${theme.headerBorder} ${theme.headerBg}`}>
         <Link
-          href={role ? `/${role}` : "/login"}
+          href={role ? `/${role}` : "/"}
           className="flex items-center gap-3 group cursor-pointer"
           onClick={onClose}
         >
