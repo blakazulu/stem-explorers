@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, notFound } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { SkeletonList } from "@/components/ui/Skeleton";
 import type { UserRole } from "@/types";
@@ -18,9 +18,13 @@ export default function RoleLayout({ children }: RoleLayoutProps) {
   const { session, loading } = useAuth();
 
   const urlRole = params.role as string;
+  const isValidRole = VALID_ROLES.includes(urlRole as UserRole);
 
   useEffect(() => {
     if (loading) return;
+
+    // Invalid role - let the render handle 404
+    if (!isValidRole) return;
 
     // Not authenticated - redirect to home
     if (!session) {
@@ -29,12 +33,6 @@ export default function RoleLayout({ children }: RoleLayoutProps) {
     }
 
     const userRole = session.user.role;
-
-    // Invalid role in URL
-    if (!VALID_ROLES.includes(urlRole as UserRole)) {
-      router.replace(`/${userRole}`);
-      return;
-    }
 
     // URL role doesn't match user's role - redirect to correct role
     if (urlRole !== userRole) {
@@ -47,7 +45,12 @@ export default function RoleLayout({ children }: RoleLayoutProps) {
       router.replace(`/${userRole}${pathAfterRole ? `/${pathAfterRole}` : ""}`);
       return;
     }
-  }, [session, loading, urlRole, router]);
+  }, [session, loading, urlRole, router, isValidRole]);
+
+  // Invalid role in URL - show 404
+  if (!isValidRole) {
+    notFound();
+  }
 
   // Show loading skeleton while validating
   if (loading) {
