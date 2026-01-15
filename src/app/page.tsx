@@ -172,13 +172,13 @@ export default function Home() {
 
             {/* Bubble Cards - positioned at corners of fixed container */}
             <div className="absolute top-0 right-0">
-              <GlowingBubble title="תלמידים" icon={GraduationCap} href="/login" color="green" delay={100} />
+              <GlowingBubble title="תלמידים" icon={GraduationCap} href="/login?type=student" color="green" delay={100} />
             </div>
             <div className="absolute top-0 left-0">
-              <GlowingBubble title="צוות" icon={Users} href="/login" color="blue" delay={200} />
+              <GlowingBubble title="צוות" icon={Users} href="/login?type=staff" color="blue" delay={200} />
             </div>
             <div className="absolute bottom-0 left-0">
-              <GlowingBubble title="הורים" icon={Heart} href="/login" color="orange" delay={300} />
+              <GlowingBubble title="הורים" icon={Heart} href="/login?type=parent" color="orange" delay={300} />
             </div>
             <div className="absolute bottom-0 right-0">
               <GlowingBubble title="גלריה" icon={Images} href="/gallery" color="teal" delay={400} />
@@ -207,13 +207,13 @@ export default function Home() {
             {/* Bubble Cards Grid - 2x2 */}
             <div className="grid grid-cols-2 gap-4 sm:gap-6 md:gap-8">
               <div className="flex justify-center">
-                <GlowingBubble title="תלמידים" icon={GraduationCap} href="/login" color="green" delay={100} />
+                <GlowingBubble title="תלמידים" icon={GraduationCap} href="/login?type=student" color="green" delay={100} />
               </div>
               <div className="flex justify-center">
-                <GlowingBubble title="צוות" icon={Users} href="/login" color="blue" delay={200} />
+                <GlowingBubble title="צוות" icon={Users} href="/login?type=staff" color="blue" delay={200} />
               </div>
               <div className="flex justify-center">
-                <GlowingBubble title="הורים" icon={Heart} href="/login" color="orange" delay={300} />
+                <GlowingBubble title="הורים" icon={Heart} href="/login?type=parent" color="orange" delay={300} />
               </div>
               <div className="flex justify-center">
                 <GlowingBubble title="גלריה" icon={Images} href="/gallery" color="teal" delay={400} />

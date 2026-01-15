@@ -21,6 +21,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Logged-in users auto-redirect to their dashboard
 - **New animations**: Added `twinkle`, `float`, and `portal-appear` keyframes and utilities
 - **Radial gradient utility**: Added `bg-gradient-radial` CSS utility class
+- **Themed login pages**: Login page now supports role-specific themes via URL parameter (`/login?type=student|parent|staff`)
+  - **Student theme**: Glass card floating over full-bleed bg-student.webp, emerald color scheme, playful "שלום חוקר!" greeting
+  - **Parent theme**: Side-by-side layout with bg-parents.webp on left, warm amber gradient background, welcoming family feel
+  - **Staff theme**: Integrated layout with form positioned in left empty space of bg-teachers.webp, professional blue theme
+  - Each theme has unique background image, color scheme, greeting text, and button styling
+  - All layouts include "חזרה" (back) button to return to home page
+  - Default fallback layout for direct `/login` access without type parameter
 
 ## [0.2.0] - 2026-01-15
 
