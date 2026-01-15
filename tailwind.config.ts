@@ -32,6 +32,7 @@ const config: Config = {
       fontFamily: {
         rubik: ["var(--font-rubik)", "sans-serif"],
         heebo: ["var(--font-heebo)", "sans-serif"],
+        playpen: ['"Playpen Sans Hebrew"', "cursive"],
       },
       borderRadius: {
         DEFAULT: "8px",

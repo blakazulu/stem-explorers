@@ -33,7 +33,7 @@
     /* ===== ROLE THEME SYSTEM ===== */
     /* Theme defaults (teacher as base) */
     --theme-card-radius: 8px;
-    --theme-card-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    --theme-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     --theme-animation-duration: 300ms;
     --theme-animation-easing: ease-out;
     --theme-content-max-width: 1200px;
@@ -43,7 +43,7 @@
   /* Admin theme - Command Center: sharp, snappy, dense */
   .theme-admin {
     --theme-card-radius: 4px;
-    --theme-card-shadow: 0 1px 2px rgba(99,102,241,0.08);
+    --theme-card-shadow: 0 1px 2px rgba(99, 102, 241, 0.08);
     --theme-animation-duration: 150ms;
     --theme-animation-easing: ease;
     --theme-content-max-width: 1400px;
@@ -53,7 +53,7 @@
   /* Teacher theme - Knowledge Garden: balanced, smooth, comfortable */
   .theme-teacher {
     --theme-card-radius: 8px;
-    --theme-card-shadow: 0 2px 8px rgba(2,132,199,0.08);
+    --theme-card-shadow: 0 2px 8px rgba(2, 132, 199, 0.08);
     --theme-animation-duration: 300ms;
     --theme-animation-easing: ease-out;
     --theme-content-max-width: 1200px;
@@ -63,7 +63,7 @@
   /* Parent theme - Family Dashboard: soft, gentle, spacious */
   .theme-parent {
     --theme-card-radius: 16px;
-    --theme-card-shadow: 0 4px 12px rgba(245,158,11,0.1);
+    --theme-card-shadow: 0 4px 12px rgba(245, 158, 11, 0.1);
     --theme-animation-duration: 400ms;
     --theme-animation-easing: cubic-bezier(0.34, 1.56, 0.64, 1);
     --theme-content-max-width: 1000px;
@@ -73,7 +73,7 @@
   /* Student theme - Explorer's Lab: playful, bouncy, engaging */
   .theme-student {
     --theme-card-radius: 16px;
-    --theme-card-shadow: 0 6px 20px rgba(16,185,129,0.12);
+    --theme-card-shadow: 0 6px 20px rgba(16, 185, 129, 0.12);
     --theme-animation-duration: 400ms;
     --theme-animation-easing: cubic-bezier(0.34, 1.56, 0.64, 1);
     --theme-content-max-width: 1100px;
@@ -87,7 +87,12 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-rubik), sans-serif;
   }
 
@@ -106,6 +111,7 @@
 }
 
 @layer utilities {
+
   /* Text gradient utility */
   .text-gradient-primary {
     @apply bg-gradient-to-l from-primary to-secondary bg-clip-text text-transparent;
@@ -117,12 +123,29 @@
   }
 
   /* Staggered animation delays */
-  .stagger-1 { animation-delay: 50ms; }
-  .stagger-2 { animation-delay: 100ms; }
-  .stagger-3 { animation-delay: 150ms; }
-  .stagger-4 { animation-delay: 200ms; }
-  .stagger-5 { animation-delay: 250ms; }
-  .stagger-6 { animation-delay: 300ms; }
+  .stagger-1 {
+    animation-delay: 50ms;
+  }
+
+  .stagger-2 {
+    animation-delay: 100ms;
+  }
+
+  .stagger-3 {
+    animation-delay: 150ms;
+  }
+
+  .stagger-4 {
+    animation-delay: 200ms;
+  }
+
+  .stagger-5 {
+    animation-delay: 250ms;
+  }
+
+  .stagger-6 {
+    animation-delay: 300ms;
+  }
 
   /* ===== ROLE BACKGROUND PATTERNS ===== */
   /* Apply to dashboard content areas for subtle visual differentiation */
@@ -154,5 +177,47 @@
 
   .theme-student .dashboard-bg {
     background-color: rgba(16, 185, 129, 0.02);
+  }
+
+  /* Advanced Glass/Bubble Utilities for "Mockup Match" */
+  .glass-bubble {
+    /* Base glass */
+    @apply backdrop-blur-xl border border-white/30 text-white shadow-2xl;
+    /* 3D Bubble feel */
+    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.05) 60%, rgba(255, 255, 255, 0) 100%);
+    box-shadow:
+      inset 0 0 20px rgba(255, 255, 255, 0.3),
+      /* Inner glow */
+      inset 10px 10px 20px rgba(255, 255, 255, 0.2),
+      /* Highlight */
+      inset -10px -20px 30px rgba(0, 0, 0, 0.1),
+      /* Shadow */
+      0 15px 35px rgba(0, 0, 0, 0.2);
+    /* Drop shadow */
+  }
+
+  /* Color variants for bubbles */
+  .bubble-green {
+    background: radial-gradient(circle at 30% 30%, rgba(52, 211, 153, 0.3) 0%, rgba(16, 185, 129, 0.4) 100%);
+    border-color: rgba(52, 211, 153, 0.4);
+    box-shadow: inset 0 0 20px rgba(16, 185, 129, 0.3), 0 10px 25px rgba(16, 185, 129, 0.2);
+  }
+
+  .bubble-blue {
+    background: radial-gradient(circle at 30% 30%, rgba(56, 189, 248, 0.3) 0%, rgba(2, 132, 199, 0.4) 100%);
+    border-color: rgba(56, 189, 248, 0.4);
+    box-shadow: inset 0 0 20px rgba(2, 132, 199, 0.3), 0 10px 25px rgba(2, 132, 199, 0.2);
+  }
+
+  .bubble-orange {
+    background: radial-gradient(circle at 30% 30%, rgba(251, 191, 36, 0.3) 0%, rgba(245, 158, 11, 0.4) 100%);
+    border-color: rgba(251, 191, 36, 0.4);
+    box-shadow: inset 0 0 20px rgba(245, 158, 11, 0.3), 0 10px 25px rgba(245, 158, 11, 0.2);
+  }
+
+  .bubble-teal {
+    background: radial-gradient(circle at 30% 30%, rgba(45, 212, 191, 0.3) 0%, rgba(13, 148, 136, 0.4) 100%);
+    border-color: rgba(45, 212, 191, 0.4);
+    box-shadow: inset 0 0 20px rgba(13, 148, 136, 0.3), 0 10px 25px rgba(13, 148, 136, 0.2);
   }
 }
