@@ -91,7 +91,7 @@ export function CardHeader({
 }
 
 // Card Content component
-interface CardContentProps extends HTMLAttributes<HTMLDivElement> {}
+type CardContentProps = HTMLAttributes<HTMLDivElement>;
 
 export function CardContent({ className = "", children, ...props }: CardContentProps) {
   return (
@@ -102,7 +102,7 @@ export function CardContent({ className = "", children, ...props }: CardContentP
 }
 
 // Card Footer component
-interface CardFooterProps extends HTMLAttributes<HTMLDivElement> {}
+type CardFooterProps = HTMLAttributes<HTMLDivElement>;
 
 export function CardFooter({ className = "", children, ...props }: CardFooterProps) {
   return (

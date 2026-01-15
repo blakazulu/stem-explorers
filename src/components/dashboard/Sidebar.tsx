@@ -293,9 +293,9 @@ export function Sidebar({ onClose }: SidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 overflow-y-auto">
+      <nav className="flex-1 p-4 overflow-y-auto" aria-label="תפריט ראשי">
         {/* Main Navigation Items */}
-        <ul className="space-y-1">
+        <ul className="space-y-1" role="list">
           {mainItems.map((item) => {
             const isActive = isPathActive(item.href);
             const ItemIcon = item.icon;
@@ -306,6 +306,7 @@ export function Sidebar({ onClose }: SidebarProps) {
                 <Link
                   href={fullHref}
                   onClick={onClose}
+                  aria-current={isActive ? "page" : undefined}
                   className={`flex items-center gap-3 px-4 py-2.5 rounded-theme transition-all duration-theme cursor-pointer relative group ${
                     isActive
                       ? `${theme.navItemActive} ${theme.navItemActiveText}`
@@ -315,10 +316,12 @@ export function Sidebar({ onClose }: SidebarProps) {
                   {/* Active indicator bar */}
                   {isActive && (
                     <span
+                      aria-hidden="true"
                       className={`absolute right-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-l-full ${theme.indicatorBg}`}
                     />
                   )}
                   <ItemIcon
+                    aria-hidden="true"
                     size={20}
                     className={`shrink-0 transition-transform duration-theme ${
                       isActive ? "" : "group-hover:scale-110"
@@ -338,7 +341,7 @@ export function Sidebar({ onClose }: SidebarProps) {
             <p className={`px-4 mb-2 text-xs font-medium ${theme.sectionLabelColor} uppercase tracking-wider`}>
               ניהול
             </p>
-            <ul className="space-y-1">
+            <ul className="space-y-1" role="list">
               {adminItems.map((item) => {
                 const isActive = isPathActive(item.href);
                 const ItemIcon = item.icon;
@@ -349,6 +352,7 @@ export function Sidebar({ onClose }: SidebarProps) {
                     <Link
                       href={fullHref}
                       onClick={onClose}
+                      aria-current={isActive ? "page" : undefined}
                       className={`flex items-center gap-3 px-4 py-2.5 rounded-theme transition-all duration-theme cursor-pointer relative group ${
                         isActive
                           ? `${theme.navItemActive} ${theme.navItemActiveText}`
@@ -357,10 +361,12 @@ export function Sidebar({ onClose }: SidebarProps) {
                     >
                       {isActive && (
                         <span
+                          aria-hidden="true"
                           className={`absolute right-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-l-full ${theme.indicatorBg}`}
                         />
                       )}
                       <ItemIcon
+                        aria-hidden="true"
                         size={20}
                         className={`shrink-0 transition-transform duration-theme ${
                           isActive ? "" : "group-hover:scale-110"

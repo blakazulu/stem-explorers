@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { SkeletonList } from "@/components/ui/Skeleton";
 import type { UserRole } from "@/types";
 
 const VALID_ROLES: UserRole[] = ["admin", "teacher", "parent", "student"];
@@ -48,19 +49,31 @@ export default function RoleLayout({ children }: RoleLayoutProps) {
     }
   }, [session, loading, urlRole, router]);
 
-  // Show nothing while validating
+  // Show loading skeleton while validating
   if (loading) {
-    return null;
+    return (
+      <div className="p-6 max-w-2xl mx-auto">
+        <SkeletonList count={5} />
+      </div>
+    );
   }
 
-  // Not authenticated
+  // Not authenticated - will redirect
   if (!session) {
-    return null;
+    return (
+      <div className="p-6 max-w-2xl mx-auto">
+        <SkeletonList count={3} />
+      </div>
+    );
   }
 
   // Role mismatch - will redirect
   if (urlRole !== session.user.role) {
-    return null;
+    return (
+      <div className="p-6 max-w-2xl mx-auto">
+        <SkeletonList count={3} />
+      </div>
+    );
   }
 
   return <>{children}</>;

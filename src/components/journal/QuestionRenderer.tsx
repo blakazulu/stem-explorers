@@ -120,6 +120,8 @@ export function QuestionRenderer({ question, value, onChange }: QuestionRenderer
                   key={n}
                   type="button"
                   onClick={() => onChange(n)}
+                  aria-label={`דירוג ${n} מתוך 5`}
+                  aria-pressed={isExact}
                   className={`group relative p-2 md:p-3 rounded-xl transition-all duration-200 cursor-pointer ${
                     isExact ? `${selectedBg} scale-110` : "hover:bg-surface-2"
                   }`}
@@ -127,6 +129,7 @@ export function QuestionRenderer({ question, value, onChange }: QuestionRenderer
                   {content}
                   {style !== "emojis" && (
                     <span
+                      aria-hidden="true"
                       className={`absolute -bottom-1 left-1/2 -translate-x-1/2 text-xs font-medium transition-opacity ${
                         isExact ? "opacity-100 text-foreground" : "opacity-0"
                       }`}
@@ -147,7 +150,7 @@ export function QuestionRenderer({ question, value, onChange }: QuestionRenderer
 
     case "single":
       return (
-        <div className="space-y-4">
+        <div className="space-y-4" role="radiogroup" aria-label={question.text}>
           <p className="text-lg font-rubik font-medium text-foreground">
             {question.text}
           </p>
@@ -158,6 +161,8 @@ export function QuestionRenderer({ question, value, onChange }: QuestionRenderer
                 <button
                   key={option}
                   type="button"
+                  role="radio"
+                  aria-checked={isSelected}
                   onClick={() => onChange(option)}
                   className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 text-right transition-all duration-200 cursor-pointer ${
                     isSelected
@@ -191,7 +196,7 @@ export function QuestionRenderer({ question, value, onChange }: QuestionRenderer
     case "multiple": {
       const selectedValues = (value as string[]) || [];
       return (
-        <div className="space-y-4">
+        <div className="space-y-4" role="group" aria-label={question.text}>
           <p className="text-lg font-rubik font-medium text-foreground">
             {question.text}
           </p>
@@ -203,6 +208,8 @@ export function QuestionRenderer({ question, value, onChange }: QuestionRenderer
                 <button
                   key={option}
                   type="button"
+                  role="checkbox"
+                  aria-checked={isSelected}
                   onClick={() => {
                     if (isSelected) {
                       onChange(selectedValues.filter((v) => v !== option));
@@ -260,6 +267,7 @@ export function QuestionRenderer({ question, value, onChange }: QuestionRenderer
             value={(value as string) || ""}
             onChange={(e) => onChange(e.target.value)}
             placeholder="כתבו את תשובתכם כאן..."
+            aria-label={question.text}
             className="w-full p-4 border-2 border-surface-3 rounded-xl bg-surface-0 text-foreground placeholder:text-gray-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none"
             rows={5}
           />

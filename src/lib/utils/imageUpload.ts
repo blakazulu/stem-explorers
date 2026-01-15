@@ -1,4 +1,9 @@
-export async function resizeImage(file: File, maxWidth: number = 800): Promise<Blob> {
+import { imageConfig } from "@/lib/config/image";
+
+export async function resizeImage(
+  file: File,
+  maxWidth: number = imageConfig.maxWidth
+): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     const canvas = document.createElement("canvas");
@@ -27,8 +32,8 @@ export async function resizeImage(file: File, maxWidth: number = 800): Promise<B
           if (blob) resolve(blob);
           else reject(new Error("Failed to create blob"));
         },
-        "image/webp",
-        0.85
+        imageConfig.format,
+        imageConfig.quality
       );
     };
 

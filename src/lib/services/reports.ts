@@ -45,9 +45,17 @@ export async function generateReport(
   journals: ResearchJournal[]
 ): Promise<Report> {
   try {
+    const headers: HeadersInit = { "Content-Type": "application/json" };
+
+    // Add API secret if configured
+    const apiSecret = process.env.NEXT_PUBLIC_REPORT_API_SECRET;
+    if (apiSecret) {
+      headers["x-api-secret"] = apiSecret;
+    }
+
     const response = await fetch("/.netlify/functions/generate-report", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify({ journals, unitName }),
     });
 

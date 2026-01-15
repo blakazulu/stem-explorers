@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
+import rehypeSanitize from "rehype-sanitize";
 import { useAuth } from "@/contexts/AuthContext";
 import { getUnit } from "@/lib/services/units";
 import { getReport } from "@/lib/services/reports";
@@ -141,7 +142,7 @@ export default function ReportViewPage() {
               className="prose prose-lg max-w-none prose-headings:font-rubik prose-headings:text-foreground prose-p:text-gray-600 prose-strong:text-foreground prose-ul:text-gray-600 prose-ol:text-gray-600"
               dir="rtl"
             >
-              <ReactMarkdown>{reportContent}</ReactMarkdown>
+              <ReactMarkdown rehypePlugins={[rehypeSanitize]}>{reportContent}</ReactMarkdown>
             </div>
           ) : (
             <EmptyState

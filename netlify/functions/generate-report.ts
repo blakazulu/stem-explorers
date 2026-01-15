@@ -8,6 +8,12 @@ export const handler: Handler = async (event) => {
     return { statusCode: 405, body: "Method not allowed" };
   }
 
+  // Validate API secret to prevent unauthorized access
+  const apiSecret = process.env.REPORT_API_SECRET;
+  if (apiSecret && event.headers["x-api-secret"] !== apiSecret) {
+    return { statusCode: 401, body: JSON.stringify({ error: "Unauthorized" }) };
+  }
+
   try {
     const { journals, unitName, reportConfig } = JSON.parse(event.body || "{}");
 

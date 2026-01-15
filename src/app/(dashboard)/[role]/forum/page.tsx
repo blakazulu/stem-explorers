@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { SkeletonList } from "@/components/ui/Skeleton";
 import type { UserRole } from "@/types";
 
 export default function ForumRedirectPage() {
@@ -14,5 +15,10 @@ export default function ForumRedirectPage() {
     router.replace(`/${role}/forum/requests`);
   }, [role, router]);
 
-  return null;
+  // Show loading skeleton while redirecting
+  return (
+    <div className="p-6 max-w-2xl mx-auto">
+      <SkeletonList count={3} />
+    </div>
+  );
 }

@@ -4,6 +4,8 @@ import {
   doc,
   setDoc,
   deleteDoc,
+  getDoc,
+  runTransaction,
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -38,15 +40,31 @@ export async function updateUserPassword(
   grade: Grade | null
 ): Promise<void> {
   try {
-    // Create new document with new password
-    await setDoc(doc(db, "users", newPassword), {
-      role,
-      grade,
-      createdAt: serverTimestamp(),
+    // Use a transaction to ensure atomicity - prevents duplicate records on crash
+    await runTransaction(db, async (transaction) => {
+      const newDocRef = doc(db, "users", newPassword);
+      const oldDocRef = doc(db, "users", oldPassword);
+
+      // Check if new password already exists
+      const newDoc = await transaction.get(newDocRef);
+      if (newDoc.exists()) {
+        throw new Error("PASSWORD_EXISTS");
+      }
+
+      // Create new document with new password
+      transaction.set(newDocRef, {
+        role,
+        grade,
+        createdAt: serverTimestamp(),
+      });
+
+      // Delete old document
+      transaction.delete(oldDocRef);
     });
-    // Delete old document
-    await deleteDoc(doc(db, "users", oldPassword));
   } catch (error) {
+    if (error instanceof Error && error.message === "PASSWORD_EXISTS") {
+      throw new Error("סיסמה זו כבר קיימת במערכת");
+    }
     handleFirebaseError(error, "updateUserPassword");
   }
 }

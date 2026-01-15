@@ -7,9 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-01-15
+
 ### Added
 
+- **ErrorBoundary component**: New `ErrorBoundary` component at `src/components/ErrorBoundary.tsx` that catches unhandled React errors and displays a user-friendly error message with retry button
+- **Image configuration**: Image processing settings (max width, quality, format) are now configurable via environment variables (`NEXT_PUBLIC_IMAGE_MAX_WIDTH`, `NEXT_PUBLIC_IMAGE_QUALITY`) instead of hardcoded values
 - **Code review documentation**: Added comprehensive code review document at `docs/code-review-2026-01-14.md` with findings categorized by severity (Critical, Important, Minor), accepted risks documented with rationale, and recommended fixes with code examples
+
+### Fixed
+
+- **API endpoint security**: Added API secret validation to the report generation endpoint (`netlify/functions/generate-report.ts`) to prevent unauthorized access and quota abuse. Set both `REPORT_API_SECRET` (server) and `NEXT_PUBLIC_REPORT_API_SECRET` (client) environment variables to the same value to enable
+- **XSS protection for AI reports**: Added `rehype-sanitize` to ReactMarkdown in reports page to sanitize AI-generated content
+- **Input validation**: Added input sanitization for journal submissions (student names max 100 chars, answers max 5000 chars) and forum posts (titles max 200 chars, content max 10000 chars)
+- **Race condition in password updates**: Password updates now use Firestore transactions to prevent duplicate records if a crash occurs between create and delete operations
+- **Firebase error detection**: Error handling now uses Firebase error codes instead of string matching for more reliable error categorization
+- **Empty interface definitions**: Fixed TypeScript empty interfaces in Card.tsx by converting them to type aliases
+- **Inconsistent loading states**: Role layout and forum redirect pages now show skeleton loaders instead of returning null during loading/redirecting
+
+### Improved
+
+- **Accessibility (ARIA)**: Added proper ARIA labels and roles to QuestionRenderer (rating buttons, radio groups, checkboxes) and Sidebar navigation (aria-current for active page, aria-label for nav)
 - **Version display and app refresh**: Header now shows app version number (from package.json) and includes a refresh button that clears cached HTML, CSS, JS, and service workers with an animated 3-second progress modal
 - **Password visibility toggle**: Login page now has a show/hide password button for better UX
 - **Improved social sharing metadata**: Enhanced Open Graph and Twitter card meta tags with proper image dimensions, locale, and site name
@@ -328,5 +346,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Safe markdown rendering with react-markdown
 - Object URL cleanup to prevent memory leaks
 
-[Unreleased]: https://github.com/blakazulu/stem-explorers/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/blakazulu/stem-explorers/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/blakazulu/stem-explorers/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/blakazulu/stem-explorers/releases/tag/v0.1.0
