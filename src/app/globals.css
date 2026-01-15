@@ -111,6 +111,11 @@
     @apply bg-gradient-to-l from-primary to-secondary bg-clip-text text-transparent;
   }
 
+  /* Radial gradient utilities for cosmic backgrounds */
+  .bg-gradient-radial {
+    background: radial-gradient(circle, var(--tw-gradient-stops));
+  }
+
   /* Staggered animation delays */
   .stagger-1 { animation-delay: 50ms; }
   .stagger-2 { animation-delay: 100ms; }

@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Home page landing**: New landing page replaces automatic redirect to login
+  - STEM-themed background illustration (`/bg/bg-home.webp`)
+  - Large centered logo (192px mobile, 224px tablet, 288px desktop)
+  - Hero text "מרכז למידה בית ספרי" with teal-blue-emerald gradient
+  - Four portal cards in modern horizontal layout with gradient borders
+  - Centered vertical layout with logo, title, and cards tightly grouped
+  - Cards feature: gradient border effect, icon with rotation on hover, slide-in arrow
+  - Mobile-first: 1 column on mobile, 2x2 grid on tablet/desktop
+  - Minimum 16px font size throughout for accessibility
+  - Color scheme: emerald (students), blue (faculty), amber (parents), teal (gallery)
+  - Logged-in users auto-redirect to their dashboard
+- **New animations**: Added `twinkle`, `float`, and `portal-appear` keyframes and utilities
+- **Radial gradient utility**: Added `bg-gradient-radial` CSS utility class
+
 ## [0.2.0] - 2026-01-15
 
 ### Added

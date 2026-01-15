@@ -122,6 +122,18 @@ const config: Config = {
           "0%, 100%": { transform: "rotate(-2deg)" },
           "50%": { transform: "rotate(2deg)" },
         },
+        twinkle: {
+          "0%, 100%": { opacity: "0.3", transform: "scale(1)" },
+          "50%": { opacity: "1", transform: "scale(1.2)" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0) rotate(0deg)" },
+          "50%": { transform: "translateY(-20px) rotate(5deg)" },
+        },
+        "portal-appear": {
+          "0%": { opacity: "0", transform: "translateY(30px) scale(0.95)" },
+          "100%": { opacity: "1", transform: "translateY(0) scale(1)" },
+        },
       },
       animation: {
         "fade-in": "fadeIn 200ms ease-out",
@@ -141,6 +153,9 @@ const config: Config = {
         "bounce-playful": "bounce-playful 600ms var(--theme-animation-easing) infinite",
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
         wiggle: "wiggle 300ms ease-in-out",
+        twinkle: "twinkle 3s ease-in-out infinite",
+        float: "float 6s ease-in-out infinite",
+        "portal-appear": "portal-appear 600ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards",
       },
     },
   },
