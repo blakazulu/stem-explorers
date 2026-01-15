@@ -451,7 +451,12 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const loginType = searchParams.get("type") as LoginType | null;
+  // Runtime validation for loginType to prevent invalid values
+  const typeParam = searchParams.get("type");
+  const loginType: LoginType | null =
+    typeParam === "student" || typeParam === "parent" || typeParam === "staff"
+      ? typeParam
+      : null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -463,17 +468,18 @@ export default function LoginPage() {
     if (result.success && result.role) {
       // Admins can login from anywhere
       if (result.role === "admin") {
-        router.push(`/${result.role}`);
         setLoading(false);
+        router.push(`/${result.role}`);
         return;
       }
 
       // Validate role matches the login type (if type is specified)
+      // Note: /login without type param allows any role (intentional fallback)
       if (loginType) {
         const allowedRoles: Record<LoginType, string[]> = {
           student: ["student"],
           parent: ["parent"],
-          staff: ["teacher", "admin"],
+          staff: ["teacher"],
         };
 
         if (!allowedRoles[loginType].includes(result.role)) {
@@ -488,12 +494,12 @@ export default function LoginPage() {
         }
       }
 
+      setLoading(false);
       router.push(`/${result.role}`);
     } else {
       setError(result.error || "שגיאה בהתחברות");
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const formProps = {
