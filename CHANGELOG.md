@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Custom 404 page**: Friendly Hebrew "page not found" page with STEM theme, logo, and back-to-home button
+
 ## [0.3.0] - 2026-01-15
 
 ### Added
