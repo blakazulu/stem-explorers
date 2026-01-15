@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Public gallery page**: New `/gallery` page for browsing documentation by grade level
+  - Full-viewport grid layout with 6 grade boxes (א through ו)
+  - Responsive: 2 columns × 3 rows on mobile/tablet, 3 columns × 2 rows on desktop
+  - Grade boxes fill entire available screen space (no fixed dimensions)
+  - Each grade has distinct gradient color scheme (rose, orange, amber, emerald, cyan, violet)
+  - Glassmorphism background effects and hover animations
+  - Header with logo and back-to-home navigation
+
 ## [0.4.1] - 2026-01-15
 
 ### Changed
