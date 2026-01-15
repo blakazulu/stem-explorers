@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { HeaderGradeSelector } from "@/components/ui/HeaderGradeSelector";
 import { RefreshModal } from "@/components/ui/RefreshModal";
@@ -119,6 +120,7 @@ interface HeaderProps {
 
 export function Header({ onMenuToggle }: HeaderProps) {
   const { session, logout } = useAuth();
+  const router = useRouter();
   const role = session?.user.role;
   const { showGradeSelector, selectedGrade, navigateToGrade } = useGradeNavigation();
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -137,6 +139,11 @@ export function Header({ onMenuToggle }: HeaderProps) {
   const handleRefreshComplete = useCallback(() => {
     setIsRefreshing(false);
   }, []);
+
+  const handleLogout = useCallback(() => {
+    logout();
+    router.push("/");
+  }, [logout, router]);
 
   return (
     <header className={`${theme.bg} border-b ${theme.border} px-4 md:px-6 py-3 transition-colors duration-theme`}>
@@ -205,7 +212,7 @@ export function Header({ onMenuToggle }: HeaderProps) {
           </button>
 
           <button
-            onClick={logout}
+            onClick={handleLogout}
             className={`hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-theme text-sm font-medium ${theme.logoutText} ${theme.logoutHover} transition-all duration-theme cursor-pointer`}
           >
             <LogOut size={16} />
@@ -214,7 +221,7 @@ export function Header({ onMenuToggle }: HeaderProps) {
 
           {/* Mobile logout button */}
           <button
-            onClick={logout}
+            onClick={handleLogout}
             className={`sm:hidden p-2 rounded-theme ${theme.logoutText} ${theme.logoutHover} transition-all duration-theme cursor-pointer`}
             aria-label="התנתק"
           >
