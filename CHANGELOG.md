@@ -7,9 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-01-15
+
 ### Added
 
 - **Custom 404 page**: Friendly Hebrew "page not found" page with STEM theme, logo, and back-to-home button
+- **Automatic version check**: App now checks version on load before any content renders
+  - Compares localStorage stored version with current package.json version
+  - On version change: automatically clears service workers and caches, then reloads
+  - Shows loading screen ("מעדכן גרסה חדשה...") during cache clearing
+  - Ensures users always run the latest version without manual refresh
 
 ## [0.3.0] - 2026-01-15
 
@@ -380,6 +387,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Safe markdown rendering with react-markdown
 - Object URL cleanup to prevent memory leaks
 
-[Unreleased]: https://github.com/blakazulu/stem-explorers/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/blakazulu/stem-explorers/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/blakazulu/stem-explorers/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/blakazulu/stem-explorers/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/blakazulu/stem-explorers/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/blakazulu/stem-explorers/releases/tag/v0.1.0
