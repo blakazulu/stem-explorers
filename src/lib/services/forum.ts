@@ -1,7 +1,6 @@
 import {
   collection,
   query,
-  where,
   orderBy,
   getDocs,
   doc,
@@ -13,7 +12,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { handleFirebaseError } from "@/lib/utils/errors";
-import type { ForumPost, ForumRoom, ForumReply } from "@/types";
+import type { ForumPost, ForumReply } from "@/types";
 
 const COLLECTION = "forum";
 
@@ -26,11 +25,10 @@ function sanitizeString(str: string, maxLength: number): string {
   return str.trim().slice(0, maxLength);
 }
 
-export async function getPostsByRoom(room: ForumRoom): Promise<ForumPost[]> {
+export async function getPosts(): Promise<ForumPost[]> {
   try {
     const q = query(
       collection(db, COLLECTION),
-      where("room", "==", room),
       orderBy("createdAt", "desc")
     );
 
@@ -45,7 +43,8 @@ export async function getPostsByRoom(room: ForumRoom): Promise<ForumPost[]> {
       })),
     })) as ForumPost[];
   } catch (error) {
-    handleFirebaseError(error, "getPostsByRoom");
+    handleFirebaseError(error, "getPosts");
+    throw error;
   }
 }
 
@@ -55,7 +54,6 @@ export async function createPost(
   try {
     // Sanitize inputs before saving
     const sanitizedData = {
-      ...data,
       title: sanitizeString(data.title, MAX_TITLE_LENGTH),
       content: sanitizeString(data.content, MAX_CONTENT_LENGTH),
       authorName: sanitizeString(data.authorName, MAX_AUTHOR_LENGTH),
@@ -67,6 +65,7 @@ export async function createPost(
     return docRef.id;
   } catch (error) {
     handleFirebaseError(error, "createPost");
+    throw error;
   }
 }
 

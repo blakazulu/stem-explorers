@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Forum → במה אישית**: Simplified forum section
+  - Renamed "פורום" to "במה אישית" in sidebar and dashboard
+  - Removed room tabs (בקשות/התייעצויות) - now single unified forum
+  - Deleted `/forum/[room]` route, forum content now directly at `/forum`
 - **Sidebar label**: Renamed "מודל פדגוגי" to "מודל פדגוגי ומו"פ" (R&D)
 - **Pedagogical page**: Updated page title to match new sidebar label
 - **Work Plans → Teaching Resources**: Major refactoring:

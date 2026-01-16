@@ -7,16 +7,14 @@ import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import { useToastActions } from "@/components/ui/Toast";
 import { PenLine, Send, X } from "lucide-react";
-import type { ForumRoom } from "@/types";
 
 interface NewPostFormProps {
-  room: ForumRoom;
   authorName: string;
   onCreated: () => void;
   onCancel: () => void;
 }
 
-export function NewPostForm({ room, authorName, onCreated, onCancel }: NewPostFormProps) {
+export function NewPostForm({ authorName, onCreated, onCancel }: NewPostFormProps) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -29,7 +27,6 @@ export function NewPostForm({ room, authorName, onCreated, onCancel }: NewPostFo
     setSubmitting(true);
     try {
       await createPost({
-        room,
         authorName,
         title,
         content,

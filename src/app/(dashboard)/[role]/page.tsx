@@ -196,16 +196,16 @@ export default function RoleDashboardPage() {
               <div className="p-2 bg-primary/10 rounded-lg">
                 <Users className="w-5 h-5 text-primary" />
               </div>
-              <h3 className="font-rubik font-semibold">פורום מורים</h3>
+              <h3 className="font-rubik font-semibold">במה אישית</h3>
             </div>
             <p className="text-sm text-gray-500">
-              שתפו רעיונות והתייעצו עם עמיתים בפורום המורים
+              שתפו רעיונות והתייעצו עם עמיתים
             </p>
             <Link
               href={`/${role}/forum`}
               className="inline-flex items-center mt-3 text-sm text-primary font-medium hover:underline cursor-pointer"
             >
-              לפורום
+              לבמה
               <ArrowLeft size={14} className="mr-1" />
             </Link>
           </Card>

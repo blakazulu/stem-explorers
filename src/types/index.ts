@@ -103,11 +103,8 @@ export interface Report {
 }
 
 // Forum post
-export type ForumRoom = "requests" | "consultations";
-
 export interface ForumPost {
   id: string;
-  room: ForumRoom;
   authorName: string;
   title: string;
   content: string;
