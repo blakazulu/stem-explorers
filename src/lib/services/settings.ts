@@ -1,4 +1,4 @@
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { handleFirebaseError } from "@/lib/utils/errors";
 import type { EmailConfig, ReportConfig, Grade } from "@/types";
@@ -12,6 +12,7 @@ export async function getEmailConfig(): Promise<EmailConfig | null> {
     return docSnap.exists() ? (docSnap.data() as EmailConfig) : null;
   } catch (error) {
     handleFirebaseError(error, "getEmailConfig");
+    throw error;
   }
 }
 
@@ -20,6 +21,7 @@ export async function saveEmailConfig(config: EmailConfig): Promise<void> {
     await setDoc(doc(db, SETTINGS_DOC, "emailConfig"), config);
   } catch (error) {
     handleFirebaseError(error, "saveEmailConfig");
+    throw error;
   }
 }
 
@@ -30,6 +32,7 @@ export async function getReportConfig(): Promise<ReportConfig | null> {
     return docSnap.exists() ? (docSnap.data() as ReportConfig) : null;
   } catch (error) {
     handleFirebaseError(error, "getReportConfig");
+    throw error;
   }
 }
 
@@ -38,6 +41,7 @@ export async function saveReportConfig(config: ReportConfig): Promise<void> {
     await setDoc(doc(db, SETTINGS_DOC, "reportConfig"), config);
   } catch (error) {
     handleFirebaseError(error, "saveReportConfig");
+    throw error;
   }
 }
 
@@ -48,6 +52,7 @@ export async function getPedagogicalIntro(grade: Grade): Promise<string | null> 
     return docSnap.exists() ? (docSnap.data().text as string) : null;
   } catch (error) {
     handleFirebaseError(error, "getPedagogicalIntro");
+    throw error;
   }
 }
 
@@ -56,6 +61,7 @@ export async function savePedagogicalIntro(grade: Grade, text: string): Promise<
     await setDoc(doc(db, SETTINGS_DOC, `pedagogicalIntro-${grade}`), { text });
   } catch (error) {
     handleFirebaseError(error, "savePedagogicalIntro");
+    throw error;
   }
 }
 
@@ -82,6 +88,7 @@ export async function getResourceFile(grade: Grade, type: ResourceType): Promise
     };
   } catch (error) {
     handleFirebaseError(error, "getResourceFile");
+    throw error;
   }
 }
 
@@ -99,14 +106,15 @@ export async function saveResourceFile(
     });
   } catch (error) {
     handleFirebaseError(error, "saveResourceFile");
+    throw error;
   }
 }
 
 export async function deleteResourceFile(grade: Grade, type: ResourceType): Promise<void> {
   try {
-    const { deleteDoc } = await import("firebase/firestore");
     await deleteDoc(doc(db, SETTINGS_DOC, `resource-${type}-${grade}`));
   } catch (error) {
     handleFirebaseError(error, "deleteResourceFile");
+    throw error;
   }
 }

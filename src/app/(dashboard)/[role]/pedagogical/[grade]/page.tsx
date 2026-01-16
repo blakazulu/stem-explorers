@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { UnitTreeView } from "@/components/pedagogical/UnitTreeView";
+import { StaffGrid } from "@/components/staff";
 import { Button } from "@/components/ui/Button";
 import { useToastActions } from "@/components/ui/Toast";
 import {
@@ -53,7 +54,8 @@ export default function PedagogicalGradePage() {
     session?.user.role === "teacher" || session?.user.role === "admin";
   const showBackButton = isAdmin;
 
-  const [introText, setIntroText] = useState<string>(DEFAULT_INTRO);
+  const [introText, setIntroText] = useState<string | null>(null);
+  const [introLoading, setIntroLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState("");
   const [saving, setSaving] = useState(false);
@@ -66,9 +68,11 @@ export default function PedagogicalGradePage() {
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const [showStaffModal, setShowStaffModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const resourceModalRef = useRef<HTMLDialogElement>(null);
   const lightboxRef = useRef<HTMLDialogElement>(null);
+  const staffModalRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
     if (!VALID_GRADES.includes(grade)) {
@@ -77,14 +81,16 @@ export default function PedagogicalGradePage() {
     }
 
     async function loadData() {
+      setIntroLoading(true);
       const [introData, trainingData, timetableData] = await Promise.all([
         getPedagogicalIntro(grade),
         getResourceFile(grade, "training-schedule"),
         getResourceFile(grade, "timetable"),
       ]);
-      if (introData) setIntroText(introData);
+      setIntroText(introData || DEFAULT_INTRO);
       setTrainingSchedule(trainingData);
       setTimetable(timetableData);
+      setIntroLoading(false);
     }
     loadData();
   }, [grade, role, router]);
@@ -122,6 +128,17 @@ export default function PedagogicalGradePage() {
     }
   }, [lightboxImage]);
 
+  useEffect(() => {
+    const modal = staffModalRef.current;
+    if (!modal) return;
+
+    if (showStaffModal) {
+      modal.showModal();
+    } else {
+      modal.close();
+    }
+  }, [showStaffModal]);
+
   const getResourceData = (type: ResourceType) => {
     return type === "training-schedule" ? trainingSchedule : timetable;
   };
@@ -144,7 +161,9 @@ export default function PedagogicalGradePage() {
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !activeResourceModal) return;
+    // Capture activeResourceModal to prevent race condition during async operation
+    const resourceType = activeResourceModal;
+    if (!file || !resourceType) return;
 
     if (!isValidResourceFile(file)) {
       toast.error("שגיאה", "סוג קובץ לא נתמך. יש להעלות PDF, Word או תמונה");
@@ -154,7 +173,7 @@ export default function PedagogicalGradePage() {
     setUploading(true);
     try {
       const timestamp = Date.now();
-      const path = `resources/${grade}/${activeResourceModal}/${timestamp}-${file.name}`;
+      const path = `resources/${grade}/${resourceType}/${timestamp}-${file.name}`;
       const url = await uploadResourceFile(file, path);
 
       const resourceFile: ResourceFile = {
@@ -164,9 +183,9 @@ export default function PedagogicalGradePage() {
         uploadedAt: new Date(),
       };
 
-      await saveResourceFile(grade, activeResourceModal, resourceFile);
+      await saveResourceFile(grade, resourceType, resourceFile);
 
-      if (activeResourceModal === "training-schedule") {
+      if (resourceType === "training-schedule") {
         setTrainingSchedule(resourceFile);
       } else {
         setTimetable(resourceFile);
@@ -185,9 +204,11 @@ export default function PedagogicalGradePage() {
   };
 
   const handleDeleteResource = async () => {
-    if (!activeResourceModal) return;
+    // Capture activeResourceModal to prevent race condition during async operation
+    const resourceType = activeResourceModal;
+    if (!resourceType) return;
 
-    const resource = getResourceData(activeResourceModal);
+    const resource = getResourceData(resourceType);
     if (!resource) return;
 
     setDeleting(true);
@@ -204,9 +225,9 @@ export default function PedagogicalGradePage() {
         // Storage deletion failed, continue with Firestore deletion
       }
 
-      await deleteResourceFile(grade, activeResourceModal);
+      await deleteResourceFile(grade, resourceType);
 
-      if (activeResourceModal === "training-schedule") {
+      if (resourceType === "training-schedule") {
         setTrainingSchedule(null);
       } else {
         setTimetable(null);
@@ -285,7 +306,13 @@ export default function PedagogicalGradePage() {
 
       {/* Intro Section */}
       <div className="p-6 bg-surface-1 rounded-2xl border border-surface-2">
-        {isEditing ? (
+        {introLoading ? (
+          <div className="space-y-2 animate-pulse">
+            <div className="h-4 bg-surface-2 rounded w-full" />
+            <div className="h-4 bg-surface-2 rounded w-5/6" />
+            <div className="h-4 bg-surface-2 rounded w-4/6" />
+          </div>
+        ) : isEditing ? (
           <div className="space-y-3">
             <textarea
               value={editText}
@@ -351,7 +378,7 @@ export default function PedagogicalGradePage() {
         <Button
           variant="outline"
           className="h-24 flex-col gap-2"
-          onClick={() => {/* TODO: Handle צוות מו"פ */}}
+          onClick={() => setShowStaffModal(true)}
         >
           <Users size={24} />
           <span>צוות מו&quot;פ</span>
@@ -401,6 +428,7 @@ export default function PedagogicalGradePage() {
               <button
                 onClick={handleCloseModal}
                 className="p-2 text-gray-400 hover:text-gray-600 hover:bg-surface-2 rounded-lg transition-all duration-200 cursor-pointer"
+                aria-label="סגור חלון"
               >
                 <X size={20} />
               </button>
@@ -441,6 +469,7 @@ export default function PedagogicalGradePage() {
               <button
                 onClick={handleCloseResourceModal}
                 className="p-2 text-gray-400 hover:text-gray-600 hover:bg-surface-2 rounded-lg transition-all duration-200 cursor-pointer"
+                aria-label="סגור חלון"
               >
                 <X size={20} />
               </button>
@@ -571,6 +600,7 @@ export default function PedagogicalGradePage() {
             <button
               onClick={() => setLightboxImage(null)}
               className="absolute top-2 left-2 p-2 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors cursor-pointer z-10"
+              aria-label="סגור תצוגה מוגדלת"
             >
               <X size={24} />
             </button>
@@ -581,6 +611,36 @@ export default function PedagogicalGradePage() {
               className="max-w-[95vw] max-h-[95vh] object-contain rounded-lg"
               onClick={(e) => e.stopPropagation()}
             />
+          </div>
+        </dialog>
+      )}
+
+      {/* Staff Modal */}
+      {showStaffModal && (
+        <dialog
+          ref={staffModalRef}
+          className="fixed inset-0 m-auto z-50 rounded-2xl p-0 backdrop:bg-black/50 backdrop:animate-fade-in max-w-4xl w-[95vw] max-h-[90vh] shadow-2xl animate-scale-in border-0 overflow-hidden"
+          onClose={() => setShowStaffModal(false)}
+        >
+          <div className="flex flex-col h-full max-h-[90vh]" dir="rtl">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 border-b border-surface-2 bg-surface-1">
+              <h2 className="text-xl font-rubik font-bold text-foreground">
+                צוות מו&quot;פ - כיתה {grade}
+              </h2>
+              <button
+                onClick={() => setShowStaffModal(false)}
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-surface-2 rounded-lg transition-all duration-200 cursor-pointer"
+                aria-label="סגור חלון"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <StaffGrid grade={grade} isAdmin={isAdmin} />
+            </div>
           </div>
         </dialog>
       )}

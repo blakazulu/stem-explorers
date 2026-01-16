@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Download, FileText, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "./Button";
 
@@ -10,6 +10,8 @@ interface DocumentViewerProps {
   className?: string;
 }
 
+const LOAD_TIMEOUT = 15000; // 15 seconds timeout for loading
+
 /**
  * Embeds PDF and Word documents using Google Docs Viewer.
  * Supports: .pdf, .doc, .docx
@@ -17,16 +19,39 @@ interface DocumentViewerProps {
 export function DocumentViewer({ url, fileName, className = "" }: DocumentViewerProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [iframeKey, setIframeKey] = useState(0);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Google Docs Viewer URL - works for PDF, DOC, DOCX
   const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
 
+  // Timeout for loading - Google Docs Viewer doesn't always trigger onerror
+  useEffect(() => {
+    if (loading && !error) {
+      timeoutRef.current = setTimeout(() => {
+        setLoading(false);
+        setError(true);
+      }, LOAD_TIMEOUT);
+    }
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [loading, error, iframeKey]);
+
   const handleLoad = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
     setLoading(false);
     setError(false);
   };
 
   const handleError = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
     setLoading(false);
     setError(true);
   };
@@ -34,11 +59,8 @@ export function DocumentViewer({ url, fileName, className = "" }: DocumentViewer
   const handleRetry = () => {
     setLoading(true);
     setError(false);
-    // Force iframe reload by updating key
-    const iframe = document.querySelector('iframe[data-doc-viewer]') as HTMLIFrameElement;
-    if (iframe) {
-      iframe.src = viewerUrl;
-    }
+    // Force iframe reload by updating key (React-based approach)
+    setIframeKey((prev) => prev + 1);
   };
 
   return (
@@ -57,7 +79,7 @@ export function DocumentViewer({ url, fileName, className = "" }: DocumentViewer
 
       {/* Loading state */}
       {loading && !error && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-1 z-5">
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-1 z-[5]">
           <Loader2 size={40} className="text-primary animate-spin mb-3" />
           <p className="text-gray-500 text-sm">טוען מסמך...</p>
         </div>
@@ -65,7 +87,7 @@ export function DocumentViewer({ url, fileName, className = "" }: DocumentViewer
 
       {/* Error state */}
       {error && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-1 z-5">
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-1 z-[5]">
           <FileText size={48} className="text-gray-400 mb-3" />
           <p className="text-gray-500 mb-4">לא הצלחנו לטעון את המסמך</p>
           <div className="flex gap-3">
@@ -87,7 +109,7 @@ export function DocumentViewer({ url, fileName, className = "" }: DocumentViewer
 
       {/* Document viewer iframe */}
       <iframe
-        data-doc-viewer
+        key={iframeKey}
         src={viewerUrl}
         className="w-full h-full border-0"
         onLoad={handleLoad}

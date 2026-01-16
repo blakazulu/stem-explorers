@@ -156,3 +156,14 @@ export interface AuthSession {
   user: User;
   documentId: string; // Changed from password - stores Firestore doc ID for re-validation
 }
+
+// Staff member for צוות מו"פ
+export interface StaffMember {
+  id: string;
+  gradeId: Grade;
+  name: string;
+  description: string;
+  imageUrl: string;
+  order: number;
+  createdAt: Date;
+}

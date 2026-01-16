@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Firebase service functions**: Added proper error re-throwing in staff.ts and settings.ts to ensure functions always return or throw
+- **StaffGrid useEffect**: Fixed missing dependency by wrapping `loadStaff` in useCallback
+- **AddEditStaffModal memory leak**: Replaced FileReader with URL.createObjectURL for image preview with proper cleanup
+- **DocumentViewer retry**: Fixed to use React state (iframeKey) instead of DOM query for iframe reload
+- **DocumentViewer timeout**: Added 15-second load timeout since Google Docs Viewer doesn't always trigger onerror
+- **DocumentViewer z-index**: Fixed non-standard `z-5` class to `z-[5]`
+- **Pedagogical page race condition**: Fixed upload/delete handlers to capture resource type at function start
+- **Accessibility**: Added aria-labels to all modal close buttons
+- **StaffMemberCard image reset**: Added useEffect to reset error state when imageUrl changes
+- **Pedagogical intro flash**: Added skeleton loading state to prevent flash of stale content while fetching from Firebase
+
 ### Changed
 
 - **Sidebar label**: Renamed "מודל פדגוגי" to "מודל פדגוגי ומו"פ" (R&D)
@@ -41,6 +54,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Files now open in modal with embedded viewer instead of new tab
   - Images display full-size with lightbox on click
   - Documents use DocumentViewer component
+- **צוות מו"פ (R&D Staff)** feature:
+  - Admin can add, edit, and delete staff members per grade
+  - Each member has: circular profile image, name, description (200 char max)
+  - Beautiful responsive grid: 2 cols mobile, 3 cols tablet, 4 cols desktop
+  - Gradient ring effect and hover animations on profile cards
+  - Images auto-compressed and stored in Firebase Storage
+  - Staff data stored in Firestore `staff` collection
+  - New components: `StaffGrid`, `StaffMemberCard`, `AddEditStaffModal`
 
 - **Public gallery page**: New `/gallery` page for browsing documentation by grade level
   - Full-viewport grid layout with 6 grade boxes (א through ו)
