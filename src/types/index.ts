@@ -173,3 +173,16 @@ export interface StemLink {
   grade: Grade | null; // null = all grades, Grade = specific grade only
   createdAt: Date;
 }
+
+// Expert for "שאל את המומחה" section
+export interface Expert {
+  id: string;
+  name: string;
+  title: string;
+  description: string;
+  availability: string;
+  imageUrl: string;
+  grade: Grade | null; // null = all grades, Grade = specific grade only
+  order: number;
+  createdAt: Date;
+}

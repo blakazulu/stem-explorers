@@ -38,6 +38,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **"שאל את המומחה" section**: New experts section on teaching-resources page
+  - Displays below resource buttons with decorative section separator
+  - Shows circular image, name, and title for each expert
+  - Clicking expert opens details modal with full description and availability
+  - Admin can add/edit/delete experts with image upload
+  - Experts can be global (all grades) or specific to current grade
+  - Experts stored in Firestore at `settings/experts`
 - **Equipment request form**: Clicking "טופס הצטיידות" button opens a form modal
   - Form fields: teacher name, program/unit, classes, age group selection
   - Resource checkboxes for agricultural/gardening supplies

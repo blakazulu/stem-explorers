@@ -1,7 +1,7 @@
 import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { handleFirebaseError } from "@/lib/utils/errors";
-import type { EmailConfig, ReportConfig, Grade, StemLink } from "@/types";
+import type { EmailConfig, ReportConfig, Grade, StemLink, Expert } from "@/types";
 
 const SETTINGS_DOC = "settings";
 
@@ -147,6 +147,44 @@ export async function saveStemLinks(links: StemLink[]): Promise<void> {
     await setDoc(doc(db, SETTINGS_DOC, "stemLinks"), { links });
   } catch (error) {
     handleFirebaseError(error, "saveStemLinks");
+    throw error;
+  }
+}
+
+// Experts for "שאל את המומחה"
+export async function getExperts(): Promise<Expert[]> {
+  try {
+    const docRef = doc(db, SETTINGS_DOC, "experts");
+    const docSnap = await getDoc(docRef);
+    if (!docSnap.exists()) return [];
+    const data = docSnap.data();
+    return (data.experts || [])
+      .map((expert: Record<string, unknown>) => {
+        const createdAt = expert.createdAt as { toDate?: () => Date } | undefined;
+        return {
+          id: expert.id as string,
+          name: expert.name as string,
+          title: expert.title as string,
+          description: expert.description as string,
+          availability: expert.availability as string,
+          imageUrl: expert.imageUrl as string,
+          grade: expert.grade as Grade | null,
+          order: (expert.order as number) || 0,
+          createdAt: createdAt?.toDate?.() || new Date(),
+        };
+      })
+      .sort((a: Expert, b: Expert) => a.order - b.order);
+  } catch (error) {
+    handleFirebaseError(error, "getExperts");
+    throw error;
+  }
+}
+
+export async function saveExperts(experts: Expert[]): Promise<void> {
+  try {
+    await setDoc(doc(db, SETTINGS_DOC, "experts"), { experts });
+  } catch (error) {
+    handleFirebaseError(error, "saveExperts");
     throw error;
   }
 }

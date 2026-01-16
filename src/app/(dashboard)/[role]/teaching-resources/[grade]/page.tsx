@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { StemLinksModal } from "@/components/teaching-resources/StemLinksModal";
 import { EquipmentFormModal } from "@/components/teaching-resources/EquipmentFormModal";
+import { ExpertsSection } from "@/components/experts";
 import {
   FolderOpen,
   ArrowRight,
@@ -161,6 +162,9 @@ export default function TeachingResourcesGradePage() {
           )
         )}
       </div>
+
+      {/* Experts Section */}
+      <ExpertsSection grade={grade} isAdmin={isAdmin} />
 
       {/* STEM Links Modal */}
       <StemLinksModal
