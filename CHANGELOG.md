@@ -34,6 +34,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Equipment request form**: Clicking "טופס הצטיידות" button opens a form modal
+  - Form fields: teacher name, program/unit, classes, age group selection
+  - Resource checkboxes for agricultural/gardening supplies
+  - Sends email to admin emails configured in settings
+  - Uses Resend API for immediate email delivery
 - **STEM Links modal**: Clicking "קישורים STEM" button opens a modal with links
   - Links display description text, clicking opens URL in new tab
   - Admin can add/edit/delete links with inline editing

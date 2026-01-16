@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { StemLinksModal } from "@/components/teaching-resources/StemLinksModal";
+import { EquipmentFormModal } from "@/components/teaching-resources/EquipmentFormModal";
 import {
   FolderOpen,
   ArrowRight,
@@ -24,6 +25,7 @@ export default function TeachingResourcesGradePage() {
   const router = useRouter();
 
   const [stemLinksOpen, setStemLinksOpen] = useState(false);
+  const [equipmentFormOpen, setEquipmentFormOpen] = useState(false);
 
   const role = params.role as UserRole;
   const grade = decodeURIComponent(params.grade as string) as Grade;
@@ -65,9 +67,9 @@ export default function TeachingResourcesGradePage() {
     {
       id: "equipment-form",
       title: "טופס הצטיידות",
-      description: "רשימת ציוד נדרש",
+      description: "בקשה למשאבי למידה",
       icon: ClipboardList,
-      href: "#",
+      onClick: () => setEquipmentFormOpen(true),
       featured: false,
       gradient: "from-amber-700 to-orange-700",
       iconBg: "bg-white/20",
@@ -166,6 +168,13 @@ export default function TeachingResourcesGradePage() {
         onClose={() => setStemLinksOpen(false)}
         grade={grade}
         isAdmin={isAdmin}
+      />
+
+      {/* Equipment Request Form Modal */}
+      <EquipmentFormModal
+        isOpen={equipmentFormOpen}
+        onClose={() => setEquipmentFormOpen(false)}
+        teacherName={session?.user.name}
       />
     </div>
   );
