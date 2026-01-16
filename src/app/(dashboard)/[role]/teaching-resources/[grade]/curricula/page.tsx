@@ -21,7 +21,7 @@ import type { Unit, Grade, UserRole } from "@/types";
 
 const VALID_GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
 
-export default function WorkPlansGradePage() {
+export default function CurriculaPage() {
   const { session } = useAuth();
   const params = useParams();
   const router = useRouter();
@@ -35,12 +35,12 @@ export default function WorkPlansGradePage() {
 
   const isAdmin = session?.user.role === "admin";
   const canManage = isAdmin;
-  const newUnitUrl = `/${role}/work-plans/${encodeURIComponent(grade)}/new`;
-  const showBackButton = isAdmin;
+  const baseUrl = `/${role}/teaching-resources/${encodeURIComponent(grade)}`;
+  const newUnitUrl = `${baseUrl}/curricula/new`;
 
   useEffect(() => {
     if (!VALID_GRADES.includes(grade)) {
-      router.replace(`/${role}/work-plans`);
+      router.replace(`/${role}/teaching-resources`);
     }
   }, [grade, role, router]);
 
@@ -69,21 +69,19 @@ export default function WorkPlansGradePage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          {showBackButton && (
-            <Link
-              href={`/${role}/work-plans`}
-              className="p-2 hover:bg-surface-2 rounded-lg transition-colors cursor-pointer"
-              title="חזרה לבחירת כיתה"
-            >
-              <ArrowRight size={20} className="text-gray-500" />
-            </Link>
-          )}
+          <Link
+            href={baseUrl}
+            className="p-2 hover:bg-surface-2 rounded-lg transition-colors cursor-pointer"
+            title="חזרה למשאבי הוראה"
+          >
+            <ArrowRight size={20} className="text-gray-500" />
+          </Link>
           <div className="p-3 bg-role-teacher/10 rounded-xl">
             <FileText size={24} className="text-role-teacher" />
           </div>
           <div>
             <h1 className="text-xl md:text-2xl font-rubik font-bold text-foreground">
-              תוכניות עבודה - כיתה {grade}
+              תוכניות לימודים - כיתה {grade}
             </h1>
             <p className="text-sm text-gray-500">
               {canManage ? "ניהול יחידות לימוד" : "צפייה והורדת יחידות לימוד"}
@@ -120,7 +118,7 @@ export default function WorkPlansGradePage() {
             return (
               <Link
                 key={unit.id}
-                href={`/${role}/work-plans/${encodeURIComponent(grade)}/${unit.id}`}
+                href={`${baseUrl}/curricula/${unit.id}`}
                 className={`group block w-full text-right p-4 md:p-5 bg-surface-0 rounded-xl border-2 border-surface-2 hover:border-primary hover:shadow-lg transition-all duration-200 cursor-pointer animate-slide-up stagger-${Math.min(index + 1, 6)}`}
               >
                 <div className="flex items-start gap-4">

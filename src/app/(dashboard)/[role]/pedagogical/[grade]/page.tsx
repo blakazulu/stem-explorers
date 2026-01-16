@@ -245,7 +245,7 @@ export default function PedagogicalGradePage() {
   };
 
   const handleStartEdit = () => {
-    setEditText(introText);
+    setEditText(introText || DEFAULT_INTRO);
     setIsEditing(true);
   };
 
@@ -443,7 +443,7 @@ export default function PedagogicalGradePage() {
                   isTeacherOrAdmin
                     ? () => {
                         handleCloseModal();
-                        router.push(`/${role}/work-plans/${encodeURIComponent(grade)}/new`);
+                        router.push(`/${role}/teaching-resources/${encodeURIComponent(grade)}/curricula/new`);
                       }
                     : undefined
                 }

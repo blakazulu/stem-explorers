@@ -168,7 +168,7 @@ export function UnitTreeView({ grade, role, onAddUnit }: UnitTreeViewProps) {
 
                 {/* Content Card */}
                 <Link
-                  href={`/${role}/work-plans/${encodeURIComponent(grade)}/${unit.id}`}
+                  href={`/${role}/teaching-resources/${encodeURIComponent(grade)}/curricula/${unit.id}`}
                   className={`group flex-1 p-4 md:p-5 bg-surface-0 rounded-2xl border-2 border-surface-2 hover:border-primary hover:shadow-xl transition-all duration-300 cursor-pointer mt-1`}
                 >
                   <div className="flex items-start justify-between gap-4">

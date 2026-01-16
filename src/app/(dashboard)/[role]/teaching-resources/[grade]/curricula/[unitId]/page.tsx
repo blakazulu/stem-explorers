@@ -45,11 +45,12 @@ export default function UnitDetailPage() {
 
   const isAdmin = session?.user.role === "admin";
   const canManage = isAdmin;
-  const backUrl = `/${role}/work-plans/${encodeURIComponent(grade)}`;
+  const baseUrl = `/${role}/teaching-resources/${encodeURIComponent(grade)}`;
+  const backUrl = `${baseUrl}/curricula`;
 
   useEffect(() => {
     if (!VALID_GRADES.includes(grade)) {
-      router.replace(`/${role}/work-plans`);
+      router.replace(`/${role}/teaching-resources`);
       return;
     }
 
@@ -232,7 +233,7 @@ export default function UnitDetailPage() {
       {canManage && (
         <div className="flex gap-3 pt-2">
           <Link
-            href={`/${role}/work-plans/${encodeURIComponent(grade)}/${unit.id}/edit`}
+            href={`${baseUrl}/curricula/${unit.id}/edit`}
             className="flex-1"
           >
             <Button variant="outline" className="w-full" rightIcon={Edit2}>
@@ -274,6 +275,7 @@ export default function UnitDetailPage() {
               <button
                 onClick={() => setActiveFileModal(null)}
                 className="p-2 text-gray-400 hover:text-gray-600 hover:bg-surface-2 rounded-lg transition-all duration-200 cursor-pointer"
+                aria-label="סגור חלון"
               >
                 <X size={20} />
               </button>
@@ -328,6 +330,7 @@ export default function UnitDetailPage() {
             <button
               onClick={() => setLightboxImage(null)}
               className="absolute top-2 left-2 p-2 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors cursor-pointer z-10"
+              aria-label="סגור תצוגה מוגדלת"
             >
               <X size={24} />
             </button>

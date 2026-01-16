@@ -36,7 +36,7 @@ interface NavItem {
 // Base paths - will be prefixed with role
 const navItems: NavItem[] = [
   { label: "מודל פדגוגי ומו\"פ", href: "/pedagogical", roles: ["admin", "teacher", "parent", "student"], icon: BookOpen },
-  { label: "תוכניות עבודה", href: "/work-plans", roles: ["admin", "teacher"], icon: FileText },
+  { label: "משאבי הוראה", href: "/teaching-resources", roles: ["admin", "teacher"], icon: FileText },
   { label: "תיעודים", href: "/documentation", roles: ["admin", "teacher", "parent", "student"], icon: Image },
   { label: "יומן חוקר", href: "/journal", roles: ["student"], icon: PenTool },
   { label: "דוחות", href: "/reports", roles: ["admin", "teacher", "parent"], icon: BarChart2 },
@@ -172,7 +172,7 @@ interface SidebarProps {
 
 // Sections that support grade in URL
 const GRADE_SECTIONS = [
-  "work-plans",
+  "teaching-resources",
   "questions",
   "documentation",
   "pedagogical",

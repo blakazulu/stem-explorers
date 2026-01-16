@@ -21,7 +21,7 @@ function getStoredGrade(): Grade | null {
   return null;
 }
 
-export default function WorkPlansRedirectPage() {
+export default function TeachingResourcesRedirectPage() {
   const { session } = useAuth();
   const params = useParams();
   const router = useRouter();
@@ -41,7 +41,7 @@ export default function WorkPlansRedirectPage() {
     const targetGrade = session.user.grade ||
       (session.user.role === "admin" ? getStoredGrade() : null) ||
       "א";
-    router.replace(`/${urlRole}/work-plans/${encodeURIComponent(targetGrade)}`);
+    router.replace(`/${urlRole}/teaching-resources/${encodeURIComponent(targetGrade)}`);
   }, [session, urlRole, router]);
 
   return (

@@ -7,7 +7,7 @@ import type { Grade, UserRole } from "@/types";
 
 // Sections that support grade selection in header
 const GRADE_SECTIONS = [
-  "work-plans",
+  "teaching-resources",
   "questions",
   "documentation",
   "pedagogical",
@@ -55,14 +55,14 @@ export function useGradeNavigation() {
   const isAdmin = session?.user.role === "admin";
   const userAssignedGrade = session?.user.grade || null;
 
-  // Extract section from pathname: /admin/work-plans/א → "work-plans"
+  // Extract section from pathname: /admin/teaching-resources/א → "teaching-resources"
   const pathParts = pathname.split("/").filter(Boolean);
   const section = pathParts[1] || null;
 
   // Check if we're on the main dashboard (no section, just /admin)
   const isMainDashboard = pathParts.length === 1 && pathParts[0] === role;
 
-  // Extract grade if present from URL: /admin/work-plans/א → "א"
+  // Extract grade if present from URL: /admin/teaching-resources/א → "א"
   const gradeParam = pathParts[2];
   const decodedGrade = gradeParam ? decodeURIComponent(gradeParam) : null;
   const gradeFromUrl = decodedGrade && VALID_GRADES.includes(decodedGrade as Grade)

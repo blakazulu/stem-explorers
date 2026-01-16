@@ -42,18 +42,19 @@ export default function NewUnitPage() {
   const [unitFile, setUnitFile] = useState<File | null>(null);
 
   const isAdmin = session?.user.role === "admin";
-  const backUrl = `/${role}/work-plans/${encodeURIComponent(grade)}`;
+  const baseUrl = `/${role}/teaching-resources/${encodeURIComponent(grade)}`;
+  const backUrl = `${baseUrl}/curricula`;
 
   // Validate grade and permissions
   useEffect(() => {
     if (!VALID_GRADES.includes(grade)) {
-      router.replace(`/${role}/work-plans`);
+      router.replace(`/${role}/teaching-resources`);
       return;
     }
     if (!isAdmin) {
-      router.replace(`/${role}/work-plans/${encodeURIComponent(grade)}`);
+      router.replace(backUrl);
     }
-  }, [grade, role, router, isAdmin]);
+  }, [grade, role, router, isAdmin, backUrl]);
 
   // Load units count to set default order
   const loadUnitsCount = useCallback(async () => {

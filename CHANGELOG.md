@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Teaching resources button contrast**: Added drop shadows to text and icons on gradient buttons for better readability
 - **Firebase service functions**: Added proper error re-throwing in staff.ts and settings.ts to ensure functions always return or throw
 - **StaffGrid useEffect**: Fixed missing dependency by wrapping `loadStaff` in useCallback
 - **AddEditStaffModal memory leak**: Replaced FileReader with URL.createObjectURL for image preview with proper cleanup
@@ -24,6 +25,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Sidebar label**: Renamed "מודל פדגוגי" to "מודל פדגוגי ומו"פ" (R&D)
 - **Pedagogical page**: Updated page title to match new sidebar label
+- **Work Plans → Teaching Resources**: Major refactoring:
+  - Renamed "תוכניות עבודה" to "משאבי הוראה" in sidebar
+  - Changed route from `/work-plans` to `/teaching-resources`
+  - Created new landing page with 3 beautiful gradient buttons
+  - Moved curricula/units to sub-route `/teaching-resources/[grade]/curricula/`
+  - Updated all navigation links throughout the app
 
 ### Added
 
