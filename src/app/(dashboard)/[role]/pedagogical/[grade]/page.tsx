@@ -7,12 +7,36 @@ import { useAuth } from "@/contexts/AuthContext";
 import { UnitTreeView } from "@/components/pedagogical/UnitTreeView";
 import { Button } from "@/components/ui/Button";
 import { useToastActions } from "@/components/ui/Toast";
-import { getPedagogicalIntro, savePedagogicalIntro } from "@/lib/services/settings";
-import { Lightbulb, ArrowRight, Users, Calendar, Clock, Pencil, Check, X, BookOpen } from "lucide-react";
+import {
+  getPedagogicalIntro,
+  savePedagogicalIntro,
+  getResourceFile,
+  saveResourceFile,
+  deleteResourceFile,
+  type ResourceFile,
+  type ResourceType,
+} from "@/lib/services/settings";
+import { uploadResourceFile, isValidResourceFile, deleteStorageFile } from "@/lib/utils/imageUpload";
+import { DocumentViewer } from "@/components/ui/DocumentViewer";
+import {
+  Lightbulb,
+  ArrowRight,
+  Users,
+  Calendar,
+  Clock,
+  Pencil,
+  Check,
+  X,
+  BookOpen,
+  Upload,
+  Trash2,
+  FileText,
+} from "lucide-react";
 import type { Grade, UserRole } from "@/types";
 
 const VALID_GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
 const DEFAULT_INTRO = "ברוכים הבאים למרחב הלמידה. כאן תוכלו למצוא את כל המידע על המודל הפדגוגי, יחידות הלימוד, וכלים נוספים לתמיכה בתהליך הלמידה.";
+const ACCEPTED_FILE_TYPES = ".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp";
 
 export default function PedagogicalGradePage() {
   const { session } = useAuth();
@@ -35,19 +59,34 @@ export default function PedagogicalGradePage() {
   const [saving, setSaving] = useState(false);
   const [showPedagogicalModal, setShowPedagogicalModal] = useState(false);
 
+  // Resource file state
+  const [trainingSchedule, setTrainingSchedule] = useState<ResourceFile | null>(null);
+  const [timetable, setTimetable] = useState<ResourceFile | null>(null);
+  const [activeResourceModal, setActiveResourceModal] = useState<ResourceType | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const resourceModalRef = useRef<HTMLDialogElement>(null);
+  const lightboxRef = useRef<HTMLDialogElement>(null);
+
   useEffect(() => {
     if (!VALID_GRADES.includes(grade)) {
       router.replace(`/${role}/pedagogical`);
       return;
     }
 
-    async function loadIntro() {
-      const text = await getPedagogicalIntro(grade);
-      if (text) {
-        setIntroText(text);
-      }
+    async function loadData() {
+      const [introData, trainingData, timetableData] = await Promise.all([
+        getPedagogicalIntro(grade),
+        getResourceFile(grade, "training-schedule"),
+        getResourceFile(grade, "timetable"),
+      ]);
+      if (introData) setIntroText(introData);
+      setTrainingSchedule(trainingData);
+      setTimetable(timetableData);
     }
-    loadIntro();
+    loadData();
   }, [grade, role, router]);
 
   useEffect(() => {
@@ -60,6 +99,129 @@ export default function PedagogicalGradePage() {
       modal.close();
     }
   }, [showPedagogicalModal]);
+
+  useEffect(() => {
+    const modal = resourceModalRef.current;
+    if (!modal) return;
+
+    if (activeResourceModal) {
+      modal.showModal();
+    } else {
+      modal.close();
+    }
+  }, [activeResourceModal]);
+
+  useEffect(() => {
+    const modal = lightboxRef.current;
+    if (!modal) return;
+
+    if (lightboxImage) {
+      modal.showModal();
+    } else {
+      modal.close();
+    }
+  }, [lightboxImage]);
+
+  const getResourceData = (type: ResourceType) => {
+    return type === "training-schedule" ? trainingSchedule : timetable;
+  };
+
+  const getResourceTitle = (type: ResourceType) => {
+    return type === "training-schedule" ? "לוז הדרכה" : "מערכת שעות";
+  };
+
+  const handleOpenResourceModal = (type: ResourceType) => {
+    setActiveResourceModal(type);
+  };
+
+  const handleCloseResourceModal = () => {
+    setActiveResourceModal(null);
+  };
+
+  const handleFileSelect = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !activeResourceModal) return;
+
+    if (!isValidResourceFile(file)) {
+      toast.error("שגיאה", "סוג קובץ לא נתמך. יש להעלות PDF, Word או תמונה");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const timestamp = Date.now();
+      const path = `resources/${grade}/${activeResourceModal}/${timestamp}-${file.name}`;
+      const url = await uploadResourceFile(file, path);
+
+      const resourceFile: ResourceFile = {
+        url,
+        fileName: file.name,
+        fileType: file.type,
+        uploadedAt: new Date(),
+      };
+
+      await saveResourceFile(grade, activeResourceModal, resourceFile);
+
+      if (activeResourceModal === "training-schedule") {
+        setTrainingSchedule(resourceFile);
+      } else {
+        setTimetable(resourceFile);
+      }
+
+      toast.success("הועלה בהצלחה", "הקובץ נשמר");
+    } catch {
+      toast.error("שגיאה", "לא הצלחנו להעלות את הקובץ");
+    }
+    setUploading(false);
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleDeleteResource = async () => {
+    if (!activeResourceModal) return;
+
+    const resource = getResourceData(activeResourceModal);
+    if (!resource) return;
+
+    setDeleting(true);
+    try {
+      // Extract storage path from URL and delete from storage
+      try {
+        const urlObj = new URL(resource.url);
+        const pathMatch = urlObj.pathname.match(/o\/(.+?)\?/);
+        if (pathMatch) {
+          const storagePath = decodeURIComponent(pathMatch[1]);
+          await deleteStorageFile(storagePath);
+        }
+      } catch {
+        // Storage deletion failed, continue with Firestore deletion
+      }
+
+      await deleteResourceFile(grade, activeResourceModal);
+
+      if (activeResourceModal === "training-schedule") {
+        setTrainingSchedule(null);
+      } else {
+        setTimetable(null);
+      }
+
+      toast.success("נמחק", "הקובץ הוסר בהצלחה");
+    } catch {
+      toast.error("שגיאה", "לא הצלחנו למחוק את הקובץ");
+    }
+    setDeleting(false);
+  };
+
+  const isImageType = (fileType: string) => {
+    return fileType.startsWith("image/");
+  };
 
   const handleStartEdit = () => {
     setEditText(introText);
@@ -197,20 +359,31 @@ export default function PedagogicalGradePage() {
         <Button
           variant="outline"
           className="h-24 flex-col gap-2"
-          onClick={() => {/* TODO: Handle לוז הדרכה */}}
+          onClick={() => handleOpenResourceModal("training-schedule")}
         >
           <Calendar size={24} />
           <span>לוז הדרכה</span>
+          {trainingSchedule && <span className="text-xs text-green-500">קובץ קיים</span>}
         </Button>
         <Button
           variant="outline"
           className="h-24 flex-col gap-2"
-          onClick={() => {/* TODO: Handle מערכת שעות */}}
+          onClick={() => handleOpenResourceModal("timetable")}
         >
           <Clock size={24} />
           <span>מערכת שעות</span>
+          {timetable && <span className="text-xs text-green-500">קובץ קיים</span>}
         </Button>
       </div>
+
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept={ACCEPTED_FILE_TYPES}
+        onChange={handleFileUpload}
+        className="hidden"
+      />
 
       {/* Pedagogical Model Modal */}
       {showPedagogicalModal && (
@@ -248,6 +421,166 @@ export default function PedagogicalGradePage() {
                 }
               />
             </div>
+          </div>
+        </dialog>
+      )}
+
+      {/* Resource File Modal */}
+      {activeResourceModal && (
+        <dialog
+          ref={resourceModalRef}
+          className="fixed inset-0 m-auto z-50 rounded-2xl p-0 backdrop:bg-black/50 backdrop:animate-fade-in max-w-2xl w-[95vw] max-h-[90vh] shadow-2xl animate-scale-in border-0 overflow-hidden"
+          onClose={handleCloseResourceModal}
+        >
+          <div className="flex flex-col h-full max-h-[90vh]" dir="rtl">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 border-b border-surface-2 bg-surface-1">
+              <h2 className="text-xl font-rubik font-bold text-foreground">
+                {getResourceTitle(activeResourceModal)} - כיתה {grade}
+              </h2>
+              <button
+                onClick={handleCloseResourceModal}
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-surface-2 rounded-lg transition-all duration-200 cursor-pointer"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="flex-1 overflow-hidden">
+              {(() => {
+                const resource = getResourceData(activeResourceModal);
+
+                if (!resource) {
+                  // No file uploaded
+                  return (
+                    <div className="text-center py-12 px-6">
+                      <div className="w-16 h-16 mx-auto mb-4 bg-surface-2 rounded-full flex items-center justify-center">
+                        <FileText size={32} className="text-gray-400" />
+                      </div>
+                      <p className="text-gray-500 mb-6">לא הועלה קובץ עדיין</p>
+                      {isAdmin && (
+                        <Button onClick={handleFileSelect} loading={uploading} rightIcon={Upload}>
+                          העלאת קובץ
+                        </Button>
+                      )}
+                      {isAdmin && (
+                        <p className="text-xs text-gray-400 mt-4">
+                          ניתן להעלות PDF, Word או תמונה
+                        </p>
+                      )}
+                    </div>
+                  );
+                }
+
+                // File exists - show full content
+                if (isImageType(resource.fileType)) {
+                  // Image - show full size, clickable for lightbox
+                  return (
+                    <div className="relative h-full">
+                      {/* Admin actions - fixed top left */}
+                      {isAdmin && (
+                        <div className="absolute top-3 left-3 z-10 flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="bg-white/90 backdrop-blur-sm shadow-lg"
+                            onClick={handleFileSelect}
+                            loading={uploading}
+                            rightIcon={Upload}
+                          >
+                            החלף
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            className="shadow-lg"
+                            onClick={handleDeleteResource}
+                            loading={deleting}
+                            rightIcon={Trash2}
+                          >
+                            מחק
+                          </Button>
+                        </div>
+                      )}
+                      <button
+                        onClick={() => setLightboxImage(resource.url)}
+                        className="w-full h-full flex items-center justify-center p-4 cursor-zoom-in"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={resource.url}
+                          alt={resource.fileName}
+                          className="max-w-full max-h-[75vh] object-contain rounded-lg"
+                        />
+                      </button>
+                    </div>
+                  );
+                }
+
+                // Document - show embedded viewer
+                return (
+                  <div className="relative h-full">
+                    {/* Admin actions - fixed top right (download is on left) */}
+                    {isAdmin && (
+                      <div className="absolute top-3 right-3 z-10 flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="bg-white/90 backdrop-blur-sm shadow-lg"
+                          onClick={handleFileSelect}
+                          loading={uploading}
+                          rightIcon={Upload}
+                        >
+                          החלף
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="shadow-lg"
+                          onClick={handleDeleteResource}
+                          loading={deleting}
+                          rightIcon={Trash2}
+                        >
+                          מחק
+                        </Button>
+                      </div>
+                    )}
+                    <DocumentViewer
+                      url={resource.url}
+                      fileName={resource.fileName}
+                      className="h-full"
+                    />
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+        </dialog>
+      )}
+
+      {/* Image Lightbox */}
+      {lightboxImage && (
+        <dialog
+          ref={lightboxRef}
+          className="fixed inset-0 m-auto z-[60] p-0 bg-transparent backdrop:bg-black/90 max-w-[95vw] max-h-[95vh] border-0"
+          onClick={() => setLightboxImage(null)}
+          onClose={() => setLightboxImage(null)}
+        >
+          <div className="relative flex items-center justify-center min-h-[50vh]">
+            <button
+              onClick={() => setLightboxImage(null)}
+              className="absolute top-2 left-2 p-2 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors cursor-pointer z-10"
+            >
+              <X size={24} />
+            </button>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={lightboxImage}
+              alt="תצוגה מוגדלת"
+              className="max-w-[95vw] max-h-[95vh] object-contain rounded-lg"
+              onClick={(e) => e.stopPropagation()}
+            />
           </div>
         </dialog>
       )}

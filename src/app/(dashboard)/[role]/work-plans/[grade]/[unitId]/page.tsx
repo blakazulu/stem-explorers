@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,15 +10,18 @@ import { Card } from "@/components/ui/Card";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { SkeletonCard } from "@/components/ui/Skeleton";
 import { useToastActions } from "@/components/ui/Toast";
+import { DocumentViewer } from "@/components/ui/DocumentViewer";
 import {
   FileText,
   BookOpen,
   Edit2,
   Trash2,
   ArrowRight,
-  ExternalLink,
+  X,
 } from "lucide-react";
 import type { Unit, Grade, UserRole } from "@/types";
+
+type FileModalType = "intro" | "unit" | null;
 
 const VALID_GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
 
@@ -35,6 +38,10 @@ export default function UnitDetailPage() {
   const [unit, setUnit] = useState<Unit | null>(null);
   const [loading, setLoading] = useState(true);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [activeFileModal, setActiveFileModal] = useState<FileModalType>(null);
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const fileModalRef = useRef<HTMLDialogElement>(null);
+  const lightboxRef = useRef<HTMLDialogElement>(null);
 
   const isAdmin = session?.user.role === "admin";
   const canManage = isAdmin;
@@ -65,6 +72,41 @@ export default function UnitDetailPage() {
 
     loadUnit();
   }, [grade, unitId, role, router, backUrl, toast]);
+
+  useEffect(() => {
+    const modal = fileModalRef.current;
+    if (!modal) return;
+
+    if (activeFileModal) {
+      modal.showModal();
+    } else {
+      modal.close();
+    }
+  }, [activeFileModal]);
+
+  useEffect(() => {
+    const modal = lightboxRef.current;
+    if (!modal) return;
+
+    if (lightboxImage) {
+      modal.showModal();
+    } else {
+      modal.close();
+    }
+  }, [lightboxImage]);
+
+  const getActiveFileUrl = () => {
+    if (!unit) return null;
+    return activeFileModal === "intro" ? unit.introFileUrl : unit.unitFileUrl;
+  };
+
+  const getActiveFileTitle = () => {
+    return activeFileModal === "intro" ? "מבוא ליחידה" : "תוכן היחידה";
+  };
+
+  const isImageUrl = (url: string) => {
+    return /\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(url);
+  };
 
   async function handleDelete() {
     if (!unit) return;
@@ -135,11 +177,9 @@ export default function UnitDetailPage() {
       {/* Unit Files */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {unit.introFileUrl && (
-          <a
-            href={unit.introFileUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block"
+          <button
+            onClick={() => setActiveFileModal("intro")}
+            className="block text-right w-full"
           >
             <Card interactive className="h-full">
               <div className="flex items-center gap-4">
@@ -152,17 +192,14 @@ export default function UnitDetailPage() {
                   </h3>
                   <p className="text-sm text-gray-500">רקע והקדמה לנושא</p>
                 </div>
-                <ExternalLink size={18} className="text-gray-400" />
               </div>
             </Card>
-          </a>
+          </button>
         )}
         {unit.unitFileUrl && (
-          <a
-            href={unit.unitFileUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block"
+          <button
+            onClick={() => setActiveFileModal("unit")}
+            className="block text-right w-full"
           >
             <Card interactive className="h-full">
               <div className="flex items-center gap-4">
@@ -175,10 +212,9 @@ export default function UnitDetailPage() {
                   </h3>
                   <p className="text-sm text-gray-500">חומר הלימוד המלא</p>
                 </div>
-                <ExternalLink size={18} className="text-gray-400" />
               </div>
             </Card>
-          </a>
+          </button>
         )}
       </div>
 
@@ -221,6 +257,90 @@ export default function UnitDetailPage() {
         onConfirm={handleDelete}
         onCancel={() => setShowDeleteConfirm(false)}
       />
+
+      {/* File Viewer Modal */}
+      {activeFileModal && (
+        <dialog
+          ref={fileModalRef}
+          className="fixed inset-0 m-auto z-50 rounded-2xl p-0 backdrop:bg-black/50 backdrop:animate-fade-in max-w-4xl w-[95vw] max-h-[90vh] shadow-2xl animate-scale-in border-0 overflow-hidden"
+          onClose={() => setActiveFileModal(null)}
+        >
+          <div className="flex flex-col h-full max-h-[90vh]" dir="rtl">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 border-b border-surface-2 bg-surface-1">
+              <h2 className="text-xl font-rubik font-bold text-foreground">
+                {getActiveFileTitle()}
+              </h2>
+              <button
+                onClick={() => setActiveFileModal(null)}
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-surface-2 rounded-lg transition-all duration-200 cursor-pointer"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="flex-1 overflow-hidden">
+              {(() => {
+                const fileUrl = getActiveFileUrl();
+                if (!fileUrl) return null;
+
+                if (isImageUrl(fileUrl)) {
+                  // Image - show full size, clickable for lightbox
+                  return (
+                    <button
+                      onClick={() => setLightboxImage(fileUrl)}
+                      className="w-full h-full flex items-center justify-center p-4 cursor-zoom-in"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={fileUrl}
+                        alt={getActiveFileTitle()}
+                        className="max-w-full max-h-[75vh] object-contain rounded-lg"
+                      />
+                    </button>
+                  );
+                }
+
+                // Document - show embedded viewer
+                return (
+                  <DocumentViewer
+                    url={fileUrl}
+                    fileName={getActiveFileTitle()}
+                    className="h-full"
+                  />
+                );
+              })()}
+            </div>
+          </div>
+        </dialog>
+      )}
+
+      {/* Image Lightbox */}
+      {lightboxImage && (
+        <dialog
+          ref={lightboxRef}
+          className="fixed inset-0 m-auto z-[60] p-0 bg-transparent backdrop:bg-black/90 max-w-[95vw] max-h-[95vh] border-0"
+          onClick={() => setLightboxImage(null)}
+          onClose={() => setLightboxImage(null)}
+        >
+          <div className="relative flex items-center justify-center min-h-[50vh]">
+            <button
+              onClick={() => setLightboxImage(null)}
+              className="absolute top-2 left-2 p-2 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors cursor-pointer z-10"
+            >
+              <X size={24} />
+            </button>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={lightboxImage}
+              alt="תצוגה מוגדלת"
+              className="max-w-[95vw] max-h-[95vh] object-contain rounded-lg"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        </dialog>
+      )}
     </div>
   );
 }

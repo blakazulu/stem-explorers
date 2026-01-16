@@ -58,3 +58,49 @@ export async function uploadImage(
   await uploadBytes(storageRef, resized);
   return getDownloadURL(storageRef);
 }
+
+const IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+const DOCUMENT_TYPES = [
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+];
+
+export function isImageFile(file: File): boolean {
+  return IMAGE_TYPES.includes(file.type);
+}
+
+export function isDocumentFile(file: File): boolean {
+  return DOCUMENT_TYPES.includes(file.type);
+}
+
+export function isValidResourceFile(file: File): boolean {
+  return isImageFile(file) || isDocumentFile(file);
+}
+
+export async function uploadResourceFile(
+  file: File,
+  path: string
+): Promise<string> {
+  const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
+  const { storage } = await import("@/lib/firebase");
+
+  let uploadData: Blob | File = file;
+
+  // Compress images, upload documents as-is
+  if (isImageFile(file)) {
+    uploadData = await resizeImage(file);
+  }
+
+  const storageRef = ref(storage, path);
+  await uploadBytes(storageRef, uploadData);
+  return getDownloadURL(storageRef);
+}
+
+export async function deleteStorageFile(path: string): Promise<void> {
+  const { ref, deleteObject } = await import("firebase/storage");
+  const { storage } = await import("@/lib/firebase");
+
+  const storageRef = ref(storage, path);
+  await deleteObject(storageRef);
+}

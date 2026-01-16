@@ -22,6 +22,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Pedagogical page action buttons**: Four buttons in 2x2 grid - מודל פדגוגי, צוות מו"פ, לוז הדרכה, מערכת שעות
   - מודל פדגוגי opens full-screen modal with unit tree view
   - Buttons display with icon above text, taller card style
+  - Buttons show "קובץ קיים" indicator when file is uploaded
+- **Resource file upload** for לוז הדרכה and מערכת שעות:
+  - Admin can upload PDF, Word (.doc/.docx), or images
+  - Images are automatically compressed before upload
+  - Files stored in Firebase Storage at `resources/{grade}/{type}/`
+  - Metadata stored in Firestore at `settings/resource-{type}-{grade}`
+  - Images display full-size in modal, click to open lightbox
+  - Admin can replace or delete existing files with floating buttons
+  - Non-admin users can view uploaded files
+- **DocumentViewer component** (`src/components/ui/DocumentViewer.tsx`):
+  - Reusable embedded viewer for PDF and Word documents
+  - Uses Google Docs Viewer for rendering
+  - Download button fixed at top-left
+  - Loading spinner and error state with retry option
+  - Can be used anywhere documents need to be displayed
+- **Unit detail page file viewer**: Updated מבוא ליחידה and תוכן היחידה cards
+  - Files now open in modal with embedded viewer instead of new tab
+  - Images display full-size with lightbox on click
+  - Documents use DocumentViewer component
 
 - **Public gallery page**: New `/gallery` page for browsing documentation by grade level
   - Full-viewport grid layout with 6 grade boxes (א through ו)

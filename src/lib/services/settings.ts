@@ -58,3 +58,55 @@ export async function savePedagogicalIntro(grade: Grade, text: string): Promise<
     handleFirebaseError(error, "savePedagogicalIntro");
   }
 }
+
+export type ResourceType = "training-schedule" | "timetable";
+
+export interface ResourceFile {
+  url: string;
+  fileName: string;
+  fileType: string;
+  uploadedAt: Date;
+}
+
+export async function getResourceFile(grade: Grade, type: ResourceType): Promise<ResourceFile | null> {
+  try {
+    const docRef = doc(db, SETTINGS_DOC, `resource-${type}-${grade}`);
+    const docSnap = await getDoc(docRef);
+    if (!docSnap.exists()) return null;
+    const data = docSnap.data();
+    return {
+      url: data.url,
+      fileName: data.fileName,
+      fileType: data.fileType,
+      uploadedAt: data.uploadedAt?.toDate() || new Date(),
+    };
+  } catch (error) {
+    handleFirebaseError(error, "getResourceFile");
+  }
+}
+
+export async function saveResourceFile(
+  grade: Grade,
+  type: ResourceType,
+  file: ResourceFile
+): Promise<void> {
+  try {
+    await setDoc(doc(db, SETTINGS_DOC, `resource-${type}-${grade}`), {
+      url: file.url,
+      fileName: file.fileName,
+      fileType: file.fileType,
+      uploadedAt: file.uploadedAt,
+    });
+  } catch (error) {
+    handleFirebaseError(error, "saveResourceFile");
+  }
+}
+
+export async function deleteResourceFile(grade: Grade, type: ResourceType): Promise<void> {
+  try {
+    const { deleteDoc } = await import("firebase/firestore");
+    await deleteDoc(doc(db, SETTINGS_DOC, `resource-${type}-${grade}`));
+  } catch (error) {
+    handleFirebaseError(error, "deleteResourceFile");
+  }
+}
