@@ -167,3 +167,12 @@ export interface StaffMember {
   order: number;
   createdAt: Date;
 }
+
+// STEM link for teaching resources
+export interface StemLink {
+  id: string;
+  description: string;
+  url: string;
+  grade: Grade | null; // null = all grades, Grade = specific grade only
+  createdAt: Date;
+}

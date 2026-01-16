@@ -1,7 +1,7 @@
 import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { handleFirebaseError } from "@/lib/utils/errors";
-import type { EmailConfig, ReportConfig, Grade } from "@/types";
+import type { EmailConfig, ReportConfig, Grade, StemLink } from "@/types";
 
 const SETTINGS_DOC = "settings";
 
@@ -115,6 +115,38 @@ export async function deleteResourceFile(grade: Grade, type: ResourceType): Prom
     await deleteDoc(doc(db, SETTINGS_DOC, `resource-${type}-${grade}`));
   } catch (error) {
     handleFirebaseError(error, "deleteResourceFile");
+    throw error;
+  }
+}
+
+// STEM Links
+export async function getStemLinks(): Promise<StemLink[]> {
+  try {
+    const docRef = doc(db, SETTINGS_DOC, "stemLinks");
+    const docSnap = await getDoc(docRef);
+    if (!docSnap.exists()) return [];
+    const data = docSnap.data();
+    return (data.links || []).map((link: Record<string, unknown>) => {
+      const createdAt = link.createdAt as { toDate?: () => Date } | undefined;
+      return {
+        id: link.id as string,
+        description: link.description as string,
+        url: link.url as string,
+        grade: link.grade as Grade | null,
+        createdAt: createdAt?.toDate?.() || new Date(),
+      };
+    });
+  } catch (error) {
+    handleFirebaseError(error, "getStemLinks");
+    throw error;
+  }
+}
+
+export async function saveStemLinks(links: StemLink[]): Promise<void> {
+  try {
+    await setDoc(doc(db, SETTINGS_DOC, "stemLinks"), { links });
+  } catch (error) {
+    handleFirebaseError(error, "saveStemLinks");
     throw error;
   }
 }

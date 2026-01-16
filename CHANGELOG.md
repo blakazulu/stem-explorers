@@ -34,6 +34,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **STEM Links modal**: Clicking "קישורים STEM" button opens a modal with links
+  - Links display description text, clicking opens URL in new tab
+  - Admin can add/edit/delete links with inline editing
+  - Links can be global (all grades) or specific to current grade via checkbox
+  - Links stored in Firestore at `settings/stemLinks`
 - **Pedagogical page intro section**: Editable intro text stored in Firebase per grade
   - Admins see pencil icon to edit inline
   - Text saved to `settings/pedagogicalIntro-{grade}` in Firestore

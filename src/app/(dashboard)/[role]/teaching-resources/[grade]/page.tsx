@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
+import { StemLinksModal } from "@/components/teaching-resources/StemLinksModal";
 import {
   FolderOpen,
   ArrowRight,
@@ -21,6 +22,8 @@ export default function TeachingResourcesGradePage() {
   const { session } = useAuth();
   const params = useParams();
   const router = useRouter();
+
+  const [stemLinksOpen, setStemLinksOpen] = useState(false);
 
   const role = params.role as UserRole;
   const grade = decodeURIComponent(params.grade as string) as Grade;
@@ -54,7 +57,7 @@ export default function TeachingResourcesGradePage() {
       title: "קישורים STEM",
       description: "אוסף קישורים שימושיים",
       icon: Link2,
-      href: "#",
+      onClick: () => setStemLinksOpen(true),
       featured: false,
       gradient: "from-emerald-700 to-teal-700",
       iconBg: "bg-white/20",
@@ -99,7 +102,7 @@ export default function TeachingResourcesGradePage() {
       </div>
 
       {/* Featured Resource - Full Width */}
-      {featuredResource && (
+      {featuredResource && featuredResource.href && (
         <Link
           href={featuredResource.href}
           className="group relative block w-full overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
@@ -136,16 +139,34 @@ export default function TeachingResourcesGradePage() {
 
       {/* Other Resources - 2 Column Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {otherResources.map((resource) => (
-          <Link
-            key={resource.id}
-            href={resource.href}
-            className="group relative overflow-hidden rounded-2xl shadow-md hover:shadow-lg cursor-pointer transition-all duration-300"
-          >
-            <ResourceCard resource={resource} />
-          </Link>
-        ))}
+        {otherResources.map((resource) =>
+          resource.onClick ? (
+            <button
+              key={resource.id}
+              onClick={resource.onClick}
+              className="group relative overflow-hidden rounded-2xl shadow-md hover:shadow-lg cursor-pointer transition-all duration-300 text-right"
+            >
+              <ResourceCard resource={resource} />
+            </button>
+          ) : (
+            <Link
+              key={resource.id}
+              href={resource.href || "#"}
+              className="group relative overflow-hidden rounded-2xl shadow-md hover:shadow-lg cursor-pointer transition-all duration-300"
+            >
+              <ResourceCard resource={resource} />
+            </Link>
+          )
+        )}
       </div>
+
+      {/* STEM Links Modal */}
+      <StemLinksModal
+        isOpen={stemLinksOpen}
+        onClose={() => setStemLinksOpen(false)}
+        grade={grade}
+        isAdmin={isAdmin}
+      />
     </div>
   );
 }
