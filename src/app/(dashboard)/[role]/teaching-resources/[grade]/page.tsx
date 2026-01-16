@@ -48,7 +48,6 @@ export default function TeachingResourcesGradePage() {
       featured: true,
       gradient: "from-primary via-primary/80 to-secondary",
       iconBg: "bg-white/20",
-      available: true,
     },
     {
       id: "stem-links",
@@ -59,7 +58,6 @@ export default function TeachingResourcesGradePage() {
       featured: false,
       gradient: "from-emerald-700 to-teal-700",
       iconBg: "bg-white/20",
-      available: false,
     },
     {
       id: "equipment-form",
@@ -70,7 +68,6 @@ export default function TeachingResourcesGradePage() {
       featured: false,
       gradient: "from-amber-700 to-orange-700",
       iconBg: "bg-white/20",
-      available: false,
     },
   ];
 
@@ -140,23 +137,13 @@ export default function TeachingResourcesGradePage() {
       {/* Other Resources - 2 Column Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {otherResources.map((resource) => (
-          <div
+          <Link
             key={resource.id}
-            aria-disabled={!resource.available || undefined}
-            title={!resource.available ? "יהיה זמין בקרוב" : undefined}
-            className={`group relative overflow-hidden rounded-2xl shadow-md transition-all duration-300 ${resource.available
-              ? "hover:shadow-lg cursor-pointer"
-              : "opacity-60 cursor-not-allowed"
-              }`}
+            href={resource.href}
+            className="group relative overflow-hidden rounded-2xl shadow-md hover:shadow-lg cursor-pointer transition-all duration-300"
           >
-            {resource.available ? (
-              <Link href={resource.href} className="block">
-                <ResourceCard resource={resource} />
-              </Link>
-            ) : (
-              <ResourceCard resource={resource} />
-            )}
-          </div>
+            <ResourceCard resource={resource} />
+          </Link>
         ))}
       </div>
     </div>
@@ -170,7 +157,6 @@ interface ResourceCardProps {
     icon: React.ComponentType<{ size?: number; className?: string }>;
     gradient: string;
     iconBg: string;
-    available: boolean;
   };
 }
 
@@ -197,17 +183,10 @@ function ResourceCard({ resource }: ResourceCardProps) {
           <p className="text-white text-sm drop-shadow-md">
             {resource.description}
           </p>
-          {!resource.available && (
-            <span className="inline-block mt-2 text-xs bg-black/20 text-white px-2 py-1 rounded-full drop-shadow-sm">
-              בקרוב
-            </span>
-          )}
         </div>
-        {resource.available && (
-          <div className="opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-300">
-            <ChevronLeft size={24} className="text-white drop-shadow-lg" />
-          </div>
-        )}
+        <div className="opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all duration-300">
+          <ChevronLeft size={24} className="text-white drop-shadow-lg" />
+        </div>
       </div>
     </>
   );
