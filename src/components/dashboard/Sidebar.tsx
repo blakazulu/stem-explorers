@@ -35,7 +35,7 @@ interface NavItem {
 
 // Base paths - will be prefixed with role
 const navItems: NavItem[] = [
-  { label: "מודל פדגוגי", href: "/pedagogical", roles: ["admin", "teacher", "parent", "student"], icon: BookOpen },
+  { label: "מודל פדגוגי ומו\"פ", href: "/pedagogical", roles: ["admin", "teacher", "parent", "student"], icon: BookOpen },
   { label: "תוכניות עבודה", href: "/work-plans", roles: ["admin", "teacher"], icon: FileText },
   { label: "תיעודים", href: "/documentation", roles: ["admin", "teacher", "parent", "student"], icon: Image },
   { label: "יומן חוקר", href: "/journal", roles: ["student"], icon: PenTool },

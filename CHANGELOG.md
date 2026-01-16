@@ -7,7 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Sidebar label**: Renamed "מודל פדגוגי" to "מודל פדגוגי ומו"פ" (R&D)
+- **Pedagogical page**: Updated page title to match new sidebar label
+
 ### Added
+
+- **Pedagogical page intro section**: Editable intro text stored in Firebase per grade
+  - Admins see pencil icon to edit inline
+  - Text saved to `settings/pedagogicalIntro-{grade}` in Firestore
+  - Default placeholder text shown if no custom text set
+  - 300 character limit with live counter (turns amber near limit)
+- **Pedagogical page action buttons**: Four buttons in 2x2 grid - מודל פדגוגי, צוות מו"פ, לוז הדרכה, מערכת שעות
+  - מודל פדגוגי opens full-screen modal with unit tree view
+  - Buttons display with icon above text, taller card style
 
 - **Public gallery page**: New `/gallery` page for browsing documentation by grade level
   - Full-viewport grid layout with 6 grade boxes (א through ו)

@@ -1,7 +1,7 @@
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { handleFirebaseError } from "@/lib/utils/errors";
-import type { EmailConfig, ReportConfig } from "@/types";
+import type { EmailConfig, ReportConfig, Grade } from "@/types";
 
 const SETTINGS_DOC = "settings";
 
@@ -38,5 +38,23 @@ export async function saveReportConfig(config: ReportConfig): Promise<void> {
     await setDoc(doc(db, SETTINGS_DOC, "reportConfig"), config);
   } catch (error) {
     handleFirebaseError(error, "saveReportConfig");
+  }
+}
+
+export async function getPedagogicalIntro(grade: Grade): Promise<string | null> {
+  try {
+    const docRef = doc(db, SETTINGS_DOC, `pedagogicalIntro-${grade}`);
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists() ? (docSnap.data().text as string) : null;
+  } catch (error) {
+    handleFirebaseError(error, "getPedagogicalIntro");
+  }
+}
+
+export async function savePedagogicalIntro(grade: Grade, text: string): Promise<void> {
+  try {
+    await setDoc(doc(db, SETTINGS_DOC, `pedagogicalIntro-${grade}`), { text });
+  } catch (error) {
+    handleFirebaseError(error, "savePedagogicalIntro");
   }
 }
