@@ -7,9 +7,10 @@ import { SkeletonGrid } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useVisibility } from "@/contexts/VisibilityContext";
 import { useToastActions } from "@/components/ui/Toast";
 import { Plus, RefreshCw } from "lucide-react";
-import type { Documentation, Grade } from "@/types";
+import type { Documentation, Grade, ConfigurableRole } from "@/types";
 
 interface DocumentationGalleryProps {
   unitId: string;
@@ -23,6 +24,7 @@ export function DocumentationGallery({
   onAddNew,
 }: DocumentationGalleryProps) {
   const { session } = useAuth();
+  const { getPageElements } = useVisibility();
   const [docs, setDocs] = useState<Documentation[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -31,6 +33,11 @@ export function DocumentationGallery({
   const isAdmin = session?.user.role === "admin";
   const isTeacher = session?.user.role === "teacher";
   const isStudent = session?.user.role === "student";
+
+  // Get documentation visibility config for the current role
+  const role = session?.user.role;
+  const configurableRole = (role === "admin" ? "teacher" : role) as ConfigurableRole;
+  const documentationVisibility = role ? getPageElements(configurableRole, "documentation") : { images: true, text: true, teacherName: true };
 
   const loadDocs = useCallback(async () => {
     setLoading(true);
@@ -120,6 +127,7 @@ export function DocumentationGallery({
               canDelete={isAdmin || (isTeacher && doc.teacherName === session?.user.name)}
               onDelete={handleDelete}
               index={index}
+              visibility={documentationVisibility}
             />
           ))}
         </div>
