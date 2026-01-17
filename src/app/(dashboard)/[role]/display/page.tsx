@@ -175,6 +175,7 @@ export default function DisplaySettingsPage() {
           >
             <DashboardSection
               config={localConfig.dashboards[selectedRole]}
+              sidebarConfig={localConfig.sidebars[selectedRole]}
               onChange={updateDashboard}
             />
           </CollapsibleSection>

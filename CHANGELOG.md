@@ -62,6 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Sidebar labels as single source of truth**: Renamed sidebar links now reflect in dashboard cards (labels sync between sections)
 - **VisibilityContext performance**: Added useMemo to context value to prevent unnecessary re-renders
 - **Visibility control cleanup**: Removed reports from PageElementsConfig since AI-generated content shouldn't have element-level visibility control
 - **Pedagogical page visibility**: Now respects visibility config for unitCards (מודל פדגוגי button) and unitDetails (file indicators in tree view)

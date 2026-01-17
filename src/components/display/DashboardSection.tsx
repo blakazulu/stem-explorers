@@ -1,17 +1,26 @@
 "use client";
 
 import { DraggableCardList } from "./DraggableCardList";
-import type { DashboardConfig } from "@/types";
+import type { DashboardConfig, SidebarConfig } from "@/types";
 import { ALL_DASHBOARD_CARDS } from "@/lib/constants/visibility-defaults";
 
 interface DashboardSectionProps {
   config: DashboardConfig;
+  sidebarConfig: SidebarConfig;
   onChange: (config: DashboardConfig) => void;
 }
 
-export function DashboardSection({ config, onChange }: DashboardSectionProps) {
+export function DashboardSection({ config, sidebarConfig, onChange }: DashboardSectionProps) {
+  // Use sidebar labels as the source of truth, fallback to defaults
+  const sidebarLabels = Object.fromEntries(
+    sidebarConfig.links.map((link) => [link.id, link.label])
+  );
+
   const cardLabels = Object.fromEntries(
-    Object.entries(ALL_DASHBOARD_CARDS).map(([id, meta]) => [id, meta.label])
+    Object.entries(ALL_DASHBOARD_CARDS).map(([id, meta]) => [
+      id,
+      sidebarLabels[id] || meta.label
+    ])
   );
 
   return (
