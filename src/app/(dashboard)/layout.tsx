@@ -106,22 +106,9 @@ export default function DashboardLayout({
           )}
 
           {/* Main Content */}
-          <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden relative">
-            {/* Teacher background */}
-            {urlRole === "teacher" && (
-              <>
-                <div
-                  className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                  style={{ backgroundImage: "url('/bg/bg-teachers.webp')" }}
-                />
-                <div className="absolute inset-0" style={{ backgroundColor: "#f1f6fe", opacity: 0.85 }} />
-              </>
-            )}
-
-            <div className="relative z-10">
-              <Header onMenuToggle={() => setSidebarOpen(true)} />
-            </div>
-            <main className="flex-1 p-4 md:p-6 overflow-y-auto overflow-x-hidden relative z-10">
+          <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+            <Header onMenuToggle={() => setSidebarOpen(true)} />
+            <main className="flex-1 p-4 md:p-6 overflow-y-auto overflow-x-hidden">
               <div className="animate-fade-in">{children}</div>
             </main>
           </div>
