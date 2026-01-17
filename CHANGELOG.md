@@ -84,6 +84,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Dashboard limited to 4 items**: Default dashboard config now shows only 4 visible cards per role (admin can change)
 - **Editable dashboard card descriptions**: Admin can now edit the description for each dashboard card (shown below each card in the config)
 - **Sticky header on display settings page**: Header with save button and role tabs stays visible when scrolling
+- **Dashboard card limit validation**: Admin can only select up to 4 dashboard cards per role, with counter and toast error message
 - **Teaching resources button contrast**: Added drop shadows to text and icons on gradient buttons for better readability
 - **Firebase service functions**: Added proper error re-throwing in staff.ts and settings.ts to ensure functions always return or throw
 - **StaffGrid useEffect**: Fixed missing dependency by wrapping `loadStaff` in useCallback

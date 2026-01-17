@@ -18,7 +18,10 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
+import { useToastActions } from "@/components/ui/Toast";
 import type { DashboardCardConfig } from "@/types";
+
+const MAX_VISIBLE_CARDS = 4;
 
 interface DraggableCardListProps {
   cards: DashboardCardConfig[];
@@ -103,12 +106,15 @@ function SortableItem({ card, label, defaultDescription, onToggle, onDescription
 }
 
 export function DraggableCardList({ cards, cardLabels, cardDescriptions, onChange }: DraggableCardListProps) {
+  const toast = useToastActions();
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
+
+  const visibleCount = cards.filter((c) => c.visible).length;
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -127,8 +133,17 @@ export function DraggableCardList({ cards, cardLabels, cardDescriptions, onChang
   };
 
   const handleToggle = (id: string) => {
-    const newCards = cards.map((card) =>
-      card.id === id ? { ...card, visible: !card.visible } : card
+    const card = cards.find((c) => c.id === id);
+    if (!card) return;
+
+    // If trying to enable and already at max, show error
+    if (!card.visible && visibleCount >= MAX_VISIBLE_CARDS) {
+      toast.error(`ניתן לבחור עד ${MAX_VISIBLE_CARDS} כרטיסים בלבד. בטל בחירה של כרטיס אחר כדי להוסיף חדש.`);
+      return;
+    }
+
+    const newCards = cards.map((c) =>
+      c.id === id ? { ...c, visible: !c.visible } : c
     );
     onChange(newCards);
   };
@@ -154,6 +169,11 @@ export function DraggableCardList({ cards, cardLabels, cardDescriptions, onChang
         strategy={verticalListSortingStrategy}
       >
         <div className="space-y-2">
+          {/* Counter */}
+          <div className={`text-sm ${visibleCount >= MAX_VISIBLE_CARDS ? "text-amber-600" : "text-gray-500"}`}>
+            נבחרו {visibleCount} מתוך {MAX_VISIBLE_CARDS} כרטיסים
+          </div>
+
           {sortedCards.map((card) => (
             <SortableItem
               key={card.id}
