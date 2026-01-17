@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
+import { useVisibility } from "@/contexts/VisibilityContext";
 import { StemLinksModal } from "@/components/teaching-resources/StemLinksModal";
 import { EquipmentFormModal } from "@/components/teaching-resources/EquipmentFormModal";
 import { ExpertsSection } from "@/components/experts";
@@ -16,7 +17,7 @@ import {
   Sparkles,
   ChevronLeft,
 } from "lucide-react";
-import type { Grade, UserRole } from "@/types";
+import type { Grade, UserRole, ConfigurableRole } from "@/types";
 
 const VALID_GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
 
@@ -24,6 +25,7 @@ export default function TeachingResourcesGradePage() {
   const { session } = useAuth();
   const params = useParams();
   const router = useRouter();
+  const { canSee } = useVisibility();
 
   const [stemLinksOpen, setStemLinksOpen] = useState(false);
   const [equipmentFormOpen, setEquipmentFormOpen] = useState(false);
@@ -33,6 +35,7 @@ export default function TeachingResourcesGradePage() {
 
   const isAdmin = session?.user.role === "admin";
   const showBackButton = isAdmin;
+  const configurableRole = (role === "admin" ? "teacher" : role) as ConfigurableRole;
 
   useEffect(() => {
     if (!VALID_GRADES.includes(grade)) {
@@ -44,9 +47,10 @@ export default function TeachingResourcesGradePage() {
     return null;
   }
 
-  const resources = [
+  const allResources = [
     {
       id: "curricula",
+      visibilityKey: "curricula",
       title: "תוכניות לימודים",
       description: "יחידות הלימוד, קבצים ומשאבים לכל נושא",
       icon: BookOpen,
@@ -57,6 +61,7 @@ export default function TeachingResourcesGradePage() {
     },
     {
       id: "stem-links",
+      visibilityKey: "stemLinks",
       title: "קישורים STEM",
       description: "אוסף קישורים שימושיים",
       icon: Link2,
@@ -67,6 +72,7 @@ export default function TeachingResourcesGradePage() {
     },
     {
       id: "equipment-form",
+      visibilityKey: "equipment",
       title: "טופס הצטיידות",
       description: "בקשה למשאבי למידה",
       icon: ClipboardList,
@@ -76,6 +82,11 @@ export default function TeachingResourcesGradePage() {
       iconBg: "bg-white/20",
     },
   ];
+
+  // Filter resources based on visibility config (admin sees everything)
+  const resources = role === "admin"
+    ? allResources
+    : allResources.filter(r => canSee(configurableRole, "teachingResources", r.visibilityKey));
 
   const featuredResource = resources.find((r) => r.featured);
   const otherResources = resources.filter((r) => !r.featured);
@@ -163,8 +174,10 @@ export default function TeachingResourcesGradePage() {
         )}
       </div>
 
-      {/* Experts Section */}
-      <ExpertsSection grade={grade} isAdmin={isAdmin} />
+      {/* Experts Section - controlled by visibility */}
+      {(role === "admin" || canSee(configurableRole, "teachingResources", "experts")) && (
+        <ExpertsSection grade={grade} isAdmin={isAdmin} />
+      )}
 
       {/* STEM Links Modal */}
       <StemLinksModal
