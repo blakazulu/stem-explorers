@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname, notFound } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { VisibilityProvider } from "@/contexts/VisibilityContext";
 import { ToastProvider } from "@/components/ui/Toast";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { Header } from "@/components/dashboard/Header";
@@ -69,8 +70,9 @@ export default function DashboardLayout({
 
   return (
     <ThemeProvider>
-      <ToastProvider>
-        <div className="h-screen bg-background flex overflow-hidden">
+      <VisibilityProvider>
+        <ToastProvider>
+          <div className="h-screen bg-background flex overflow-hidden">
           {/* Desktop Sidebar */}
           <div className="hidden md:block">
             <Sidebar />
@@ -110,8 +112,9 @@ export default function DashboardLayout({
               <div className="animate-fade-in">{children}</div>
             </main>
           </div>
-        </div>
-      </ToastProvider>
+          </div>
+        </ToastProvider>
+      </VisibilityProvider>
     </ThemeProvider>
   );
 }
