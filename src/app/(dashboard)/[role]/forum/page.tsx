@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { getPosts, deletePost } from "@/lib/services/forum";
+import { usePosts, useDeletePost } from "@/lib/queries";
 import { PostCard } from "@/components/forum/PostCard";
 import { NewPostForm } from "@/components/forum/NewPostForm";
 import { Button } from "@/components/ui/Button";
@@ -10,38 +10,25 @@ import { SkeletonList } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useToastActions } from "@/components/ui/Toast";
 import { MessageSquare, Plus } from "lucide-react";
-import type { ForumPost } from "@/types";
 
 export default function ForumPage() {
   const { session } = useAuth();
 
-  const [posts, setPosts] = useState<ForumPost[]>([]);
+  const {
+    data: posts = [],
+    isLoading: loading,
+    refetch: loadPosts,
+  } = usePosts();
   const [showNewPost, setShowNewPost] = useState(false);
-  const [loading, setLoading] = useState(true);
   const toast = useToastActions();
+  const deletePostMutation = useDeletePost();
 
   const isAdmin = session?.user.role === "admin";
-
-  const loadPosts = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await getPosts();
-      setPosts(data);
-    } catch {
-      toast.error("שגיאה", "שגיאה בטעינת הפוסטים");
-    }
-    setLoading(false);
-  }, [toast]);
-
-  useEffect(() => {
-    loadPosts();
-  }, [loadPosts]);
 
   async function handleDelete(id: string) {
     if (!confirm("האם למחוק פוסט זה?")) return;
     try {
-      await deletePost(id);
-      await loadPosts();
+      await deletePostMutation.mutateAsync(id);
     } catch {
       toast.error("שגיאה", "שגיאה במחיקת הפוסט");
     }

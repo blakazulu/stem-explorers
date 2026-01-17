@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { getUnit } from "@/lib/services/units";
+import { useUnit, useCreateDocumentation } from "@/lib/queries";
 import { DocumentationGallery } from "@/components/documentation/DocumentationGallery";
-import { createDocumentation } from "@/lib/services/documentation";
 import { uploadImage } from "@/lib/utils/imageUpload";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -20,7 +19,7 @@ import {
   Image,
   FileText,
 } from "lucide-react";
-import type { Grade, Unit, UserRole } from "@/types";
+import type { Grade, UserRole } from "@/types";
 
 const VALID_GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
 
@@ -33,8 +32,10 @@ export default function DocumentationGalleryPage() {
   const grade = decodeURIComponent(params.grade as string) as Grade;
   const unitId = params.unitId as string;
 
-  const [unit, setUnit] = useState<Unit | null>(null);
-  const [loading, setLoading] = useState(true);
+  // React Query hooks
+  const { data: unit, isLoading: loading } = useUnit(unitId);
+  const createDocumentationMutation = useCreateDocumentation();
+
   const [showAddForm, setShowAddForm] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -47,30 +48,23 @@ export default function DocumentationGalleryPage() {
   const isTeacherOrAdmin =
     session?.user.role === "teacher" || session?.user.role === "admin";
 
-  // Validate grade and load unit
-  useEffect(() => {
-    if (!VALID_GRADES.includes(grade)) {
-      router.replace(`/${role}/documentation`);
-      return;
-    }
+  // Validate grade - redirect if invalid
+  if (!VALID_GRADES.includes(grade)) {
+    router.replace(`/${role}/documentation`);
+    return null;
+  }
 
-    async function loadUnit() {
-      setLoading(true);
-      try {
-        const unitData = await getUnit(unitId);
-        if (!unitData || unitData.gradeId !== grade) {
-          router.replace(`/${role}/documentation/${grade}`);
-          return;
-        }
-        setUnit(unitData);
-      } catch {
-        router.replace(`/${role}/documentation/${grade}`);
-      }
-      setLoading(false);
-    }
+  // Validate unit belongs to grade - redirect if not
+  if (!loading && unit && unit.gradeId !== grade) {
+    router.replace(`/${role}/documentation/${grade}`);
+    return null;
+  }
 
-    loadUnit();
-  }, [grade, unitId, role, router]);
+  // Redirect if unit not found after loading
+  if (!loading && !unit) {
+    router.replace(`/${role}/documentation/${grade}`);
+    return null;
+  }
 
   async function handleAddDocumentation() {
     if (!unit || !session) return;
@@ -90,8 +84,8 @@ export default function DocumentationGalleryPage() {
         imageUrls.push(url);
       }
 
-      // Create documentation entry
-      await createDocumentation({
+      // Create documentation entry using mutation
+      await createDocumentationMutation.mutateAsync({
         unitId: unitId,
         gradeId: grade,
         images: imageUrls,
@@ -111,11 +105,8 @@ export default function DocumentationGalleryPage() {
     setUploading(false);
   }
 
-  if (!VALID_GRADES.includes(grade) || loading) {
-    return null;
-  }
-
-  if (!unit) {
+  // Show nothing while loading
+  if (loading || !unit) {
     return null;
   }
 

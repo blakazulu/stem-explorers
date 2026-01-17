@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { getUnitsByGrade } from "@/lib/services/units";
-import { Card } from "@/components/ui/Card";
+import { useUnitsByGrade } from "@/lib/queries";
 import { SkeletonGrid } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { BarChart2, ChevronRight, BookOpen, ArrowRight } from "lucide-react";
@@ -22,41 +21,28 @@ export default function ReportsUnitSelectorPage() {
   const role = params.role as UserRole;
   const grade = decodeURIComponent(params.grade as string) as Grade;
 
-  const [units, setUnits] = useState<Unit[]>([]);
-  const [loading, setLoading] = useState(true);
+  const isValidGrade = VALID_GRADES.includes(grade);
+
+  const { data: units = [], isLoading: loading } = useUnitsByGrade(
+    isValidGrade ? grade : null
+  );
 
   const isAdmin = session?.user.role === "admin";
   // Only show back button for admins (others are restricted to their grade)
   const showBackButton = isAdmin;
 
-  // Validate grade
+  // Validate grade - redirect if invalid
   useEffect(() => {
-    if (!VALID_GRADES.includes(grade)) {
+    if (!isValidGrade) {
       router.replace(`/${role}/reports`);
     }
-  }, [grade, role, router]);
-
-  const loadUnits = useCallback(async () => {
-    if (!VALID_GRADES.includes(grade)) return;
-    setLoading(true);
-    try {
-      const data = await getUnitsByGrade(grade);
-      setUnits(data);
-    } catch {
-      // Error handled silently
-    }
-    setLoading(false);
-  }, [grade]);
-
-  useEffect(() => {
-    loadUnits();
-  }, [loadUnits]);
+  }, [isValidGrade, role, router]);
 
   function handleUnitSelect(unit: Unit) {
     router.push(`/${role}/reports/${grade}/${unit.id}`);
   }
 
-  if (!VALID_GRADES.includes(grade)) {
+  if (!isValidGrade) {
     return null;
   }
 

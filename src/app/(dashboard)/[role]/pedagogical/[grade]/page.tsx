@@ -10,14 +10,13 @@ import { StaffGrid } from "@/components/staff";
 import { Button } from "@/components/ui/Button";
 import { useToastActions } from "@/components/ui/Toast";
 import {
-  getPedagogicalIntro,
-  savePedagogicalIntro,
-  getResourceFile,
-  saveResourceFile,
-  deleteResourceFile,
-  type ResourceFile,
-  type ResourceType,
-} from "@/lib/services/settings";
+  usePedagogicalIntro,
+  useResourceFile,
+  useSavePedagogicalIntro,
+  useSaveResourceFile,
+  useDeleteResourceFile,
+} from "@/lib/queries";
+import { type ResourceFile, type ResourceType } from "@/lib/services/settings";
 import { uploadResourceFile, isValidResourceFile, deleteStorageFile } from "@/lib/utils/imageUpload";
 import { DocumentViewer } from "@/components/ui/DocumentViewer";
 import {
@@ -50,6 +49,7 @@ export default function PedagogicalGradePage() {
 
   const role = params.role as UserRole;
   const grade = decodeURIComponent(params.grade as string) as Grade;
+  const isValidGrade = VALID_GRADES.includes(grade);
 
   const isAdmin = session?.user.role === "admin";
   // Admin doesn't have configurable visibility - default to showing everything
@@ -59,16 +59,26 @@ export default function PedagogicalGradePage() {
     session?.user.role === "teacher" || session?.user.role === "admin";
   const showBackButton = isAdmin;
 
-  const [introText, setIntroText] = useState<string | null>(null);
-  const [introLoading, setIntroLoading] = useState(true);
+  // React Query hooks for data fetching
+  const { data: introData, isLoading: introLoading } = usePedagogicalIntro(isValidGrade ? grade : null);
+  const { data: trainingSchedule } = useResourceFile(isValidGrade ? grade : null, "training-schedule");
+  const { data: timetable } = useResourceFile(isValidGrade ? grade : null, "timetable");
+
+  // Mutations for saving/deleting
+  const savePedagogicalIntroMutation = useSavePedagogicalIntro();
+  const saveResourceFileMutation = useSaveResourceFile();
+  const deleteResourceFileMutation = useDeleteResourceFile();
+
+  // Derived intro text with default fallback
+  const introText = introData || DEFAULT_INTRO;
+
+  // Local state for editing and UI
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState("");
   const [saving, setSaving] = useState(false);
   const [showPedagogicalModal, setShowPedagogicalModal] = useState(false);
 
-  // Resource file state
-  const [trainingSchedule, setTrainingSchedule] = useState<ResourceFile | null>(null);
-  const [timetable, setTimetable] = useState<ResourceFile | null>(null);
+  // Resource file UI state
   const [activeResourceModal, setActiveResourceModal] = useState<ResourceType | null>(null);
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -79,26 +89,12 @@ export default function PedagogicalGradePage() {
   const lightboxRef = useRef<HTMLDialogElement>(null);
   const staffModalRef = useRef<HTMLDialogElement>(null);
 
+  // Redirect if grade is invalid
   useEffect(() => {
-    if (!VALID_GRADES.includes(grade)) {
+    if (!isValidGrade) {
       router.replace(`/${role}/pedagogical`);
-      return;
     }
-
-    async function loadData() {
-      setIntroLoading(true);
-      const [introData, trainingData, timetableData] = await Promise.all([
-        getPedagogicalIntro(grade),
-        getResourceFile(grade, "training-schedule"),
-        getResourceFile(grade, "timetable"),
-      ]);
-      setIntroText(introData || DEFAULT_INTRO);
-      setTrainingSchedule(trainingData);
-      setTimetable(timetableData);
-      setIntroLoading(false);
-    }
-    loadData();
-  }, [grade, role, router]);
+  }, [isValidGrade, role, router]);
 
   useEffect(() => {
     const modal = modalRef.current;
@@ -144,7 +140,7 @@ export default function PedagogicalGradePage() {
     }
   }, [showStaffModal]);
 
-  const getResourceData = (type: ResourceType) => {
+  const getResourceData = (type: ResourceType): ResourceFile | null | undefined => {
     return type === "training-schedule" ? trainingSchedule : timetable;
   };
 
@@ -188,13 +184,8 @@ export default function PedagogicalGradePage() {
         uploadedAt: new Date(),
       };
 
-      await saveResourceFile(grade, resourceType, resourceFile);
-
-      if (resourceType === "training-schedule") {
-        setTrainingSchedule(resourceFile);
-      } else {
-        setTimetable(resourceFile);
-      }
+      // Use mutation which automatically invalidates the query
+      await saveResourceFileMutation.mutateAsync({ grade, type: resourceType, file: resourceFile });
 
       toast.success("הועלה בהצלחה", "הקובץ נשמר");
     } catch {
@@ -230,13 +221,8 @@ export default function PedagogicalGradePage() {
         // Storage deletion failed, continue with Firestore deletion
       }
 
-      await deleteResourceFile(grade, resourceType);
-
-      if (resourceType === "training-schedule") {
-        setTrainingSchedule(null);
-      } else {
-        setTimetable(null);
-      }
+      // Use mutation which automatically invalidates the query
+      await deleteResourceFileMutation.mutateAsync({ grade, type: resourceType });
 
       toast.success("נמחק", "הקובץ הוסר בהצלחה");
     } catch {
@@ -250,7 +236,7 @@ export default function PedagogicalGradePage() {
   };
 
   const handleStartEdit = () => {
-    setEditText(introText || DEFAULT_INTRO);
+    setEditText(introText);
     setIsEditing(true);
   };
 
@@ -267,8 +253,8 @@ export default function PedagogicalGradePage() {
 
     setSaving(true);
     try {
-      await savePedagogicalIntro(grade, editText.trim());
-      setIntroText(editText.trim());
+      // Use mutation which automatically invalidates the query
+      await savePedagogicalIntroMutation.mutateAsync({ grade, text: editText.trim() });
       setIsEditing(false);
       toast.success("נשמר", "הטקסט עודכן בהצלחה");
     } catch {
@@ -281,7 +267,7 @@ export default function PedagogicalGradePage() {
     setShowPedagogicalModal(false);
   };
 
-  if (!VALID_GRADES.includes(grade)) {
+  if (!isValidGrade) {
     return null;
   }
 

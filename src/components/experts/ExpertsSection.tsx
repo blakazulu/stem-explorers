@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { getExperts, saveExperts } from "@/lib/services/settings";
+import { useState, useMemo } from "react";
+import { useExperts, useSaveExperts } from "@/lib/queries";
 import { ExpertCard } from "./ExpertCard";
 import { ExpertDetailsModal } from "./ExpertDetailsModal";
 import { AddEditExpertModal } from "./AddEditExpertModal";
@@ -17,9 +17,8 @@ interface ExpertsSectionProps {
 }
 
 export function ExpertsSection({ grade, isAdmin, userRole }: ExpertsSectionProps) {
-  const [experts, setExperts] = useState<Expert[]>([]);
-  const [allExperts, setAllExperts] = useState<Expert[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: allExperts = [], isLoading: loading } = useExperts();
+  const saveExpertsMutation = useSaveExperts();
   const [deleting, setDeleting] = useState(false);
   const [selectedExpert, setSelectedExpert] = useState<Expert | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -28,31 +27,19 @@ export function ExpertsSection({ grade, isAdmin, userRole }: ExpertsSectionProps
   const [deleteConfirm, setDeleteConfirm] = useState<Expert | null>(null);
   const toast = useToastActions();
 
-  const loadExperts = useCallback(async () => {
-    try {
-      const data = await getExperts();
-      setAllExperts(data);
-      // Filter by grade (global + grade-specific) and by role
-      const filtered = data.filter((e) => {
-        // Grade filter: show if global (null) or matches current grade
-        const gradeMatch = e.grade === null || e.grade === grade;
+  // Filter experts by grade and role
+  const experts = useMemo(() => {
+    return allExperts.filter((e) => {
+      // Grade filter: show if global (null) or matches current grade
+      const gradeMatch = e.grade === null || e.grade === grade;
 
-        // Role filter: admin sees all, others see if their role is in expert's roles
-        // Legacy experts without roles field are visible to all
-        const roleMatch = isAdmin || !userRole || !e.roles?.length || e.roles.includes(userRole);
+      // Role filter: admin sees all, others see if their role is in expert's roles
+      // Legacy experts without roles field are visible to all
+      const roleMatch = isAdmin || !userRole || !e.roles?.length || e.roles.includes(userRole);
 
-        return gradeMatch && roleMatch;
-      });
-      setExperts(filtered);
-    } catch {
-      toast.error("שגיאה", "שגיאה בטעינת המומחים");
-    }
-    setLoading(false);
-  }, [grade, isAdmin, userRole, toast]);
-
-  useEffect(() => {
-    loadExperts();
-  }, [loadExperts]);
+      return gradeMatch && roleMatch;
+    });
+  }, [allExperts, grade, isAdmin, userRole]);
 
   const handleViewDetails = (expert: Expert) => {
     setSelectedExpert(expert);
@@ -91,8 +78,7 @@ export function ExpertsSection({ grade, isAdmin, userRole }: ExpertsSectionProps
         updated = [...allExperts, newExpert];
       }
 
-      await saveExperts(updated);
-      await loadExperts();
+      await saveExpertsMutation.mutateAsync(updated);
       toast.success("נשמר", editingExpert ? "המומחה עודכן" : "המומחה נוסף");
     } catch {
       toast.error("שגיאה", "שגיאה בשמירת המומחה");
@@ -106,8 +92,7 @@ export function ExpertsSection({ grade, isAdmin, userRole }: ExpertsSectionProps
     setDeleting(true);
     try {
       const updated = allExperts.filter((e) => e.id !== deleteConfirm.id);
-      await saveExperts(updated);
-      await loadExperts();
+      await saveExpertsMutation.mutateAsync(updated);
       toast.success("נמחק", "המומחה נמחק בהצלחה");
     } catch {
       toast.error("שגיאה", "שגיאה במחיקת המומחה");

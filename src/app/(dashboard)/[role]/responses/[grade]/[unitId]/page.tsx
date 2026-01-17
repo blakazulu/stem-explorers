@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { getJournalsByUnit, deleteJournal } from "@/lib/services/journals";
-import { getUnit } from "@/lib/services/units";
+import { useUnit, useJournalsByUnit, useDeleteJournal } from "@/lib/queries";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { SkeletonGrid } from "@/components/ui/Skeleton";
@@ -21,9 +20,8 @@ import {
   ChevronUp,
   Trash2,
   MessageSquare,
-  Star,
 } from "lucide-react";
-import type { Grade, Unit, ResearchJournal, UserRole } from "@/types";
+import type { Grade, UserRole } from "@/types";
 
 const VALID_GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
 
@@ -57,62 +55,50 @@ export default function ResponsesListPage() {
   const grade = decodeURIComponent(params.grade as string) as Grade;
   const unitId = params.unitId as string;
 
-  const [unit, setUnit] = useState<Unit | null>(null);
-  const [journals, setJournals] = useState<ResearchJournal[]>([]);
-  const [loading, setLoading] = useState(true);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState(false);
 
   const isAdmin = session?.user.role === "admin";
   const isTeacher = session?.user.role === "teacher";
   const backUrl = `/${role}/responses/${encodeURIComponent(grade)}`;
+  const isValidGrade = VALID_GRADES.includes(grade);
+  const canAccess = isTeacher || isAdmin;
+
+  // React Query hooks
+  const { data: unit } = useUnit(canAccess && isValidGrade ? unitId : null);
+  const { data: journals = [], isLoading: loading, refetch } = useJournalsByUnit(
+    canAccess && isValidGrade ? unitId : null,
+    canAccess && isValidGrade ? grade : null
+  );
+  const deleteJournalMutation = useDeleteJournal();
+
+  // Sort journals by date, newest first
+  const sortedJournals = useMemo(() => {
+    return [...journals].sort((a, b) =>
+      (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0)
+    );
+  }, [journals]);
 
   // Only teachers and admins can access this page
   useEffect(() => {
-    if (!isTeacher && !isAdmin) {
+    if (!canAccess) {
       router.replace(`/${role}`);
     }
-  }, [isTeacher, isAdmin, role, router]);
+  }, [canAccess, role, router]);
 
   // Validate grade
   useEffect(() => {
-    if (!VALID_GRADES.includes(grade)) {
+    if (!isValidGrade) {
       router.replace(`/${role}/responses`);
     }
-  }, [grade, role, router]);
+  }, [isValidGrade, role, router]);
 
-  const loadData = useCallback(async () => {
-    if (!VALID_GRADES.includes(grade)) return;
-    setLoading(true);
-    try {
-      const [unitData, journalsData] = await Promise.all([
-        getUnit(unitId),
-        getJournalsByUnit(unitId, grade),
-      ]);
-
-      if (!unitData || unitData.gradeId !== grade) {
-        router.replace(backUrl);
-        return;
-      }
-
-      setUnit(unitData);
-      // Sort by date, newest first
-      setJournals(journalsData.sort((a, b) =>
-        (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0)
-      ));
-    } catch {
-      toast.error("שגיאה", "שגיאה בטעינת הנתונים");
+  // Redirect if unit doesn't belong to grade
+  useEffect(() => {
+    if (unit && unit.gradeId !== grade) {
       router.replace(backUrl);
     }
-    setLoading(false);
-  }, [grade, unitId, backUrl, router, toast]);
-
-  useEffect(() => {
-    if ((isTeacher || isAdmin) && VALID_GRADES.includes(grade)) {
-      loadData();
-    }
-  }, [isTeacher, isAdmin, grade, loadData]);
+  }, [unit, grade, backUrl, router]);
 
   function toggleExpanded(id: string) {
     setExpandedIds((prev) => {
@@ -129,16 +115,18 @@ export default function ResponsesListPage() {
   async function handleDelete() {
     if (!deleteId) return;
 
-    setDeleting(true);
-    try {
-      await deleteJournal(deleteId);
-      setJournals((prev) => prev.filter((j) => j.id !== deleteId));
-      toast.success("תגובות", "התגובה נמחקה בהצלחה");
-      setDeleteId(null);
-    } catch {
-      toast.error("שגיאה", "לא הצלחנו למחוק את התגובה");
-    }
-    setDeleting(false);
+    deleteJournalMutation.mutate(
+      { id: deleteId, unitId, gradeId: grade },
+      {
+        onSuccess: () => {
+          toast.success("תגובות", "התגובה נמחקה בהצלחה");
+          setDeleteId(null);
+        },
+        onError: () => {
+          toast.error("שגיאה", "לא הצלחנו למחוק את התגובה");
+        },
+      }
+    );
   }
 
   if (!VALID_GRADES.includes(grade) || (!isTeacher && !isAdmin)) {
@@ -172,7 +160,7 @@ export default function ResponsesListPage() {
       {/* Responses List */}
       {loading ? (
         <SkeletonGrid count={4} columns={2} />
-      ) : journals.length === 0 ? (
+      ) : sortedJournals.length === 0 ? (
         <EmptyState
           icon="help-circle"
           title="אין תגובות"
@@ -181,10 +169,10 @@ export default function ResponsesListPage() {
       ) : (
         <div className="space-y-4">
           <p className="text-sm text-gray-500">
-            {journals.length} תגובות
+            {sortedJournals.length} תגובות
           </p>
 
-          {journals.map((journal, index) => {
+          {sortedJournals.map((journal, index) => {
             const isExpanded = expandedIds.has(journal.id);
             return (
               <Card

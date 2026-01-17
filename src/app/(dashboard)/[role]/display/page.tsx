@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { useVisibility } from "@/contexts/VisibilityContext";
+import { useVisibilityConfig, useSaveVisibilityConfig } from "@/lib/queries";
 import { useToastActions } from "@/components/ui/Toast";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -13,19 +13,18 @@ import { CollapsibleSection } from "@/components/display/CollapsibleSection";
 import { DashboardSection } from "@/components/display/DashboardSection";
 import { SidebarSection } from "@/components/display/SidebarSection";
 import { PageElementsSection } from "@/components/display/PageElementsSection";
-import { saveVisibilityConfig } from "@/lib/services/visibility";
 import { Eye, Save, RotateCcw } from "lucide-react";
 import type { ConfigurableRole, VisibilityConfig } from "@/types";
 
 export default function DisplaySettingsPage() {
   const { session } = useAuth();
   const router = useRouter();
-  const { config: savedConfig, isLoading, refetch } = useVisibility();
+  const { data: savedConfig, isLoading } = useVisibilityConfig();
+  const saveConfigMutation = useSaveVisibilityConfig();
   const toast = useToastActions();
 
   const [selectedRole, setSelectedRole] = useState<ConfigurableRole>("teacher");
   const [localConfig, setLocalConfig] = useState<VisibilityConfig | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
   // Redirect non-admins
@@ -45,17 +44,13 @@ export default function DisplaySettingsPage() {
   const handleSave = async () => {
     if (!localConfig) return;
 
-    setIsSaving(true);
     try {
-      await saveVisibilityConfig(localConfig);
-      await refetch();
+      await saveConfigMutation.mutateAsync(localConfig);
       setHasChanges(false);
       toast.success("הגדרות התצוגה נשמרו בהצלחה");
     } catch (error) {
       console.error("Failed to save visibility config:", error);
       toast.error("שגיאה בשמירת ההגדרות");
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -142,7 +137,7 @@ export default function DisplaySettingsPage() {
               <Button
                 variant="outline"
                 onClick={handleCancel}
-                disabled={isSaving}
+                disabled={saveConfigMutation.isPending}
               >
                 <RotateCcw size={18} className="ml-2" />
                 בטל
@@ -150,8 +145,8 @@ export default function DisplaySettingsPage() {
             )}
             <Button
               onClick={handleSave}
-              disabled={!hasChanges || isSaving}
-              loading={isSaving}
+              disabled={!hasChanges || saveConfigMutation.isPending}
+              loading={saveConfigMutation.isPending}
             >
               <Save size={18} className="ml-2" />
               שמור

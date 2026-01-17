@@ -63,6 +63,25 @@ All Firestore operations in `src/lib/services/`:
 - Functions: `get*`, `create*`, `update*`, `delete*`
 - Errors handled via `handleFirebaseError()` utility
 
+### React Query Caching
+All Firebase data fetching uses TanStack Query hooks in `src/lib/queries/`:
+- Query keys centralized in `keys.ts`
+- Each service has corresponding hooks (e.g., `useUnitsByGrade`, `useCreateUnit`)
+- Default: 5-min stale time, 30-min gc, no refetchOnWindowFocus
+
+**Adding caching for new features:**
+1. Add query keys to `src/lib/queries/keys.ts`
+2. Create hooks file `src/lib/queries/newFeature.ts` with `useQuery` for reads, `useMutation` for writes
+3. Export from `src/lib/queries/index.ts`
+4. Use hooks in components instead of `useState` + `useEffect`
+5. In mutations, invalidate related queries in `onSuccess`
+
+```tsx
+// Component usage
+const { data: units = [], isLoading } = useUnitsByGrade(grade);
+const createUnit = useCreateUnit();
+```
+
 ### UI Component Library
 Located in `src/components/ui/`:
 - `Button` - Variants: primary, outline, ghost, destructive; supports icons, loading

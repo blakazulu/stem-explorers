@@ -1,14 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { getUnitsByGrade } from "@/lib/services/units";
+import { useUnitsByGrade } from "@/lib/queries";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { SkeletonGrid } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { useToastActions } from "@/components/ui/Toast";
 import {
   BookOpen,
   PenTool,
@@ -24,28 +22,7 @@ export default function JournalUnitSelectorPage() {
   const role = params.role as UserRole;
   const grade = session?.user.grade as Grade;
 
-  const [units, setUnits] = useState<Unit[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
-  const toast = useToastActions();
-
-  const loadUnits = useCallback(async () => {
-    if (!grade) return;
-    setLoading(true);
-    setLoadError(false);
-    try {
-      const data = await getUnitsByGrade(grade);
-      setUnits(data);
-    } catch {
-      setLoadError(true);
-      toast.error("שגיאה", "שגיאה בטעינת יחידות הלימוד");
-    }
-    setLoading(false);
-  }, [grade, toast]);
-
-  useEffect(() => {
-    loadUnits();
-  }, [loadUnits]);
+  const { data: units = [], isLoading, isError, refetch } = useUnitsByGrade(grade);
 
   function handleSelectUnit(unit: Unit) {
     router.push(`/${role}/journal/${unit.id}`);
@@ -78,15 +55,15 @@ export default function JournalUnitSelectorPage() {
       </div>
 
       {/* Units Grid */}
-      {loading ? (
+      {isLoading ? (
         <SkeletonGrid count={6} />
-      ) : loadError ? (
+      ) : isError ? (
         <EmptyState
           icon="alert-triangle"
           title="שגיאה בטעינה"
           description="לא הצלחנו לטעון את יחידות הלימוד"
           action={
-            <Button onClick={loadUnits} rightIcon={RefreshCw}>
+            <Button onClick={() => refetch()} rightIcon={RefreshCw}>
               נסה שוב
             </Button>
           }

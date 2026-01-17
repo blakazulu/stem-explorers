@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { getUnit } from "@/lib/services/units";
-import { getQuestionsForUnit } from "@/lib/services/questions";
+import { useUnit, useActiveQuestionnaire } from "@/lib/queries";
 import { submitJournal } from "@/lib/services/journals";
 import { JournalWizard } from "@/components/journal/JournalWizard";
 import { Button } from "@/components/ui/Button";
@@ -18,7 +17,7 @@ import {
   ArrowRight,
   RefreshCw,
 } from "lucide-react";
-import type { Unit, Question, JournalAnswer, Grade, UserRole } from "@/types";
+import type { Question, JournalAnswer, Grade, UserRole } from "@/types";
 
 export default function JournalWizardPage() {
   const { session } = useAuth();
@@ -29,43 +28,56 @@ export default function JournalWizardPage() {
   const unitId = params.unitId as string;
   const grade = session?.user.grade as Grade;
 
-  const [unit, setUnit] = useState<Unit | null>(null);
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const toast = useToastActions();
 
-  // Load unit and questions
-  const loadData = useCallback(async () => {
+  // Load unit and questionnaire using React Query
+  const {
+    data: unit,
+    isLoading: unitLoading,
+    isError: unitError,
+    refetch: refetchUnit,
+  } = useUnit(unitId);
+
+  const {
+    data: questionnaire,
+    isLoading: questionnaireLoading,
+    isError: questionnaireError,
+    refetch: refetchQuestionnaire,
+  } = useActiveQuestionnaire(grade, unitId);
+
+  // Derive questions from questionnaire
+  const questions: Question[] = questionnaire?.questions
+    ?.sort((a, b) => a.order - b.order)
+    .map((eq) => ({
+      id: eq.id,
+      type: eq.type,
+      text: eq.text,
+      options: eq.options,
+      ratingStyle: eq.ratingStyle,
+      target: { grades: [grade], units: [unitId] },
+      order: eq.order,
+    })) ?? [];
+
+  const isLoading = unitLoading || questionnaireLoading;
+  const isError = unitError || questionnaireError;
+
+  const refetch = () => {
+    refetchUnit();
+    refetchQuestionnaire();
+  };
+
+  // Redirect if unit doesn't match grade
+  useEffect(() => {
     if (!grade) {
       router.replace(`/${role}/journal`);
       return;
     }
-
-    setLoading(true);
-    setLoadError(false);
-    try {
-      const unitData = await getUnit(unitId);
-      if (!unitData || unitData.gradeId !== grade) {
-        router.replace(`/${role}/journal`);
-        return;
-      }
-      setUnit(unitData);
-
-      const qs = await getQuestionsForUnit(grade, unitId);
-      setQuestions(qs);
-    } catch {
-      setLoadError(true);
-      toast.error("שגיאה", "שגיאה בטעינת השאלות");
+    if (!unitLoading && unit && unit.gradeId !== grade) {
+      router.replace(`/${role}/journal`);
     }
-    setLoading(false);
-  }, [grade, unitId, role, router, toast]);
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  }, [grade, unit, unitLoading, role, router]);
 
   async function handleSubmit(answers: JournalAnswer[]) {
     if (!unit || !session) return;
@@ -106,7 +118,7 @@ export default function JournalWizardPage() {
   }
 
   // Loading state
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="max-w-2xl space-y-4">
         <Card>
@@ -130,7 +142,7 @@ export default function JournalWizardPage() {
     );
   }
 
-  if (loadError) {
+  if (isError) {
     return (
       <div className="max-w-2xl space-y-4">
         <Card>
@@ -148,7 +160,7 @@ export default function JournalWizardPage() {
           title="שגיאה בטעינה"
           description="לא הצלחנו לטעון את השאלות"
           action={
-            <Button onClick={loadData} rightIcon={RefreshCw}>
+            <Button onClick={() => refetch()} rightIcon={RefreshCw}>
               נסה שוב
             </Button>
           }

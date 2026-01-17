@@ -1,7 +1,5 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { getDocumentationByUnit, deleteDocumentation } from "@/lib/services/documentation";
 import { DocumentationCard } from "./DocumentationCard";
 import { SkeletonGrid } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -9,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useVisibility } from "@/contexts/VisibilityContext";
 import { useToastActions } from "@/components/ui/Toast";
+import { useDocumentationByUnit, useDeleteDocumentation } from "@/lib/queries";
 import { Plus, RefreshCw } from "lucide-react";
 import type { Documentation, Grade, ConfigurableRole } from "@/types";
 
@@ -25,10 +24,18 @@ export function DocumentationGallery({
 }: DocumentationGalleryProps) {
   const { session } = useAuth();
   const { getPageElements } = useVisibility();
-  const [docs, setDocs] = useState<Documentation[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
   const toast = useToastActions();
+
+  // Use React Query for data fetching
+  const {
+    data: docs = [],
+    isLoading: loading,
+    isError: loadError,
+    refetch,
+  } = useDocumentationByUnit(unitId, gradeId);
+
+  // Use React Query mutation for deletion
+  const deleteDocMutation = useDeleteDocumentation();
 
   const isAdmin = session?.user.role === "admin";
   const isTeacher = session?.user.role === "teacher";
@@ -39,28 +46,15 @@ export function DocumentationGallery({
   const configurableRole = (role === "admin" ? "teacher" : role) as ConfigurableRole;
   const documentationVisibility = role ? getPageElements(configurableRole, "documentation") : { images: true, text: true, teacherName: true };
 
-  const loadDocs = useCallback(async () => {
-    setLoading(true);
-    setLoadError(false);
-    try {
-      const data = await getDocumentationByUnit(unitId, gradeId);
-      setDocs(data);
-    } catch {
-      setLoadError(true);
-      toast.error("שגיאה", "שגיאה בטעינת התיעודים");
-    }
-    setLoading(false);
-  }, [unitId, gradeId, toast]);
-
-  useEffect(() => {
-    loadDocs();
-  }, [loadDocs]);
-
   async function handleDelete(doc: Documentation) {
     if (!confirm("האם למחוק תיעוד זה?")) return;
     try {
-      await deleteDocumentation(doc.id, doc.images);
-      await loadDocs();
+      await deleteDocMutation.mutateAsync({
+        id: doc.id,
+        imageUrls: doc.images,
+        unitId,
+        gradeId,
+      });
     } catch {
       toast.error("שגיאה", "שגיאה במחיקת התיעוד");
     }
@@ -77,7 +71,7 @@ export function DocumentationGallery({
         title="שגיאה בטעינה"
         description="לא הצלחנו לטעון את התיעודים"
         action={
-          <Button onClick={loadDocs} rightIcon={RefreshCw}>
+          <Button onClick={() => refetch()} rightIcon={RefreshCw}>
             נסה שוב
           </Button>
         }

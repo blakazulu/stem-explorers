@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useParams, useRouter } from "next/navigation";
-import { getAllUsers, updateUserPassword, UserDocument } from "@/lib/services/users";
+import { updateUserPassword, UserDocument } from "@/lib/services/users";
+import { useAllUsers } from "@/lib/queries";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
@@ -218,8 +219,7 @@ export default function PasswordsPage() {
   const router = useRouter();
   const role = params.role as UserRole;
 
-  const [users, setUsers] = useState<UserDocument[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: usersData = [], isLoading: loading, refetch } = useAllUsers();
   const [editingUser, setEditingUser] = useState<UserDocument | null>(null);
   const [newPassword, setNewPassword] = useState("");
   const [saving, setSaving] = useState(false);
@@ -231,32 +231,22 @@ export default function PasswordsPage() {
     student: true,
   });
 
-  const loadUsers = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await getAllUsers();
-      data.sort((a, b) => {
-        const roleOrder = { admin: 0, teacher: 1, parent: 2, student: 3 };
-        if (roleOrder[a.role] !== roleOrder[b.role]) {
-          return roleOrder[a.role] - roleOrder[b.role];
-        }
-        const gradeOrder = ["א", "ב", "ג", "ד", "ה", "ו"];
-        return gradeOrder.indexOf(a.grade || "") - gradeOrder.indexOf(b.grade || "");
-      });
-      setUsers(data);
-    } catch {
-      toast.error("שגיאה", "שגיאה בטעינת משתמשים");
-    }
-    setLoading(false);
-  }, [toast]);
+  const users = useMemo(() => {
+    return [...usersData].sort((a, b) => {
+      const roleOrder = { admin: 0, teacher: 1, parent: 2, student: 3 };
+      if (roleOrder[a.role] !== roleOrder[b.role]) {
+        return roleOrder[a.role] - roleOrder[b.role];
+      }
+      const gradeOrder = ["א", "ב", "ג", "ד", "ה", "ו"];
+      return gradeOrder.indexOf(a.grade || "") - gradeOrder.indexOf(b.grade || "");
+    });
+  }, [usersData]);
 
   useEffect(() => {
     if (session?.user.role !== "admin") {
       router.push(`/${role}`);
-      return;
     }
-    loadUsers();
-  }, [session, router, loadUsers, role]);
+  }, [session, router, role]);
 
   function toggleSection(sectionRole: string) {
     setOpenSections((prev) => ({ ...prev, [sectionRole]: !prev[sectionRole] }));
@@ -310,7 +300,7 @@ export default function PasswordsPage() {
 
       setEditingUser(null);
       setNewPassword("");
-      await loadUsers();
+      refetch();
     } catch {
       toast.error("שגיאה", "שגיאה בעדכון הסיסמה");
     }

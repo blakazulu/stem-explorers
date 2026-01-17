@@ -1,18 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import rehypeSanitize from "rehype-sanitize";
 import { useAuth } from "@/contexts/AuthContext";
-import { getUnit } from "@/lib/services/units";
-import { getReport } from "@/lib/services/reports";
+import { useUnit, useReport } from "@/lib/queries";
 import { Card } from "@/components/ui/Card";
 import { SkeletonCard } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { BarChart2, FileText, ArrowRight } from "lucide-react";
-import type { Grade, Unit, Report, UserRole } from "@/types";
+import type { Grade, UserRole } from "@/types";
 
 const VALID_GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
 
@@ -25,41 +23,40 @@ export default function ReportViewPage() {
   const grade = decodeURIComponent(params.grade as string) as Grade;
   const unitId = params.unitId as string;
 
-  const [unit, setUnit] = useState<Unit | null>(null);
-  const [report, setReport] = useState<Report | null>(null);
-  const [loading, setLoading] = useState(true);
-
+  const isValidGrade = VALID_GRADES.includes(grade);
   const isParent = session?.user.role === "parent";
 
-  // Validate grade and load data
-  useEffect(() => {
-    if (!VALID_GRADES.includes(grade)) {
-      router.replace(`/${role}/reports`);
-      return;
-    }
+  // Load unit data using React Query
+  const {
+    data: unit,
+    isLoading: unitLoading,
+    isError: unitError,
+  } = useUnit(isValidGrade ? unitId : null);
 
-    async function loadData() {
-      setLoading(true);
-      try {
-        const unitData = await getUnit(unitId);
-        if (!unitData || unitData.gradeId !== grade) {
-          router.replace(`/${role}/reports/${grade}`);
-          return;
-        }
-        setUnit(unitData);
+  // Load report data using React Query
+  const {
+    data: report,
+    isLoading: reportLoading,
+  } = useReport(
+    isValidGrade && unit ? unitId : null,
+    isValidGrade && unit ? grade : null
+  );
 
-        const reportData = await getReport(unitId, grade);
-        setReport(reportData);
-      } catch {
-        router.replace(`/${role}/reports/${grade}`);
-      }
-      setLoading(false);
-    }
+  const loading = unitLoading || reportLoading;
 
-    loadData();
-  }, [grade, unitId, role, router]);
+  // Handle invalid grade - redirect
+  if (!isValidGrade) {
+    router.replace(`/${role}/reports`);
+    return null;
+  }
 
-  if (!VALID_GRADES.includes(grade) || loading) {
+  // Handle unit error or unit grade mismatch - redirect
+  if (unitError || (unit && unit.gradeId !== grade)) {
+    router.replace(`/${role}/reports/${grade}`);
+    return null;
+  }
+
+  if (loading) {
     return (
       <div className="space-y-6 max-w-4xl">
         <div className="flex items-center gap-3">

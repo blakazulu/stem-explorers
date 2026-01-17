@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { getUnit, deleteUnit } from "@/lib/services/units";
+import { useUnit } from "@/lib/queries";
+import { deleteUnit } from "@/lib/services/units";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -19,7 +20,7 @@ import {
   ArrowRight,
   X,
 } from "lucide-react";
-import type { Unit, Grade, UserRole } from "@/types";
+import type { Grade, UserRole } from "@/types";
 
 type FileModalType = "intro" | "unit" | null;
 
@@ -35,8 +36,7 @@ export default function UnitDetailPage() {
   const grade = decodeURIComponent(params.grade as string) as Grade;
   const unitId = params.unitId as string;
 
-  const [unit, setUnit] = useState<Unit | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: unit, isLoading: loading, error: unitError } = useUnit(unitId);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [activeFileModal, setActiveFileModal] = useState<FileModalType>(null);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
@@ -54,25 +54,17 @@ export default function UnitDetailPage() {
       return;
     }
 
-    async function loadUnit() {
-      setLoading(true);
-      try {
-        const data = await getUnit(unitId);
-        if (!data) {
-          toast.error("שגיאה", "היחידה לא נמצאה");
-          router.replace(backUrl);
-          return;
-        }
-        setUnit(data);
-      } catch {
-        toast.error("שגיאה", "שגיאה בטעינת היחידה");
-        router.replace(backUrl);
-      }
-      setLoading(false);
+    if (unitError) {
+      toast.error("שגיאה", "שגיאה בטעינת היחידה");
+      router.replace(backUrl);
+      return;
     }
 
-    loadUnit();
-  }, [grade, unitId, role, router, backUrl, toast]);
+    if (!loading && !unit) {
+      toast.error("שגיאה", "היחידה לא נמצאה");
+      router.replace(backUrl);
+    }
+  }, [grade, role, router, backUrl, toast, unitError, loading, unit]);
 
   useEffect(() => {
     const modal = fileModalRef.current;

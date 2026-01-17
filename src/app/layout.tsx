@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Rubik, Heebo } from "next/font/google";
+import { QueryProvider } from "@/providers/QueryProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { VersionGuard } from "@/components/VersionGuard";
 import "./globals.css";
@@ -69,11 +70,13 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Playpen+Sans+Hebrew:wght@700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-heebo bg-background text-foreground min-h-screen">
-        <VersionGuard>
-          <AuthProvider>
-            {children}
-          </AuthProvider>
-        </VersionGuard>
+        <QueryProvider>
+          <VersionGuard>
+            <AuthProvider>
+              {children}
+            </AuthProvider>
+          </VersionGuard>
+        </QueryProvider>
       </body>
     </html>
   );

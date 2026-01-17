@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { createQuestionnaire } from "@/lib/services/questionnaires";
-import { getUnitsByGrade } from "@/lib/services/units";
+import { useUnitsByGrade } from "@/lib/queries";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
@@ -17,7 +17,7 @@ import {
   Plus,
   BookOpen,
 } from "lucide-react";
-import type { Unit, Grade, UserRole } from "@/types";
+import type { Grade, UserRole } from "@/types";
 
 const VALID_GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
 
@@ -29,8 +29,9 @@ export default function NewQuestionnairePage() {
   const role = params.role as UserRole;
   const grade = decodeURIComponent(params.grade as string) as Grade;
 
-  const [units, setUnits] = useState<Unit[]>([]);
-  const [loading, setLoading] = useState(true);
+  const isValidGrade = VALID_GRADES.includes(grade);
+  const { data: units = [], isLoading, error } = useUnitsByGrade(isValidGrade ? grade : null);
+
   const [saving, setSaving] = useState(false);
   const [name, setName] = useState("");
   const [unitId, setUnitId] = useState("");
@@ -45,26 +46,16 @@ export default function NewQuestionnairePage() {
       router.replace(`/${role}`);
       return;
     }
-    if (!VALID_GRADES.includes(grade)) {
+    if (!isValidGrade) {
       router.replace(`/${role}/questions`);
     }
-  }, [isAdmin, grade, role, router]);
-
-  const loadUnits = useCallback(async () => {
-    if (!VALID_GRADES.includes(grade)) return;
-    setLoading(true);
-    try {
-      const data = await getUnitsByGrade(grade);
-      setUnits(data);
-    } catch {
-      toast.error("שגיאה", "שגיאה בטעינת יחידות הלימוד");
-    }
-    setLoading(false);
-  }, [grade, toast]);
+  }, [isAdmin, isValidGrade, role, router]);
 
   useEffect(() => {
-    loadUnits();
-  }, [loadUnits]);
+    if (error) {
+      toast.error("שגיאה", "שגיאה בטעינת יחידות הלימוד");
+    }
+  }, [error, toast]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -87,7 +78,7 @@ export default function NewQuestionnairePage() {
     }
   }
 
-  if (!isAdmin || !VALID_GRADES.includes(grade)) {
+  if (!isAdmin || !isValidGrade) {
     return null;
   }
 
@@ -114,7 +105,7 @@ export default function NewQuestionnairePage() {
       </div>
 
       {/* Form */}
-      {loading ? (
+      {isLoading ? (
         <SkeletonCard />
       ) : (
         <Card>

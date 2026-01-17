@@ -1,11 +1,16 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { getQuestionnairesByGrade, deleteQuestionnaire, activateQuestionnaire, deactivateQuestionnaire } from "@/lib/services/questionnaires";
-import { getUnitsByGrade } from "@/lib/services/units";
+import {
+  useUnitsByGrade,
+  useQuestionnairesByGrade,
+  useDeleteQuestionnaire,
+  useActivateQuestionnaire,
+  useDeactivateQuestionnaire,
+} from "@/lib/queries";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { SkeletonGrid } from "@/components/ui/Skeleton";
@@ -23,7 +28,7 @@ import {
   HelpCircle,
   BookOpen,
 } from "lucide-react";
-import type { Questionnaire, Unit, Grade, UserRole } from "@/types";
+import type { Questionnaire, Grade, UserRole } from "@/types";
 
 const VALID_GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
 
@@ -35,70 +40,86 @@ export default function QuestionnairesListPage() {
   const role = params.role as UserRole;
   const grade = decodeURIComponent(params.grade as string) as Grade;
 
-  const [questionnaires, setQuestionnaires] = useState<Questionnaire[]>([]);
-  const [units, setUnits] = useState<Unit[]>([]);
-  const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const toast = useToastActions();
 
   const isAdmin = session?.user.role === "admin";
+  const isValidGrade = VALID_GRADES.includes(grade);
   const newUrl = `/${role}/questions/${encodeURIComponent(grade)}/new`;
+
+  // React Query hooks for data fetching
+  const {
+    data: questionnaires = [],
+    isLoading: questionnairesLoading,
+    isError: questionnairesError,
+  } = useQuestionnairesByGrade(isAdmin && isValidGrade ? grade : null);
+
+  const {
+    data: units = [],
+    isLoading: unitsLoading,
+    isError: unitsError,
+  } = useUnitsByGrade(isAdmin && isValidGrade ? grade : null);
+
+  // React Query mutation hooks
+  const deleteMutation = useDeleteQuestionnaire();
+  const activateMutation = useActivateQuestionnaire();
+  const deactivateMutation = useDeactivateQuestionnaire();
+
+  const loading = questionnairesLoading || unitsLoading;
 
   useEffect(() => {
     if (!isAdmin) {
       router.replace(`/${role}`);
       return;
     }
-    if (!VALID_GRADES.includes(grade)) {
+    if (!isValidGrade) {
       router.replace(`/${role}/questions`);
     }
-  }, [isAdmin, grade, role, router]);
+  }, [isAdmin, isValidGrade, role, router]);
 
-  const loadData = useCallback(async () => {
-    if (!VALID_GRADES.includes(grade)) return;
-    setLoading(true);
-    try {
-      const [qData, uData] = await Promise.all([
-        getQuestionnairesByGrade(grade),
-        getUnitsByGrade(grade),
-      ]);
-      setQuestionnaires(qData);
-      setUnits(uData);
-    } catch {
+  // Show error toast when data loading fails
+  useEffect(() => {
+    if (questionnairesError || unitsError) {
       toast.error("שגיאה", "שגיאה בטעינת הנתונים");
     }
-    setLoading(false);
-  }, [grade, toast]);
+  }, [questionnairesError, unitsError, toast]);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
-
-  async function handleDelete() {
+  function handleDelete() {
     if (!deleteId) return;
-    try {
-      await deleteQuestionnaire(deleteId);
-      toast.success("שאלונים", "השאלון נמחק בהצלחה");
-      setDeleteId(null);
-      await loadData();
-    } catch {
-      toast.error("שגיאה", "לא הצלחנו למחוק את השאלון");
-      setDeleteId(null);
-    }
+    deleteMutation.mutate(deleteId, {
+      onSuccess: () => {
+        toast.success("שאלונים", "השאלון נמחק בהצלחה");
+        setDeleteId(null);
+      },
+      onError: () => {
+        toast.error("שגיאה", "לא הצלחנו למחוק את השאלון");
+        setDeleteId(null);
+      },
+    });
   }
 
-  async function handleToggleActive(q: Questionnaire) {
-    try {
-      if (q.isActive) {
-        await deactivateQuestionnaire(q.id);
-        toast.success("שאלונים", "השאלון הושבת");
-      } else {
-        await activateQuestionnaire(q.id, q.gradeId, q.unitId);
-        toast.success("שאלונים", "השאלון הופעל");
-      }
-      await loadData();
-    } catch {
-      toast.error("שגיאה", "לא הצלחנו לעדכן את סטטוס השאלון");
+  function handleToggleActive(q: Questionnaire) {
+    if (q.isActive) {
+      deactivateMutation.mutate(q.id, {
+        onSuccess: () => {
+          toast.success("שאלונים", "השאלון הושבת");
+        },
+        onError: () => {
+          toast.error("שגיאה", "לא הצלחנו לעדכן את סטטוס השאלון");
+        },
+      });
+    } else {
+      activateMutation.mutate(
+        { id: q.id, gradeId: q.gradeId, unitId: q.unitId },
+        {
+          onSuccess: () => {
+            toast.success("שאלונים", "השאלון הופעל");
+          },
+          onError: () => {
+            toast.error("שגיאה", "לא הצלחנו לעדכן את סטטוס השאלון");
+          },
+        }
+      );
     }
   }
 
@@ -107,7 +128,7 @@ export default function QuestionnairesListPage() {
     return unit?.name || "יחידה לא ידועה";
   }
 
-  if (!isAdmin || !VALID_GRADES.includes(grade)) {
+  if (!isAdmin || !isValidGrade) {
     return null;
   }
 

@@ -1,8 +1,8 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from "react";
+import { createContext, useContext, useCallback, useMemo, type ReactNode } from "react";
 import type { VisibilityConfig, ConfigurableRole, DashboardConfig, SidebarConfig, PageElementsConfig } from "@/types";
-import { getVisibilityConfig, mergeWithDefaults } from "@/lib/services/visibility";
+import { useVisibilityConfig } from "@/lib/queries";
 import { DEFAULT_VISIBILITY_CONFIG } from "@/lib/constants/visibility-defaults";
 
 interface VisibilityContextValue {
@@ -19,29 +19,7 @@ interface VisibilityContextValue {
 const VisibilityContext = createContext<VisibilityContextValue | null>(null);
 
 export function VisibilityProvider({ children }: { children: ReactNode }) {
-  const [config, setConfig] = useState<VisibilityConfig>(DEFAULT_VISIBILITY_CONFIG);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  const fetchConfig = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const saved = await getVisibilityConfig();
-      const merged = mergeWithDefaults(saved);
-      setConfig(merged);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error("Failed to load visibility config"));
-      // On error, use defaults
-      setConfig(DEFAULT_VISIBILITY_CONFIG);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchConfig();
-  }, [fetchConfig]);
+  const { data: config = DEFAULT_VISIBILITY_CONFIG, isLoading, error, refetch } = useVisibilityConfig();
 
   const getDashboardConfig = useCallback(
     (role: ConfigurableRole): DashboardConfig => {
@@ -73,18 +51,22 @@ export function VisibilityProvider({ children }: { children: ReactNode }) {
     [config]
   );
 
+  const refetchConfig = useCallback(async () => {
+    await refetch();
+  }, [refetch]);
+
   const value = useMemo(
     () => ({
       config,
       isLoading,
-      error,
-      refetch: fetchConfig,
+      error: error instanceof Error ? error : error ? new Error("Failed to load visibility config") : null,
+      refetch: refetchConfig,
       getDashboardConfig,
       getSidebarConfig,
       getPageElements,
       canSee,
     }),
-    [config, isLoading, error, fetchConfig, getDashboardConfig, getSidebarConfig, getPageElements, canSee]
+    [config, isLoading, error, refetchConfig, getDashboardConfig, getSidebarConfig, getPageElements, canSee]
   );
 
   return (

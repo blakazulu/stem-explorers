@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { getQuestionnaire, updateQuestionnaire, activateQuestionnaire, deactivateQuestionnaire } from "@/lib/services/questionnaires";
-import { getUnit } from "@/lib/services/units";
+import { useQuestionnaire, useUnitsByGrade, useUpdateQuestionnaire, useActivateQuestionnaire, useDeactivateQuestionnaire } from "@/lib/queries";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
@@ -30,7 +29,7 @@ import {
   Heart,
   ThumbsUp,
 } from "lucide-react";
-import type { Questionnaire, EmbeddedQuestion, QuestionType, RatingStyle, Unit, Grade, UserRole } from "@/types";
+import type { EmbeddedQuestion, QuestionType, RatingStyle, Grade, UserRole } from "@/types";
 
 const VALID_GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
 const MIN_QUESTIONS = 0;
@@ -74,10 +73,21 @@ export default function EditQuestionnairePage() {
   const grade = decodeURIComponent(params.grade as string) as Grade;
   const questionnaireId = params.id as string;
 
-  const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(null);
-  const [unit, setUnit] = useState<Unit | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  // React Query hooks
+  const { data: questionnaire, isLoading: questionnaireLoading } = useQuestionnaire(questionnaireId);
+  const { data: units, isLoading: unitsLoading } = useUnitsByGrade(grade);
+  const updateQuestionnaireMutation = useUpdateQuestionnaire();
+  const activateQuestionnaireMutation = useActivateQuestionnaire();
+  const deactivateQuestionnaireMutation = useDeactivateQuestionnaire();
+
+  // Derive unit from units list
+  const unit = useMemo(() => {
+    if (!units || !questionnaire) return null;
+    return units.find((u) => u.id === questionnaire.unitId) || null;
+  }, [units, questionnaire]);
+
+  const loading = questionnaireLoading || unitsLoading;
+  const saving = updateQuestionnaireMutation.isPending || activateQuestionnaireMutation.isPending || deactivateQuestionnaireMutation.isPending;
 
   // Question form state
   const [showQuestionForm, setShowQuestionForm] = useState(false);
@@ -110,30 +120,12 @@ export default function EditQuestionnairePage() {
     }
   }, [isAdmin, grade, role, router]);
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const q = await getQuestionnaire(questionnaireId);
-      if (!q || q.gradeId !== grade) {
-        router.replace(backUrl);
-        return;
-      }
-      setQuestionnaire(q);
-
-      const u = await getUnit(q.unitId);
-      setUnit(u);
-    } catch {
-      toast.error("שגיאה", "שגיאה בטעינת השאלון");
+  // Redirect if questionnaire not found or doesn't match grade
+  useEffect(() => {
+    if (!loading && questionnaire && questionnaire.gradeId !== grade) {
       router.replace(backUrl);
     }
-    setLoading(false);
-  }, [questionnaireId, grade, backUrl, router, toast]);
-
-  useEffect(() => {
-    if (isAdmin && VALID_GRADES.includes(grade)) {
-      loadData();
-    }
-  }, [isAdmin, grade, loadData]);
+  }, [loading, questionnaire, grade, backUrl, router]);
 
   function resetQuestionForm() {
     setShowQuestionForm(false);
@@ -168,108 +160,126 @@ export default function EditQuestionnairePage() {
   async function handleSaveQuestion() {
     if (!questionnaire || !isQuestionFormValid) return;
 
-    setSaving(true);
-    try {
-      let updatedQuestions: EmbeddedQuestion[];
+    let updatedQuestions: EmbeddedQuestion[];
 
-      if (editingQuestionId) {
-        // Update existing question
-        updatedQuestions = questionnaire.questions.map((q) => {
-          if (q.id !== editingQuestionId) return q;
-          const updated: EmbeddedQuestion = {
-            ...q,
-            type: questionType,
-            text: questionText.trim(),
-          };
-          // Only include options for choice types (Firebase doesn't support undefined)
-          if (isChoiceType) {
-            updated.options = questionOptions;
-          } else {
-            delete updated.options;
-          }
-          // Only include ratingStyle for rating type
-          if (isRatingType) {
-            updated.ratingStyle = ratingStyle;
-          } else {
-            delete updated.ratingStyle;
-          }
-          return updated;
-        });
-      } else {
-        // Add new question
-        const newQuestion: EmbeddedQuestion = {
-          id: generateId(),
+    if (editingQuestionId) {
+      // Update existing question
+      updatedQuestions = questionnaire.questions.map((q) => {
+        if (q.id !== editingQuestionId) return q;
+        const updated: EmbeddedQuestion = {
+          ...q,
           type: questionType,
           text: questionText.trim(),
-          order: questionnaire.questions.length + 1,
         };
         // Only include options for choice types (Firebase doesn't support undefined)
         if (isChoiceType) {
-          newQuestion.options = questionOptions;
+          updated.options = questionOptions;
+        } else {
+          delete updated.options;
         }
         // Only include ratingStyle for rating type
         if (isRatingType) {
-          newQuestion.ratingStyle = ratingStyle;
+          updated.ratingStyle = ratingStyle;
+        } else {
+          delete updated.ratingStyle;
         }
-        updatedQuestions = [...questionnaire.questions, newQuestion];
+        return updated;
+      });
+    } else {
+      // Add new question
+      const newQuestion: EmbeddedQuestion = {
+        id: generateId(),
+        type: questionType,
+        text: questionText.trim(),
+        order: questionnaire.questions.length + 1,
+      };
+      // Only include options for choice types (Firebase doesn't support undefined)
+      if (isChoiceType) {
+        newQuestion.options = questionOptions;
       }
-
-      await updateQuestionnaire(questionnaire.id, { questions: updatedQuestions });
-      setQuestionnaire({ ...questionnaire, questions: updatedQuestions });
-      toast.success("שאלונים", editingQuestionId ? "השאלה עודכנה" : "השאלה נוספה");
-      resetQuestionForm();
-    } catch {
-      toast.error("שגיאה", "לא הצלחנו לשמור את השאלה");
+      // Only include ratingStyle for rating type
+      if (isRatingType) {
+        newQuestion.ratingStyle = ratingStyle;
+      }
+      updatedQuestions = [...questionnaire.questions, newQuestion];
     }
-    setSaving(false);
+
+    const isEditing = !!editingQuestionId;
+    updateQuestionnaireMutation.mutate(
+      { id: questionnaire.id, data: { questions: updatedQuestions } },
+      {
+        onSuccess: () => {
+          toast.success("שאלונים", isEditing ? "השאלה עודכנה" : "השאלה נוספה");
+          resetQuestionForm();
+        },
+        onError: () => {
+          toast.error("שגיאה", "לא הצלחנו לשמור את השאלה");
+        },
+      }
+    );
   }
 
-  async function handleDeleteQuestion() {
+  function handleDeleteQuestion() {
     if (!questionnaire || !deleteQuestionId) return;
 
-    setSaving(true);
-    try {
-      const updatedQuestions = questionnaire.questions
-        .filter((q) => q.id !== deleteQuestionId)
-        .map((q, i) => ({ ...q, order: i + 1 })); // Re-order
+    const updatedQuestions = questionnaire.questions
+      .filter((q) => q.id !== deleteQuestionId)
+      .map((q, i) => ({ ...q, order: i + 1 })); // Re-order
 
-      // If questionnaire was active and now has no questions, deactivate it
-      const shouldDeactivate = questionnaire.isActive && updatedQuestions.length === 0;
+    // If questionnaire was active and now has no questions, deactivate it
+    const shouldDeactivate = questionnaire.isActive && updatedQuestions.length === 0;
 
-      if (shouldDeactivate) {
-        await updateQuestionnaire(questionnaire.id, { questions: updatedQuestions, isActive: false });
-        setQuestionnaire({ ...questionnaire, questions: updatedQuestions, isActive: false });
-        toast.success("שאלונים", "השאלה נמחקה והשאלון הושבת");
-      } else {
-        await updateQuestionnaire(questionnaire.id, { questions: updatedQuestions });
-        setQuestionnaire({ ...questionnaire, questions: updatedQuestions });
-        toast.success("שאלונים", "השאלה נמחקה");
+    updateQuestionnaireMutation.mutate(
+      {
+        id: questionnaire.id,
+        data: shouldDeactivate
+          ? { questions: updatedQuestions, isActive: false }
+          : { questions: updatedQuestions },
+      },
+      {
+        onSuccess: () => {
+          toast.success(
+            "שאלונים",
+            shouldDeactivate ? "השאלה נמחקה והשאלון הושבת" : "השאלה נמחקה"
+          );
+          setDeleteQuestionId(null);
+        },
+        onError: () => {
+          toast.error("שגיאה", "לא הצלחנו למחוק את השאלה");
+        },
       }
-      setDeleteQuestionId(null);
-    } catch {
-      toast.error("שגיאה", "לא הצלחנו למחוק את השאלה");
-    }
-    setSaving(false);
+    );
   }
 
-  async function handleToggleActive() {
+  function handleToggleActive() {
     if (!questionnaire) return;
 
-    setSaving(true);
-    try {
-      if (questionnaire.isActive) {
-        await deactivateQuestionnaire(questionnaire.id);
-        setQuestionnaire({ ...questionnaire, isActive: false });
-        toast.success("שאלונים", "השאלון הושבת");
-      } else {
-        await activateQuestionnaire(questionnaire.id, questionnaire.gradeId, questionnaire.unitId);
-        setQuestionnaire({ ...questionnaire, isActive: true });
-        toast.success("שאלונים", "השאלון הופעל");
-      }
-    } catch {
-      toast.error("שגיאה", "לא הצלחנו לעדכן את סטטוס השאלון");
+    if (questionnaire.isActive) {
+      deactivateQuestionnaireMutation.mutate(questionnaire.id, {
+        onSuccess: () => {
+          toast.success("שאלונים", "השאלון הושבת");
+        },
+        onError: () => {
+          toast.error("שגיאה", "לא הצלחנו לעדכן את סטטוס השאלון");
+        },
+      });
+    } else {
+      activateQuestionnaireMutation.mutate(
+        {
+          id: questionnaire.id,
+          gradeId: questionnaire.gradeId,
+          unitId: questionnaire.unitId,
+        },
+        {
+          onSuccess: () => {
+            toast.success("שאלונים", "השאלון הופעל");
+          },
+          onError: () => {
+            toast.error("שגיאה", "לא הצלחנו לעדכן את סטטוס השאלון");
+          },
+        }
+      );
     }
-    setSaving(false);
   }
 
   if (!isAdmin || !VALID_GRADES.includes(grade)) {

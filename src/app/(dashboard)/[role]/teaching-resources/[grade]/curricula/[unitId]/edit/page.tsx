@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { getUnit, getUnitsByGrade, updateUnit } from "@/lib/services/units";
+import { useUnit, useUnitsByGrade } from "@/lib/queries";
+import { updateUnit } from "@/lib/services/units";
 import { uploadDocument } from "@/lib/utils/fileUpload";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -21,7 +22,7 @@ import {
   CheckCircle,
   ArrowRight,
 } from "lucide-react";
-import type { Unit, Grade, UserRole } from "@/types";
+import type { Grade, UserRole } from "@/types";
 
 const VALID_GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
 
@@ -35,9 +36,10 @@ export default function EditUnitPage() {
   const grade = decodeURIComponent(params.grade as string) as Grade;
   const unitId = params.unitId as string;
 
-  const [unit, setUnit] = useState<Unit | null>(null);
-  const [unitsCount, setUnitsCount] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const { data: unit, isLoading: unitLoading, error: unitError } = useUnit(unitId);
+  const { data: units, isLoading: unitsLoading } = useUnitsByGrade(grade);
+  const loading = unitLoading || unitsLoading;
+  const unitsCount = units?.length ?? 0;
   const [saving, setSaving] = useState(false);
 
   // Form state
@@ -61,37 +63,25 @@ export default function EditUnitPage() {
     }
   }, [grade, role, router, isAdmin, backUrl]);
 
-  // Load unit and units count
-  const loadData = useCallback(async () => {
-    if (!VALID_GRADES.includes(grade)) return;
-    setLoading(true);
-    try {
-      const [unitData, units] = await Promise.all([
-        getUnit(unitId),
-        getUnitsByGrade(grade),
-      ]);
-
-      if (!unitData) {
-        toast.error("שגיאה", "היחידה לא נמצאה");
-        router.replace(backUrl);
-        return;
-      }
-
-      setUnit(unitData);
-      setUnitsCount(units.length);
-      setName(unitData.name);
-      setOrder(unitData.order);
-    } catch {
+  // Handle unit loading errors and initialize form state
+  useEffect(() => {
+    if (unitError) {
       toast.error("שגיאה", "שגיאה בטעינת היחידה");
       router.replace(backUrl);
-    } finally {
-      setLoading(false);
+      return;
     }
-  }, [grade, unitId, backUrl, router, toast]);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+    if (!loading && !unit) {
+      toast.error("שגיאה", "היחידה לא נמצאה");
+      router.replace(backUrl);
+      return;
+    }
+
+    if (unit) {
+      setName(unit.name);
+      setOrder(unit.order);
+    }
+  }, [unit, loading, unitError, toast, router, backUrl]);
 
   async function handleSubmit() {
     if (!name.trim() || !unit) return;

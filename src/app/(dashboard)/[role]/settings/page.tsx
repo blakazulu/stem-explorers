@@ -4,11 +4,11 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useParams, useRouter } from "next/navigation";
 import {
-  getEmailConfig,
-  saveEmailConfig,
-  getReportConfig,
-  saveReportConfig,
-} from "@/lib/services/settings";
+  useEmailConfig,
+  useSaveEmailConfig,
+  useReportConfig,
+  useSaveReportConfig,
+} from "@/lib/queries";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
@@ -44,9 +44,17 @@ export default function SettingsPage() {
   const role = params.role as UserRole;
 
   const [activeTab, setActiveTab] = useState<Tab>("email");
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
 
+  // React Query hooks
+  const { data: fetchedEmailConfig, isLoading: emailLoading } = useEmailConfig();
+  const { data: fetchedReportConfig, isLoading: reportLoading } = useReportConfig();
+  const saveEmailMutation = useSaveEmailConfig();
+  const saveReportMutation = useSaveReportConfig();
+
+  const loading = emailLoading || reportLoading;
+  const saving = saveEmailMutation.isPending || saveReportMutation.isPending;
+
+  // Local state for form editing
   const [emailConfig, setEmailConfig] = useState<EmailConfig>({
     adminEmails: [],
     frequency: "daily",
@@ -63,46 +71,41 @@ export default function SettingsPage() {
     aiPromptInstructions: "",
   });
 
+  // Redirect non-admin users
   useEffect(() => {
     if (session?.user.role !== "admin") {
       router.push(`/${role}`);
-      return;
     }
-
-    async function load() {
-      setLoading(true);
-      const [email, report] = await Promise.all([
-        getEmailConfig(),
-        getReportConfig(),
-      ]);
-      if (email) setEmailConfig(email);
-      if (report) {
-        const mergedElements = REPORT_ELEMENTS.map((el) => {
-          const saved = report.elements.find((e) => e.id === el.id);
-          return saved || {
-            id: el.id,
-            label: el.label,
-            enabledForTeacher: el.defaultTeacher,
-            enabledForParent: el.defaultParent,
-          };
-        });
-        setReportConfig({ ...report, elements: mergedElements });
-      }
-      setLoading(false);
-    }
-    load();
   }, [session, router, role]);
 
-  async function handleSaveEmail() {
-    setSaving(true);
-    await saveEmailConfig(emailConfig);
-    setSaving(false);
+  // Sync fetched data to local state
+  useEffect(() => {
+    if (fetchedEmailConfig) {
+      setEmailConfig(fetchedEmailConfig);
+    }
+  }, [fetchedEmailConfig]);
+
+  useEffect(() => {
+    if (fetchedReportConfig) {
+      const mergedElements = REPORT_ELEMENTS.map((el) => {
+        const saved = fetchedReportConfig.elements.find((e) => e.id === el.id);
+        return saved || {
+          id: el.id,
+          label: el.label,
+          enabledForTeacher: el.defaultTeacher,
+          enabledForParent: el.defaultParent,
+        };
+      });
+      setReportConfig({ ...fetchedReportConfig, elements: mergedElements });
+    }
+  }, [fetchedReportConfig]);
+
+  function handleSaveEmail() {
+    saveEmailMutation.mutate(emailConfig);
   }
 
-  async function handleSaveReport() {
-    setSaving(true);
-    await saveReportConfig(reportConfig);
-    setSaving(false);
+  function handleSaveReport() {
+    saveReportMutation.mutate(reportConfig);
   }
 
   function addEmail() {

@@ -1,13 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
-import { getUnitsByGrade } from "@/lib/services/units";
+import { useUnitsByGrade } from "@/lib/queries";
 import { Icon, getStemIconForId } from "@/components/ui/Icon";
 import { SkeletonCard } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
-import { useToastActions } from "@/components/ui/Toast";
 import {
   BookOpen,
   FileText,
@@ -17,7 +15,7 @@ import {
   Plus,
   Atom,
 } from "lucide-react";
-import type { Unit, Grade, UserRole } from "@/types";
+import type { Grade, UserRole } from "@/types";
 
 interface UnitTreeViewProps {
   grade: Grade;
@@ -27,29 +25,9 @@ interface UnitTreeViewProps {
 }
 
 export function UnitTreeView({ grade, role, onAddUnit, showDetails = true }: UnitTreeViewProps) {
-  const [units, setUnits] = useState<Unit[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
-  const toast = useToastActions();
+  const { data: units = [], isLoading, isError, refetch } = useUnitsByGrade(grade);
 
-  async function loadUnits() {
-    setLoading(true);
-    setLoadError(false);
-    try {
-      const data = await getUnitsByGrade(grade);
-      setUnits(data);
-    } catch {
-      setLoadError(true);
-      toast.error("שגיאה", "שגיאה בטעינת יחידות הלימוד");
-    }
-    setLoading(false);
-  }
-
-  useEffect(() => {
-    loadUnits();
-  }, [grade]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="space-y-6">
         {[1, 2, 3].map((i) => (
@@ -67,14 +45,14 @@ export function UnitTreeView({ grade, role, onAddUnit, showDetails = true }: Uni
     );
   }
 
-  if (loadError) {
+  if (isError) {
     return (
       <EmptyState
         icon="alert-triangle"
         title="שגיאה בטעינה"
         description="לא הצלחנו לטעון את יחידות הלימוד"
         action={
-          <Button onClick={loadUnits} rightIcon={RefreshCw}>
+          <Button onClick={() => refetch()} rightIcon={RefreshCw}>
             נסה שוב
           </Button>
         }

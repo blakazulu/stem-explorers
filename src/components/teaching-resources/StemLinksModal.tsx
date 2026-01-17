@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToastActions } from "@/components/ui/Toast";
-import { getStemLinks, saveStemLinks } from "@/lib/services/settings";
+import { useStemLinks, useSaveStemLinks } from "@/lib/queries";
 import {
   X,
   Link2,
@@ -42,9 +42,9 @@ export function StemLinksModal({
   const dialogRef = useRef<HTMLDialogElement>(null);
   const toast = useToastActions();
 
-  const [allLinks, setAllLinks] = useState<StemLink[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  // React Query hooks
+  const { data: allLinks = [], isLoading: loading } = useStemLinks();
+  const saveMutation = useSaveStemLinks();
 
   // Edit state
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -72,7 +72,6 @@ export function StemLinksModal({
 
     if (isOpen) {
       dialog.showModal();
-      loadLinks();
     } else {
       dialog.close();
     }
@@ -92,28 +91,13 @@ export function StemLinksModal({
     return () => dialog.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
-  async function loadLinks() {
-    setLoading(true);
-    try {
-      const links = await getStemLinks();
-      setAllLinks(links);
-    } catch {
-      toast.error("שגיאה", "שגיאה בטעינת הקישורים");
-    }
-    setLoading(false);
-  }
-
   async function handleSave(updatedLinks: StemLink[]): Promise<boolean> {
-    setSaving(true);
     try {
-      await saveStemLinks(updatedLinks);
-      setAllLinks(updatedLinks);
+      await saveMutation.mutateAsync(updatedLinks);
       toast.success("נשמר", "הקישורים עודכנו בהצלחה");
-      setSaving(false);
       return true;
     } catch {
       toast.error("שגיאה", "שגיאה בשמירת הקישורים");
-      setSaving(false);
       return false;
     }
   }
@@ -277,8 +261,8 @@ export function StemLinksModal({
                         <Button
                           size="sm"
                           onClick={handleSaveEdit}
-                          disabled={saving}
-                          rightIcon={saving ? Loader2 : Check}
+                          disabled={saveMutation.isPending}
+                          rightIcon={saveMutation.isPending ? Loader2 : Check}
                         >
                           שמור
                         </Button>
@@ -370,8 +354,8 @@ export function StemLinksModal({
                 <Button
                   size="sm"
                   onClick={handleAddLink}
-                  disabled={saving}
-                  rightIcon={saving ? Loader2 : Check}
+                  disabled={saveMutation.isPending}
+                  rightIcon={saveMutation.isPending ? Loader2 : Check}
                 >
                   הוסף
                 </Button>

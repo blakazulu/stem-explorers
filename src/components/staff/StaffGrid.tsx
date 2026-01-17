@@ -1,18 +1,17 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { StaffMemberCard } from "./StaffMemberCard";
 import { AddEditStaffModal } from "./AddEditStaffModal";
-import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToastActions } from "@/components/ui/Toast";
 import {
-  getStaffByGrade,
-  createStaffMember,
-  updateStaffMember,
-  deleteStaffMember,
-  getNextStaffOrder,
-} from "@/lib/services/staff";
+  useStaffByGrade,
+  useCreateStaffMember,
+  useUpdateStaffMember,
+  useDeleteStaffMember,
+} from "@/lib/queries";
+import { getNextStaffOrder } from "@/lib/services/staff";
 import { deleteStorageFile } from "@/lib/utils/imageUpload";
 import { Plus, Users, Sparkles } from "lucide-react";
 import type { StaffMember, Grade } from "@/types";
@@ -25,26 +24,21 @@ interface StaffGridProps {
 export function StaffGrid({ grade, isAdmin = false }: StaffGridProps) {
   const toast = useToastActions();
 
-  const [staff, setStaff] = useState<StaffMember[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: staff = [], isLoading: loading, error } = useStaffByGrade(grade);
+  const createMutation = useCreateStaffMember();
+  const updateMutation = useUpdateStaffMember();
+  const deleteMutation = useDeleteStaffMember();
+
   const [showModal, setShowModal] = useState(false);
   const [editingMember, setEditingMember] = useState<StaffMember | null>(null);
   const [deletingMember, setDeletingMember] = useState<StaffMember | null>(null);
 
-  const loadStaff = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await getStaffByGrade(grade);
-      setStaff(data || []);
-    } catch {
+  // Show error toast if query fails
+  useEffect(() => {
+    if (error) {
       toast.error("שגיאה", "לא הצלחנו לטעון את הצוות");
     }
-    setLoading(false);
-  }, [grade, toast]);
-
-  useEffect(() => {
-    loadStaff();
-  }, [loadStaff]);
+  }, [error, toast]);
 
   const handleAdd = () => {
     setEditingMember(null);
@@ -57,28 +51,23 @@ export function StaffGrid({ grade, isAdmin = false }: StaffGridProps) {
   };
 
   const handleSave = async (data: { name: string; description: string; imageUrl: string }) => {
-    if (editingMember) {
-      // Update existing
-      await updateStaffMember(editingMember.id, data);
-      setStaff((prev) =>
-        prev.map((m) => (m.id === editingMember.id ? { ...m, ...data } : m))
-      );
-      toast.success("עודכן", "פרטי איש הצוות עודכנו");
-    } else {
-      // Create new
-      const order = await getNextStaffOrder(grade);
-      const id = await createStaffMember({
-        ...data,
-        gradeId: grade,
-        order,
-      });
-      if (id) {
-        setStaff((prev) => [
-          ...prev,
-          { id, ...data, gradeId: grade, order, createdAt: new Date() },
-        ]);
+    try {
+      if (editingMember) {
+        // Update existing
+        await updateMutation.mutateAsync({ id: editingMember.id, data });
+        toast.success("עודכן", "פרטי איש הצוות עודכנו");
+      } else {
+        // Create new
+        const order = await getNextStaffOrder(grade);
+        await createMutation.mutateAsync({
+          ...data,
+          gradeId: grade,
+          order,
+        });
         toast.success("נוסף", "איש הצוות נוסף בהצלחה");
       }
+    } catch {
+      toast.error("שגיאה", editingMember ? "לא הצלחנו לעדכן" : "לא הצלחנו להוסיף");
     }
   };
 
@@ -98,8 +87,7 @@ export function StaffGrid({ grade, isAdmin = false }: StaffGridProps) {
         // Ignore storage deletion errors
       }
 
-      await deleteStaffMember(deletingMember.id);
-      setStaff((prev) => prev.filter((m) => m.id !== deletingMember.id));
+      await deleteMutation.mutateAsync(deletingMember.id);
       toast.success("נמחק", "איש הצוות הוסר");
     } catch {
       toast.error("שגיאה", "לא הצלחנו למחוק");

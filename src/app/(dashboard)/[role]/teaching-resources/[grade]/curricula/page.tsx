@@ -1,14 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { getUnitsByGrade } from "@/lib/services/units";
+import { useUnitsByGrade } from "@/lib/queries";
 import { Button } from "@/components/ui/Button";
 import { SkeletonGrid } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { useToastActions } from "@/components/ui/Toast";
 import { Icon, getStemIconForId } from "@/components/ui/Icon";
 import {
   FileText,
@@ -17,7 +16,7 @@ import {
   ArrowRight,
   ChevronLeft,
 } from "lucide-react";
-import type { Unit, Grade, UserRole } from "@/types";
+import type { Grade, UserRole } from "@/types";
 
 const VALID_GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
 
@@ -28,10 +27,9 @@ export default function CurriculaPage() {
 
   const role = params.role as UserRole;
   const grade = decodeURIComponent(params.grade as string) as Grade;
+  const isValidGrade = VALID_GRADES.includes(grade);
 
-  const [units, setUnits] = useState<Unit[]>([]);
-  const [loading, setLoading] = useState(true);
-  const toast = useToastActions();
+  const { data: units = [], isLoading: loading } = useUnitsByGrade(isValidGrade ? grade : null);
 
   const isAdmin = session?.user.role === "admin";
   const canManage = isAdmin;
@@ -39,26 +37,10 @@ export default function CurriculaPage() {
   const newUnitUrl = `${baseUrl}/curricula/new`;
 
   useEffect(() => {
-    if (!VALID_GRADES.includes(grade)) {
+    if (!isValidGrade) {
       router.replace(`/${role}/teaching-resources`);
     }
-  }, [grade, role, router]);
-
-  const loadUnits = useCallback(async () => {
-    if (!VALID_GRADES.includes(grade)) return;
-    setLoading(true);
-    try {
-      const data = await getUnitsByGrade(grade);
-      setUnits(data);
-    } catch {
-      toast.error("שגיאה", "שגיאה בטעינת יחידות הלימוד");
-    }
-    setLoading(false);
-  }, [grade, toast]);
-
-  useEffect(() => {
-    loadUnits();
-  }, [loadUnits]);
+  }, [isValidGrade, role, router]);
 
   if (!VALID_GRADES.includes(grade)) {
     return null;

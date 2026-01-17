@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { getUnitsByGrade } from "@/lib/services/units";
+import { useUnitsByGrade } from "@/lib/queries";
 import { Card } from "@/components/ui/Card";
 import { SkeletonGrid } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -22,13 +22,14 @@ export default function ResponsesUnitSelectorPage() {
   const role = params.role as UserRole;
   const grade = decodeURIComponent(params.grade as string) as Grade;
 
-  const [units, setUnits] = useState<Unit[]>([]);
-  const [loading, setLoading] = useState(true);
-
   const isAdmin = session?.user.role === "admin";
   const isTeacher = session?.user.role === "teacher";
   // Only show back button for admins (teachers are restricted to their grade)
   const showBackButton = isAdmin;
+
+  const isValidGrade = VALID_GRADES.includes(grade);
+
+  const { data: units = [], isLoading: loading } = useUnitsByGrade(isValidGrade ? grade : null);
 
   // Only teachers and admins can access this page
   useEffect(() => {
@@ -39,32 +40,16 @@ export default function ResponsesUnitSelectorPage() {
 
   // Validate grade
   useEffect(() => {
-    if (!VALID_GRADES.includes(grade)) {
+    if (!isValidGrade) {
       router.replace(`/${role}/responses`);
     }
-  }, [grade, role, router]);
-
-  const loadUnits = useCallback(async () => {
-    if (!VALID_GRADES.includes(grade)) return;
-    setLoading(true);
-    try {
-      const data = await getUnitsByGrade(grade);
-      setUnits(data);
-    } catch {
-      // Error handled silently
-    }
-    setLoading(false);
-  }, [grade]);
-
-  useEffect(() => {
-    loadUnits();
-  }, [loadUnits]);
+  }, [isValidGrade, role, router]);
 
   function handleUnitSelect(unit: Unit) {
     router.push(`/${role}/responses/${grade}/${unit.id}`);
   }
 
-  if (!VALID_GRADES.includes(grade) || (!isTeacher && !isAdmin)) {
+  if (!isValidGrade || (!isTeacher && !isAdmin)) {
     return null;
   }
 
