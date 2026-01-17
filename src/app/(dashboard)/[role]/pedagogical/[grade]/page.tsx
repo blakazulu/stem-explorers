@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
+import { useVisibility } from "@/contexts/VisibilityContext";
 import { UnitTreeView } from "@/components/pedagogical/UnitTreeView";
 import { StaffGrid } from "@/components/staff";
 import { Button } from "@/components/ui/Button";
@@ -41,6 +42,7 @@ const ACCEPTED_FILE_TYPES = ".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp";
 
 export default function PedagogicalGradePage() {
   const { session } = useAuth();
+  const { getPageElements } = useVisibility();
   const params = useParams();
   const router = useRouter();
   const toast = useToastActions();
@@ -50,6 +52,7 @@ export default function PedagogicalGradePage() {
   const grade = decodeURIComponent(params.grade as string) as Grade;
 
   const isAdmin = session?.user.role === "admin";
+  const pageElements = getPageElements(session?.user.role || "student");
   const isTeacherOrAdmin =
     session?.user.role === "teacher" || session?.user.role === "admin";
   const showBackButton = isAdmin;
@@ -367,14 +370,16 @@ export default function PedagogicalGradePage() {
 
       {/* Action Buttons - 2x2 Grid */}
       <div className="grid grid-cols-2 gap-4">
-        <Button
-          variant="outline"
-          className="h-24 flex-col gap-2"
-          onClick={() => setShowPedagogicalModal(true)}
-        >
-          <BookOpen size={24} />
-          <span>מודל פדגוגי</span>
-        </Button>
+        {pageElements.pedagogical.unitCards && (
+          <Button
+            variant="outline"
+            className="h-24 flex-col gap-2"
+            onClick={() => setShowPedagogicalModal(true)}
+          >
+            <BookOpen size={24} />
+            <span>מודל פדגוגי</span>
+          </Button>
+        )}
         <Button
           variant="outline"
           className="h-24 flex-col gap-2"
@@ -439,6 +444,7 @@ export default function PedagogicalGradePage() {
               <UnitTreeView
                 grade={grade}
                 role={role}
+                showDetails={pageElements.pedagogical.unitDetails}
                 onAddUnit={
                   isTeacherOrAdmin
                     ? () => {

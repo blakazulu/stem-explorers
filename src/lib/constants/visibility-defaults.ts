@@ -31,13 +31,6 @@ export const PAGE_ELEMENT_LABELS = {
     equipment: "טופס הצטיידות",
     experts: "שאל את המומחה",
   },
-  reports: {
-    _title: "דוחות",
-    summary: "סיכום",
-    patterns: "דפוסים",
-    challenges: "אתגרים",
-    suggestions: "המלצות",
-  },
   pedagogical: {
     _title: "מודל פדגוגי",
     unitCards: "כרטיסי יחידות",
@@ -110,21 +103,18 @@ const DEFAULT_STUDENT_SIDEBAR: SidebarConfig = {
 
 const DEFAULT_TEACHER_PAGE_ELEMENTS: PageElementsConfig = {
   teachingResources: { curricula: true, stemLinks: true, equipment: true, experts: true },
-  reports: { summary: true, patterns: true, challenges: true, suggestions: true },
   pedagogical: { unitCards: true, unitDetails: true },
   documentation: { images: true, text: true, teacherName: true },
 };
 
 const DEFAULT_PARENT_PAGE_ELEMENTS: PageElementsConfig = {
   teachingResources: { curricula: true, stemLinks: false, equipment: false, experts: true },
-  reports: { summary: true, patterns: false, challenges: false, suggestions: true },
   pedagogical: { unitCards: true, unitDetails: true },
   documentation: { images: true, text: true, teacherName: true },
 };
 
 const DEFAULT_STUDENT_PAGE_ELEMENTS: PageElementsConfig = {
   teachingResources: { curricula: false, stemLinks: false, equipment: false, experts: false },
-  reports: { summary: false, patterns: false, challenges: false, suggestions: false },
   pedagogical: { unitCards: true, unitDetails: true },
   documentation: { images: true, text: true, teacherName: false },
 };

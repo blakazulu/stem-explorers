@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from "react";
 import type { VisibilityConfig, ConfigurableRole, DashboardConfig, SidebarConfig, PageElementsConfig } from "@/types";
 import { getVisibilityConfig, mergeWithDefaults } from "@/lib/services/visibility";
 import { DEFAULT_VISIBILITY_CONFIG } from "@/lib/constants/visibility-defaults";
@@ -73,19 +73,22 @@ export function VisibilityProvider({ children }: { children: ReactNode }) {
     [config]
   );
 
+  const value = useMemo(
+    () => ({
+      config,
+      isLoading,
+      error,
+      refetch: fetchConfig,
+      getDashboardConfig,
+      getSidebarConfig,
+      getPageElements,
+      canSee,
+    }),
+    [config, isLoading, error, fetchConfig, getDashboardConfig, getSidebarConfig, getPageElements, canSee]
+  );
+
   return (
-    <VisibilityContext.Provider
-      value={{
-        config,
-        isLoading,
-        error,
-        refetch: fetchConfig,
-        getDashboardConfig,
-        getSidebarConfig,
-        getPageElements,
-        canSee,
-      }}
-    >
+    <VisibilityContext.Provider value={value}>
       {children}
     </VisibilityContext.Provider>
   );

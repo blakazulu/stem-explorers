@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useVisibility } from "@/contexts/VisibilityContext";
 import { useToastActions } from "@/components/ui/Toast";
@@ -9,16 +9,16 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { RoleTabs } from "@/components/display/RoleTabs";
+import { CollapsibleSection } from "@/components/display/CollapsibleSection";
 import { DashboardSection } from "@/components/display/DashboardSection";
 import { SidebarSection } from "@/components/display/SidebarSection";
 import { PageElementsSection } from "@/components/display/PageElementsSection";
 import { saveVisibilityConfig } from "@/lib/services/visibility";
-import { Eye, Save } from "lucide-react";
+import { Eye, Save, RotateCcw } from "lucide-react";
 import type { ConfigurableRole, VisibilityConfig } from "@/types";
 
 export default function DisplaySettingsPage() {
   const { session } = useAuth();
-  const params = useParams();
   const router = useRouter();
   const { config: savedConfig, isLoading, refetch } = useVisibility();
   const toast = useToastActions();
@@ -63,6 +63,14 @@ export default function DisplaySettingsPage() {
       toast.error("שגיאה בשמירת ההגדרות");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    if (savedConfig) {
+      setLocalConfig(savedConfig);
+      setHasChanges(false);
+      toast.success("השינויים בוטלו");
     }
   };
 
@@ -131,46 +139,73 @@ export default function DisplaySettingsPage() {
           </div>
         </div>
 
-        <Button
-          onClick={handleSave}
-          disabled={!hasChanges || isSaving}
-          loading={isSaving}
-        >
-          <Save size={18} className="ml-2" />
-          שמור שינויים
-        </Button>
+        <div className="flex items-center gap-2">
+          {hasChanges && (
+            <Button
+              variant="outline"
+              onClick={handleCancel}
+              disabled={isSaving}
+            >
+              <RotateCcw size={18} className="ml-2" />
+              בטל
+            </Button>
+          )}
+          <Button
+            onClick={handleSave}
+            disabled={!hasChanges || isSaving}
+            loading={isSaving}
+          >
+            <Save size={18} className="ml-2" />
+            שמור
+          </Button>
+        </div>
       </div>
 
       {/* Role Tabs */}
       <RoleTabs selectedRole={selectedRole} onRoleChange={setSelectedRole} />
 
       {/* Configuration Sections */}
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* Dashboard Section */}
         <Card padding="lg">
-          <DashboardSection
-            role={selectedRole}
-            config={localConfig.dashboards[selectedRole]}
-            onChange={updateDashboard}
-          />
+          <CollapsibleSection
+            id="display-dashboard"
+            title="לוח בקרה"
+            description="טקסט פתיחה וכרטיסים"
+          >
+            <DashboardSection
+              config={localConfig.dashboards[selectedRole]}
+              onChange={updateDashboard}
+            />
+          </CollapsibleSection>
         </Card>
 
         {/* Sidebar Section */}
         <Card padding="lg">
-          <SidebarSection
-            role={selectedRole}
-            config={localConfig.sidebars[selectedRole]}
-            onChange={updateSidebar}
-          />
+          <CollapsibleSection
+            id="display-sidebar"
+            title="תפריט צד"
+            description="קישורים והצגה"
+          >
+            <SidebarSection
+              config={localConfig.sidebars[selectedRole]}
+              onChange={updateSidebar}
+            />
+          </CollapsibleSection>
         </Card>
 
         {/* Page Elements Section */}
         <Card padding="lg">
-          <PageElementsSection
-            role={selectedRole}
-            config={localConfig.pageElements[selectedRole]}
-            onChange={updatePageElements}
-          />
+          <CollapsibleSection
+            id="display-page-elements"
+            title="אלמנטים בדפים"
+            description="בחר אילו אלמנטים יוצגו"
+          >
+            <PageElementsSection
+              config={localConfig.pageElements[selectedRole]}
+              onChange={updatePageElements}
+            />
+          </CollapsibleSection>
         </Card>
       </div>
 

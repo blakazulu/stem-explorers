@@ -1,17 +1,16 @@
 "use client";
 
-import type { PageElementsConfig, ConfigurableRole } from "@/types";
+import type { PageElementsConfig } from "@/types";
 import { PAGE_ELEMENT_LABELS } from "@/lib/constants/visibility-defaults";
 
 interface PageElementsSectionProps {
-  role: ConfigurableRole;
   config: PageElementsConfig;
   onChange: (config: PageElementsConfig) => void;
 }
 
 type PageKey = keyof PageElementsConfig;
 
-export function PageElementsSection({ role, config, onChange }: PageElementsSectionProps) {
+export function PageElementsSection({ config, onChange }: PageElementsSectionProps) {
   const handleToggle = (page: PageKey, element: string) => {
     const pageConfig = config[page] as Record<string, boolean>;
     const newPageConfig = {
@@ -24,17 +23,10 @@ export function PageElementsSection({ role, config, onChange }: PageElementsSect
     });
   };
 
-  const pages: PageKey[] = ["teachingResources", "reports", "pedagogical", "documentation"];
+  const pages: PageKey[] = ["teachingResources", "pedagogical", "documentation"];
 
   return (
     <div>
-      <label className="block text-sm font-medium text-foreground mb-2">
-        אלמנטים בדפים
-      </label>
-      <p className="text-xs text-gray-400 mb-3">
-        בחר אילו אלמנטים יוצגו בכל דף
-      </p>
-
       <div className="space-y-4">
         {pages.map((pageKey) => {
           const labels = PAGE_ELEMENT_LABELS[pageKey];

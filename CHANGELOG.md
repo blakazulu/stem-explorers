@@ -22,6 +22,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `DashboardSection` - Dashboard intro and cards configuration
   - `SidebarSection` - Sidebar links visibility and label editing
   - `PageElementsSection` - Page element toggles grouped by page
+- **Collapsible sections in Display page**: Each configuration section (dashboard, sidebar, page elements) is now collapsible
+  - Click header to expand/collapse
+  - State persisted in localStorage
+  - Smooth animation on toggle
+- **Cancel changes button**: Added "בטל" button to discard unsaved changes and restore last saved config
 - **Visibility-aware consumer components**:
   - Sidebar now filters links based on visibility config for non-admin roles
   - Sidebar supports custom link labels from visibility config
@@ -57,6 +62,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **VisibilityContext performance**: Added useMemo to context value to prevent unnecessary re-renders
+- **Visibility control cleanup**: Removed reports from PageElementsConfig since AI-generated content shouldn't have element-level visibility control
+- **Pedagogical page visibility**: Now respects visibility config for unitCards (מודל פדגוגי button) and unitDetails (file indicators in tree view)
 - **Teaching resources button contrast**: Added drop shadows to text and icons on gradient buttons for better readability
 - **Firebase service functions**: Added proper error re-throwing in staff.ts and settings.ts to ensure functions always return or throw
 - **StaffGrid useEffect**: Fixed missing dependency by wrapping `loadStaff` in useCallback

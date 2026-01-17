@@ -23,9 +23,10 @@ interface UnitTreeViewProps {
   grade: Grade;
   role: UserRole;
   onAddUnit?: () => void;
+  showDetails?: boolean;
 }
 
-export function UnitTreeView({ grade, role, onAddUnit }: UnitTreeViewProps) {
+export function UnitTreeView({ grade, role, onAddUnit, showDetails = true }: UnitTreeViewProps) {
   const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -183,31 +184,35 @@ export function UnitTreeView({ grade, role, onAddUnit }: UnitTreeViewProps) {
                         {unit.name}
                       </h3>
 
-                      {/* Description */}
-                      <p className="text-sm text-gray-500 mt-1">
-                        לחץ לצפייה בתכנים ובחומרי הלימוד
-                      </p>
+                      {/* Description - controlled by showDetails */}
+                      {showDetails && (
+                        <p className="text-sm text-gray-500 mt-1">
+                          לחץ לצפייה בתכנים ובחומרי הלימוד
+                        </p>
+                      )}
 
-                      {/* File indicators */}
-                      <div className="flex items-center gap-4 mt-3">
-                        {unit.introFileUrl && (
-                          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-secondary/10 rounded-lg">
-                            <BookOpen size={14} className="text-secondary" />
-                            <span className="text-xs font-medium text-secondary">מבוא</span>
-                          </div>
-                        )}
-                        {unit.unitFileUrl && (
-                          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 rounded-lg">
-                            <FileText size={14} className="text-primary" />
-                            <span className="text-xs font-medium text-primary">תוכן</span>
-                          </div>
-                        )}
-                        {!unit.introFileUrl && !unit.unitFileUrl && (
-                          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 rounded-lg">
-                            <span className="text-xs text-gray-400">טרם הועלו קבצים</span>
-                          </div>
-                        )}
-                      </div>
+                      {/* File indicators - controlled by showDetails */}
+                      {showDetails && (
+                        <div className="flex items-center gap-4 mt-3">
+                          {unit.introFileUrl && (
+                            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-secondary/10 rounded-lg">
+                              <BookOpen size={14} className="text-secondary" />
+                              <span className="text-xs font-medium text-secondary">מבוא</span>
+                            </div>
+                          )}
+                          {unit.unitFileUrl && (
+                            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 rounded-lg">
+                              <FileText size={14} className="text-primary" />
+                              <span className="text-xs font-medium text-primary">תוכן</span>
+                            </div>
+                          )}
+                          {!unit.introFileUrl && !unit.unitFileUrl && (
+                            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 rounded-lg">
+                              <span className="text-xs text-gray-400">טרם הועלו קבצים</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {/* Arrow */}

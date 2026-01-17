@@ -224,12 +224,6 @@ export interface PageElementsConfig {
     equipment: boolean;
     experts: boolean;
   };
-  reports: {
-    summary: boolean;
-    patterns: boolean;
-    challenges: boolean;
-    suggestions: boolean;
-  };
   pedagogical: {
     unitCards: boolean;
     unitDetails: boolean;

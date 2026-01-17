@@ -1,14 +1,13 @@
 "use client";
 
-import type { SidebarConfig, ConfigurableRole } from "@/types";
+import type { SidebarConfig } from "@/types";
 
 interface SidebarSectionProps {
-  role: ConfigurableRole;
   config: SidebarConfig;
   onChange: (config: SidebarConfig) => void;
 }
 
-export function SidebarSection({ role, config, onChange }: SidebarSectionProps) {
+export function SidebarSection({ config, onChange }: SidebarSectionProps) {
   const handleToggle = (id: string) => {
     const newLinks = config.links.map((link) =>
       link.id === id ? { ...link, visible: !link.visible } : link
@@ -25,9 +24,6 @@ export function SidebarSection({ role, config, onChange }: SidebarSectionProps) 
 
   return (
     <div>
-      <label className="block text-sm font-medium text-foreground mb-2">
-        קישורי תפריט
-      </label>
       <p className="text-xs text-gray-400 mb-3">
         סמן/בטל סימון להצגה/הסתרה, ערוך את שם הקישור
       </p>

@@ -1,16 +1,15 @@
 "use client";
 
 import { DraggableCardList } from "./DraggableCardList";
-import type { DashboardConfig, ConfigurableRole } from "@/types";
+import type { DashboardConfig } from "@/types";
 import { ALL_DASHBOARD_CARDS } from "@/lib/constants/visibility-defaults";
 
 interface DashboardSectionProps {
-  role: ConfigurableRole;
   config: DashboardConfig;
   onChange: (config: DashboardConfig) => void;
 }
 
-export function DashboardSection({ role, config, onChange }: DashboardSectionProps) {
+export function DashboardSection({ config, onChange }: DashboardSectionProps) {
   const cardLabels = Object.fromEntries(
     Object.entries(ALL_DASHBOARD_CARDS).map(([id, meta]) => [id, meta.label])
   );
