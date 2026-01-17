@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useRoleStyles } from "@/contexts/ThemeContext";
+import { useVisibility } from "@/contexts/VisibilityContext";
 import { Card } from "@/components/ui/Card";
 import { WelcomeHeader } from "@/components/dashboard/WelcomeHeader";
+import { ALL_DASHBOARD_CARDS } from "@/lib/constants/visibility-defaults";
 import {
   BookOpen,
   FileText,
@@ -18,8 +20,22 @@ import {
   ArrowLeft,
   Users,
 } from "lucide-react";
-import type { UserRole } from "@/types";
+import type { UserRole, ConfigurableRole } from "@/types";
 import type { LucideIcon } from "lucide-react";
+
+// Card metadata - icons, colors, hrefs
+const CARD_METADATA: Record<string, { icon: LucideIcon; color: string; href: string }> = {
+  pedagogical: { icon: BookOpen, color: "bg-primary", href: "/pedagogical" },
+  "teaching-resources": { icon: FileText, color: "bg-primary", href: "/teaching-resources" },
+  responses: { icon: Users, color: "bg-secondary", href: "/responses" },
+  reports: { icon: BarChart2, color: "bg-accent", href: "/reports" },
+  forum: { icon: MessageSquare, color: "bg-secondary", href: "/forum" },
+  documentation: { icon: Image, color: "bg-secondary", href: "/documentation" },
+  journal: { icon: PenTool, color: "bg-role-student", href: "/journal" },
+  questions: { icon: HelpCircle, color: "bg-role-admin", href: "/questions" },
+  passwords: { icon: Key, color: "bg-primary", href: "/passwords" },
+  settings: { icon: Settings, color: "bg-secondary", href: "/settings" },
+};
 
 interface QuickAction {
   label: string;
@@ -142,14 +158,51 @@ const quickActionsByRole: Record<UserRole, QuickAction[]> = {
 export default function RoleDashboardPage() {
   const params = useParams();
   const roleStyles = useRoleStyles();
+  const { getDashboardConfig } = useVisibility();
 
   const role = (params.role as UserRole) || "teacher";
-  const quickActions = quickActionsByRole[role];
+
+  // Admin uses hardcoded actions (not configurable)
+  // Other roles use visibility config
+  const quickActions: QuickAction[] = role === "admin"
+    ? quickActionsByRole.admin
+    : (() => {
+        const configurableRole = role as ConfigurableRole;
+        const dashboardConfig = getDashboardConfig(configurableRole);
+
+        return dashboardConfig.cards
+          .filter(card => card.visible)
+          .sort((a, b) => a.order - b.order)
+          .map(card => {
+            const metadata = CARD_METADATA[card.id];
+            const cardInfo = ALL_DASHBOARD_CARDS[card.id as keyof typeof ALL_DASHBOARD_CARDS];
+
+            return {
+              label: cardInfo?.label || card.id,
+              description: cardInfo?.description || "",
+              href: metadata?.href || `/${card.id}`,
+              icon: metadata?.icon || BookOpen,
+              color: metadata?.color || "bg-primary",
+            };
+          });
+      })();
+
+  // Get dashboard intro text
+  const dashboardIntro = role !== "admin"
+    ? getDashboardConfig(role as ConfigurableRole).intro
+    : "";
 
   return (
     <div className="max-w-theme mx-auto space-y-8">
       {/* Welcome Header - role-specific styling and content */}
       <WelcomeHeader role={role} />
+
+      {/* Dashboard Intro - from visibility config */}
+      {dashboardIntro && (
+        <div className="bg-surface-1 border border-surface-2 rounded-xl p-4 text-gray-600">
+          {dashboardIntro}
+        </div>
+      )}
 
       {/* Quick Actions Grid - role-specific columns */}
       <div>
