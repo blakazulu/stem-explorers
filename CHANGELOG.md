@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Sidebar: toggle visibility, edit link names
   - Page elements: granular show/hide for elements within pages (e.g., hide STEM links from parents)
   - Design doc at `docs/plans/2026-01-17-visibility-control-design.md`
+  - Implementation plan at `docs/plans/2026-01-17-visibility-control-implementation.md`
 
 ### Fixed
 
