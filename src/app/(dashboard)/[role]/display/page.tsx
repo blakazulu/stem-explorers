@@ -118,50 +118,53 @@ export default function DisplaySettingsPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-3 bg-primary/10 rounded-xl">
-            <Eye size={24} className="text-primary" />
+    <div className="max-w-3xl mx-auto">
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-20 bg-surface-0 pb-4 pt-2 -mt-2 space-y-4">
+        {/* Page Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-primary/10 rounded-xl">
+              <Eye size={24} className="text-primary" />
+            </div>
+            <div>
+              <h1 className="text-xl md:text-2xl font-rubik font-bold text-foreground">
+                תצוגה
+              </h1>
+              <p className="text-sm text-gray-500">
+                התאם את התצוגה לכל תפקיד
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-xl md:text-2xl font-rubik font-bold text-foreground">
-              תצוגה
-            </h1>
-            <p className="text-sm text-gray-500">
-              התאם את התצוגה לכל תפקיד
-            </p>
+
+          <div className="flex items-center gap-2">
+            {hasChanges && (
+              <Button
+                variant="outline"
+                onClick={handleCancel}
+                disabled={isSaving}
+              >
+                <RotateCcw size={18} className="ml-2" />
+                בטל
+              </Button>
+            )}
+            <Button
+              onClick={handleSave}
+              disabled={!hasChanges || isSaving}
+              loading={isSaving}
+            >
+              <Save size={18} className="ml-2" />
+              שמור
+            </Button>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {hasChanges && (
-            <Button
-              variant="outline"
-              onClick={handleCancel}
-              disabled={isSaving}
-            >
-              <RotateCcw size={18} className="ml-2" />
-              בטל
-            </Button>
-          )}
-          <Button
-            onClick={handleSave}
-            disabled={!hasChanges || isSaving}
-            loading={isSaving}
-          >
-            <Save size={18} className="ml-2" />
-            שמור
-          </Button>
-        </div>
+        {/* Role Tabs */}
+        <RoleTabs selectedRole={selectedRole} onRoleChange={setSelectedRole} />
       </div>
 
-      {/* Role Tabs */}
-      <RoleTabs selectedRole={selectedRole} onRoleChange={setSelectedRole} />
-
       {/* Configuration Sections */}
-      <div className="space-y-4">
+      <div className="space-y-4 mt-2">
         {/* Dashboard Section */}
         <Card padding="lg">
           <CollapsibleSection
@@ -201,6 +204,7 @@ export default function DisplaySettingsPage() {
             <PageElementsSection
               config={localConfig.pageElements[selectedRole]}
               sidebarConfig={localConfig.sidebars[selectedRole]}
+              dashboardConfig={localConfig.dashboards[selectedRole]}
               onChange={updatePageElements}
             />
           </CollapsibleSection>

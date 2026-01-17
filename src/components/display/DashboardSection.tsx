@@ -23,6 +23,14 @@ export function DashboardSection({ config, sidebarConfig, onChange }: DashboardS
     ])
   );
 
+  // Default descriptions from ALL_DASHBOARD_CARDS
+  const cardDescriptions = Object.fromEntries(
+    Object.entries(ALL_DASHBOARD_CARDS).map(([id, meta]) => [
+      id,
+      meta.description
+    ])
+  );
+
   return (
     <div className="space-y-6">
       {/* Dashboard Intro */}
@@ -49,11 +57,12 @@ export function DashboardSection({ config, sidebarConfig, onChange }: DashboardS
           כרטיסי לוח בקרה
         </label>
         <p className="text-xs text-gray-400 mb-3">
-          גרור לשינוי סדר, סמן/בטל סימון להצגה/הסתרה
+          גרור לשינוי סדר, סמן/בטל סימון להצגה/הסתרה, ערוך תיאור לכל כרטיס
         </p>
         <DraggableCardList
           cards={config.cards}
           cardLabels={cardLabels}
+          cardDescriptions={cardDescriptions}
           onChange={(cards) => onChange({ ...config, cards })}
         />
       </div>

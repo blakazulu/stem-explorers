@@ -79,6 +79,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Pedagogical page visibility**: Now respects visibility config for unitCards (מודל פדגוגי button) and unitDetails (file indicators in tree view)
 - **Pedagogical page crash for parent role**: Fixed `getPageElements` call to pass both role and page key (was missing "pedagogical" parameter)
 - **New visibility items not appearing**: Fixed mergeWithDefaults to add new sidebar links and dashboard cards from defaults to existing saved configs
+- **Dashboard and sidebar items now match**: All sidebar items are now also available as dashboard cards (experts, community-activities, stem-family, partners)
+- **Page elements filtered by enabled pages**: Page elements section now only shows pages that are enabled in either sidebar OR dashboard
+- **Dashboard limited to 4 items**: Default dashboard config now shows only 4 visible cards per role (admin can change)
+- **Editable dashboard card descriptions**: Admin can now edit the description for each dashboard card (shown below each card in the config)
+- **Sticky header on display settings page**: Header with save button and role tabs stays visible when scrolling
 - **Teaching resources button contrast**: Added drop shadows to text and icons on gradient buttons for better readability
 - **Firebase service functions**: Added proper error re-throwing in staff.ts and settings.ts to ensure functions always return or throw
 - **StaffGrid useEffect**: Fixed missing dependency by wrapping `loadStaff` in useCallback

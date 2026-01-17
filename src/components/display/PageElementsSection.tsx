@@ -1,28 +1,37 @@
 "use client";
 
-import type { PageElementsConfig, SidebarConfig } from "@/types";
+import type { PageElementsConfig, SidebarConfig, DashboardConfig } from "@/types";
 import { PAGE_ELEMENT_LABELS } from "@/lib/constants/visibility-defaults";
 
 interface PageElementsSectionProps {
   config: PageElementsConfig;
   sidebarConfig: SidebarConfig;
+  dashboardConfig: DashboardConfig;
   onChange: (config: PageElementsConfig) => void;
 }
 
 type PageKey = keyof PageElementsConfig;
 
-// Map page keys to sidebar link IDs
-const PAGE_TO_SIDEBAR_ID: Record<PageKey, string> = {
+// Map page keys to sidebar/dashboard IDs
+const PAGE_TO_ITEM_ID: Record<PageKey, string> = {
   teachingResources: "teaching-resources",
   pedagogical: "pedagogical",
   documentation: "documentation",
 };
 
-export function PageElementsSection({ config, sidebarConfig, onChange }: PageElementsSectionProps) {
+export function PageElementsSection({ config, sidebarConfig, dashboardConfig, onChange }: PageElementsSectionProps) {
   // Build sidebar labels lookup
   const sidebarLabels = Object.fromEntries(
     sidebarConfig.links.map((link) => [link.id, link.label])
   );
+
+  // Check if a page is enabled (visible in either sidebar OR dashboard)
+  const isPageEnabled = (pageKey: PageKey): boolean => {
+    const itemId = PAGE_TO_ITEM_ID[pageKey];
+    const sidebarVisible = sidebarConfig.links.some(l => l.id === itemId && l.visible);
+    const dashboardVisible = dashboardConfig.cards.some(c => c.id === itemId && c.visible);
+    return sidebarVisible || dashboardVisible;
+  };
 
   const handleToggle = (page: PageKey, element: string) => {
     const pageConfig = config[page] as Record<string, boolean>;
@@ -36,18 +45,28 @@ export function PageElementsSection({ config, sidebarConfig, onChange }: PageEle
     });
   };
 
-  const pages: PageKey[] = ["teachingResources", "pedagogical", "documentation"];
+  const allPages: PageKey[] = ["teachingResources", "pedagogical", "documentation"];
+  // Only show pages that are enabled in sidebar OR dashboard
+  const enabledPages = allPages.filter(isPageEnabled);
+
+  if (enabledPages.length === 0) {
+    return (
+      <div className="text-center text-gray-400 py-4">
+        אין דפים פעילים לתפקיד זה
+      </div>
+    );
+  }
 
   return (
     <div>
       <div className="space-y-4">
-        {pages.map((pageKey) => {
+        {enabledPages.map((pageKey) => {
           const labels = PAGE_ELEMENT_LABELS[pageKey];
           const pageConfig = config[pageKey] as Record<string, boolean>;
           const elements = Object.keys(pageConfig);
           // Use sidebar label as title, fallback to default
-          const sidebarId = PAGE_TO_SIDEBAR_ID[pageKey];
-          const pageTitle = sidebarLabels[sidebarId] || labels._title;
+          const itemId = PAGE_TO_ITEM_ID[pageKey];
+          const pageTitle = sidebarLabels[itemId] || labels._title;
 
           return (
             <div key={pageKey} className="p-4 bg-white border border-surface-2 rounded-lg">

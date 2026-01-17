@@ -206,6 +206,7 @@ export interface DashboardCardConfig {
   id: string;
   visible: boolean;
   order: number;
+  description?: string; // Custom description (overrides default)
 }
 
 export interface SidebarConfig {
