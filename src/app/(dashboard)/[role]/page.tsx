@@ -250,62 +250,6 @@ export default function RoleDashboardPage() {
         </div>
       </div>
 
-      {/* Teacher-specific: Info Cards - respects visibility config */}
-      {role === "teacher" && (() => {
-        const sidebarConfig = getSidebarConfig("teacher");
-        const forumLink = sidebarConfig.links.find(l => l.id === "forum");
-        const docLink = sidebarConfig.links.find(l => l.id === "documentation");
-        const showForum = forumLink?.visible;
-        const showDoc = docLink?.visible;
-
-        if (!showForum && !showDoc) return null;
-
-        return (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {showForum && (
-              <Card variant="outlined" padding="md">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <Users className="w-5 h-5 text-primary" />
-                  </div>
-                  <h3 className="font-rubik font-semibold">{forumLink?.label || "במה אישית"}</h3>
-                </div>
-                <p className="text-sm text-gray-500">
-                  שתפו רעיונות והתייעצו עם עמיתים
-                </p>
-                <Link
-                  href={`/${role}/forum`}
-                  className="inline-flex items-center mt-3 text-sm text-primary font-medium hover:underline cursor-pointer"
-                >
-                  לבמה
-                  <ArrowLeft size={14} className="mr-1" />
-                </Link>
-              </Card>
-            )}
-            {showDoc && (
-              <Card variant="outlined" padding="md">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-secondary/10 rounded-lg">
-                    <Image className="w-5 h-5 text-secondary" />
-                  </div>
-                  <h3 className="font-rubik font-semibold">{docLink?.label || "תיעוד פעילויות"}</h3>
-                </div>
-                <p className="text-sm text-gray-500">
-                  הוסיפו תיעודי תמונות מפעילויות בכיתה
-                </p>
-                <Link
-                  href={`/${role}/documentation`}
-                  className="inline-flex items-center mt-3 text-sm text-secondary font-medium hover:underline cursor-pointer"
-                >
-                  לתיעודים
-                  <ArrowLeft size={14} className="mr-1" />
-                </Link>
-              </Card>
-            )}
-          </div>
-        );
-      })()}
-
       {/* Admin-specific: Additional Tools */}
       {role === "admin" && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
