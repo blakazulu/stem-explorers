@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { useVisibility } from "@/contexts/VisibilityContext";
 import { Icon } from "@/components/ui/Icon";
-import type { Grade } from "@/types";
+import type { Grade, ConfigurableRole } from "@/types";
 import {
   BookOpen,
   FileText,
@@ -22,6 +23,7 @@ import {
   Heart,
   Rocket,
   ClipboardCheck,
+  Eye,
 } from "lucide-react";
 import type { UserRole } from "@/types";
 import type { LucideIcon } from "lucide-react";
@@ -45,6 +47,7 @@ const navItems: NavItem[] = [
   { label: "שאלות", href: "/questions", roles: ["admin"], icon: HelpCircle },
   { label: "סיסמאות", href: "/passwords", roles: ["admin"], icon: Key },
   { label: "הגדרות", href: "/settings", roles: ["admin"], icon: Settings },
+  { label: "תצוגה", href: "/display", roles: ["admin"], icon: Eye },
 ];
 
 // ===== ROLE-SPECIFIC SIDEBAR THEMES =====
@@ -228,18 +231,49 @@ export function Sidebar({ onClose }: SidebarProps) {
     };
   }, []);
 
+  // Get visibility config
+  const { getSidebarConfig } = useVisibility();
+
   // Get role-specific theme
   const theme = role ? sidebarThemes[role] : defaultTheme;
   const LogoIcon = theme.logoIcon;
 
-  const visibleItems = navItems.filter((item) => role && item.roles.includes(role));
+  // For admin, show all items they have access to (fixed sidebar)
+  // For other roles, filter based on visibility config
+  const visibleItems = navItems.filter((item) => {
+    if (!role || !item.roles.includes(role)) return false;
+
+    // Admin items are always shown (admin sidebar is fixed)
+    if (role === "admin") return true;
+
+    // For configurable roles, check visibility config
+    const configurableRole = role as ConfigurableRole;
+    const sidebarConfig = getSidebarConfig(configurableRole);
+    const linkConfig = sidebarConfig.links.find(l => l.id === item.href.slice(1));
+
+    // If no config for this link, show it (backwards compatibility)
+    if (!linkConfig) return true;
+
+    return linkConfig.visible;
+  });
+
+  // Get custom labels for sidebar items (non-admin roles only)
+  const getCustomLabel = (item: NavItem): string => {
+    if (role === "admin") return item.label;
+
+    const configurableRole = role as ConfigurableRole;
+    const sidebarConfig = getSidebarConfig(configurableRole);
+    const linkConfig = sidebarConfig.links.find(l => l.id === item.href.slice(1));
+
+    return linkConfig?.label || item.label;
+  };
 
   // Group items for admin view
   const mainItems = visibleItems.filter(
-    (item) => !["questions", "passwords", "settings"].includes(item.href.slice(1))
+    (item) => !["questions", "passwords", "settings", "display"].includes(item.href.slice(1))
   );
   const adminItems = visibleItems.filter((item) =>
-    ["questions", "passwords", "settings"].includes(item.href.slice(1))
+    ["questions", "passwords", "settings", "display"].includes(item.href.slice(1))
   );
 
   // Get full href with role prefix, preserving grade for grade-relevant sections
@@ -327,7 +361,7 @@ export function Sidebar({ onClose }: SidebarProps) {
                       isActive ? "" : "group-hover:scale-110"
                     }`}
                   />
-                  <span>{item.label}</span>
+                  <span>{getCustomLabel(item)}</span>
                 </Link>
               </li>
             );
@@ -372,7 +406,7 @@ export function Sidebar({ onClose }: SidebarProps) {
                           isActive ? "" : "group-hover:scale-110"
                         }`}
                       />
-                      <span>{item.label}</span>
+                      <span>{getCustomLabel(item)}</span>
                     </Link>
                   </li>
                 );
