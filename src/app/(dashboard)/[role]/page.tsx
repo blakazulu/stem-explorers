@@ -199,8 +199,10 @@ export default function RoleDashboardPage() {
 
       {/* Dashboard Intro - from visibility config */}
       {dashboardIntro && (
-        <div className="bg-surface-1 border border-surface-2 rounded-xl p-4 text-gray-600">
-          {dashboardIntro}
+        <div className="bg-surface-1 border border-surface-2 rounded-xl p-5">
+          <p className="text-xl font-medium text-foreground leading-relaxed">
+            {dashboardIntro}
+          </p>
         </div>
       )}
 
