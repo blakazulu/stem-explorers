@@ -52,7 +52,9 @@ export default function PedagogicalGradePage() {
   const grade = decodeURIComponent(params.grade as string) as Grade;
 
   const isAdmin = session?.user.role === "admin";
-  const pageElements = getPageElements(session?.user.role || "student");
+  // Admin doesn't have configurable visibility - default to showing everything
+  const configurableRole = (session?.user.role === "admin" ? "teacher" : session?.user.role || "student") as "teacher" | "parent" | "student";
+  const pageElements = getPageElements(configurableRole, "pedagogical");
   const isTeacherOrAdmin =
     session?.user.role === "teacher" || session?.user.role === "admin";
   const showBackButton = isAdmin;
@@ -370,7 +372,7 @@ export default function PedagogicalGradePage() {
 
       {/* Action Buttons - 2x2 Grid */}
       <div className="grid grid-cols-2 gap-4">
-        {pageElements.pedagogical.unitCards && (
+        {pageElements.unitCards && (
           <Button
             variant="outline"
             className="h-24 flex-col gap-2"
@@ -444,7 +446,7 @@ export default function PedagogicalGradePage() {
               <UnitTreeView
                 grade={grade}
                 role={role}
-                showDetails={pageElements.pedagogical.unitDetails}
+                showDetails={pageElements.unitDetails}
                 onAddUnit={
                   isTeacherOrAdmin
                     ? () => {

@@ -66,6 +66,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **VisibilityContext performance**: Added useMemo to context value to prevent unnecessary re-renders
 - **Visibility control cleanup**: Removed reports from PageElementsConfig since AI-generated content shouldn't have element-level visibility control
 - **Pedagogical page visibility**: Now respects visibility config for unitCards (מודל פדגוגי button) and unitDetails (file indicators in tree view)
+- **Pedagogical page crash for parent role**: Fixed `getPageElements` call to pass both role and page key (was missing "pedagogical" parameter)
 - **Teaching resources button contrast**: Added drop shadows to text and icons on gradient buttons for better readability
 - **Firebase service functions**: Added proper error re-throwing in staff.ts and settings.ts to ensure functions always return or throw
 - **StaffGrid useEffect**: Fixed missing dependency by wrapping `loadStaff` in useCallback
