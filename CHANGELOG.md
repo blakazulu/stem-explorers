@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Visibility default constants**: Default configuration values for the visibility control system
+  - `ALL_DASHBOARD_CARDS` - metadata for all possible dashboard cards
+  - `ALL_SIDEBAR_LINKS` - metadata for all possible sidebar links
+  - `PAGE_ELEMENT_LABELS` - Hebrew labels for page elements in admin UI
+  - `DEFAULT_VISIBILITY_CONFIG` - complete default config mirroring current hardcoded behavior
 - **Visibility config types**: TypeScript types for the visibility control system
   - `ConfigurableRole` type for teacher/parent/student roles
   - `VisibilityConfig` interface for the full configuration structure
