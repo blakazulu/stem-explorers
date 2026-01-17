@@ -204,6 +204,7 @@ export default function DisplaySettingsPage() {
           >
             <PageElementsSection
               config={localConfig.pageElements[selectedRole]}
+              sidebarConfig={localConfig.sidebars[selectedRole]}
               onChange={updatePageElements}
             />
           </CollapsibleSection>
