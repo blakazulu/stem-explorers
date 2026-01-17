@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **React Query caching documentation**: Added comprehensive docs at `docs/react-query-caching.md` covering configuration, refresh behavior, cache invalidation, and how to extend for new features
+- **Sidenav structure documentation**: Added `docs/sidenav-structure.md` documenting all sidebar navigation links per role, admin display settings capabilities, and grade-aware sections
+
 ## [0.5.0] - 2026-01-18
 
 ### Added
