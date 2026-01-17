@@ -9,6 +9,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Display Settings Admin Page** (`/admin/display`): New admin page for visibility control
+  - Role tabs to switch between teacher/parent/student configuration
+  - Dashboard section with intro text editor and drag-and-drop card reordering
+  - Sidebar section with visibility toggles and editable link names
+  - Page elements section with checkboxes for granular element visibility
+  - Real-time preview of changes with save button
+  - Added "תצוגה" link to admin sidebar with Eye icon
+- **Drag-and-Drop Components**: New display components for admin configuration
+  - `RoleTabs` - Role selector for switching between configurable roles
+  - `DraggableCardList` - Drag-and-drop list using @dnd-kit for card reordering
+  - `DashboardSection` - Dashboard intro and cards configuration
+  - `SidebarSection` - Sidebar links visibility and label editing
+  - `PageElementsSection` - Page element toggles grouped by page
+- **Visibility-aware consumer components**:
+  - Sidebar now filters links based on visibility config for non-admin roles
+  - Sidebar supports custom link labels from visibility config
+  - Dashboard cards are filtered, ordered, and shows intro text from config
+  - Teaching Resources page hides sections based on visibility config
+  - Documentation gallery respects visibility for images/text/teacherName
+- **Visibility Context provider**: React context for visibility configuration (`src/contexts/VisibilityContext.tsx`)
+  - `VisibilityProvider` - fetches config from Firestore on mount, merges with defaults
+  - `useVisibility()` hook with helper functions: `getDashboardConfig`, `getSidebarConfig`, `getPageElements`, `canSee`
+  - Handles loading and error states gracefully
+- **Visibility Firestore service**: Service for fetching and saving visibility config to Firestore (`src/lib/services/visibility.ts`)
+  - `getVisibilityConfig()` - fetches config from `settings/visibility`
+  - `saveVisibilityConfig()` - saves config to Firestore
+  - `mergeWithDefaults()` - merges saved config with defaults for forward compatibility
 - **Visibility default constants**: Default configuration values for the visibility control system
   - `ALL_DASHBOARD_CARDS` - metadata for all possible dashboard cards
   - `ALL_SIDEBAR_LINKS` - metadata for all possible sidebar links
