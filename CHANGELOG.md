@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Visibility config types**: TypeScript types for the visibility control system
+  - `ConfigurableRole` type for teacher/parent/student roles
+  - `VisibilityConfig` interface for the full configuration structure
+  - `DashboardConfig` and `DashboardCardConfig` for dashboard visibility settings
+  - `SidebarConfig` and `SidebarLinkConfig` for sidebar visibility settings
+  - `PageElementsConfig` for granular page element visibility (teaching resources, reports, pedagogical, documentation)
 - **Visibility control design document**: Design spec for admin תצוגה (Display) feature
   - Allows admins to control what each role (teacher/parent/student) sees
   - Dashboard: intro text, toggle/reorder cards

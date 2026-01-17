@@ -186,3 +186,57 @@ export interface Expert {
   order: number;
   createdAt: Date;
 }
+
+// Visibility configuration types
+export type ConfigurableRole = 'teacher' | 'parent' | 'student';
+
+export interface VisibilityConfig {
+  dashboards: Record<ConfigurableRole, DashboardConfig>;
+  sidebars: Record<ConfigurableRole, SidebarConfig>;
+  pageElements: Record<ConfigurableRole, PageElementsConfig>;
+}
+
+export interface DashboardConfig {
+  intro: string;
+  cards: DashboardCardConfig[];
+}
+
+export interface DashboardCardConfig {
+  id: string;
+  visible: boolean;
+  order: number;
+}
+
+export interface SidebarConfig {
+  links: SidebarLinkConfig[];
+}
+
+export interface SidebarLinkConfig {
+  id: string;
+  label: string;
+  visible: boolean;
+}
+
+export interface PageElementsConfig {
+  teachingResources: {
+    curricula: boolean;
+    stemLinks: boolean;
+    equipment: boolean;
+    experts: boolean;
+  };
+  reports: {
+    summary: boolean;
+    patterns: boolean;
+    challenges: boolean;
+    suggestions: boolean;
+  };
+  pedagogical: {
+    unitCards: boolean;
+    unitDetails: boolean;
+  };
+  documentation: {
+    images: boolean;
+    text: boolean;
+    teacherName: boolean;
+  };
+}
