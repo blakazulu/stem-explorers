@@ -118,7 +118,7 @@ export default function DisplaySettingsPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-3xl">
       {/* Sticky Header */}
       <div className="sticky top-0 z-20 bg-surface-0 pb-4 pt-2 -mt-2 space-y-4">
         {/* Page Header */}
