@@ -35,19 +35,12 @@ export default function DisplaySettingsPage() {
     }
   }, [session, router]);
 
-  // Initialize local config from saved config
+  // Initialize/sync local config from saved config (only when not dirty)
   useEffect(() => {
-    if (savedConfig && !localConfig) {
+    if (savedConfig && !hasChanges) {
       setLocalConfig(savedConfig);
     }
-  }, [savedConfig, localConfig]);
-
-  // Track changes
-  useEffect(() => {
-    if (localConfig && savedConfig) {
-      setHasChanges(JSON.stringify(localConfig) !== JSON.stringify(savedConfig));
-    }
-  }, [localConfig, savedConfig]);
+  }, [savedConfig, hasChanges]);
 
   const handleSave = async () => {
     if (!localConfig) return;
@@ -83,6 +76,7 @@ export default function DisplaySettingsPage() {
         [selectedRole]: dashboardConfig,
       },
     });
+    setHasChanges(true);
   };
 
   const updateSidebar = (sidebarConfig: VisibilityConfig["sidebars"][ConfigurableRole]) => {
@@ -94,6 +88,7 @@ export default function DisplaySettingsPage() {
         [selectedRole]: sidebarConfig,
       },
     });
+    setHasChanges(true);
   };
 
   const updatePageElements = (pageElementsConfig: VisibilityConfig["pageElements"][ConfigurableRole]) => {
@@ -105,6 +100,7 @@ export default function DisplaySettingsPage() {
         [selectedRole]: pageElementsConfig,
       },
     });
+    setHasChanges(true);
   };
 
   if (session?.user.role !== "admin") {
