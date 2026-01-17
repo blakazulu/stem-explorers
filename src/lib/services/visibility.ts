@@ -36,22 +36,46 @@ export async function saveVisibilityConfig(config: VisibilityConfig): Promise<vo
 }
 
 /**
+ * Deduplicates an array of items by id, keeping the first occurrence.
+ */
+function deduplicateById<T extends { id: string }>(items: T[]): T[] {
+  const seen = new Set<string>();
+  return items.filter(item => {
+    if (seen.has(item.id)) return false;
+    seen.add(item.id);
+    return true;
+  });
+}
+
+/**
  * Merges saved config with defaults to handle new features gracefully.
  * If saved config is missing properties, they get filled from defaults.
+ * Also deduplicates cards/links arrays to prevent duplicate items.
  */
 export function mergeWithDefaults(saved: VisibilityConfig | null): VisibilityConfig {
   if (!saved) return DEFAULT_VISIBILITY_CONFIG;
 
+  // Merge dashboards and deduplicate cards
+  const mergeDashboard = (defaultDash: typeof DEFAULT_VISIBILITY_CONFIG.dashboards.teacher, savedDash?: typeof saved.dashboards.teacher) => ({
+    intro: savedDash?.intro ?? defaultDash.intro,
+    cards: deduplicateById(savedDash?.cards ?? defaultDash.cards),
+  });
+
+  // Merge sidebars and deduplicate links
+  const mergeSidebar = (defaultSidebar: typeof DEFAULT_VISIBILITY_CONFIG.sidebars.teacher, savedSidebar?: typeof saved.sidebars.teacher) => ({
+    links: deduplicateById(savedSidebar?.links ?? defaultSidebar.links),
+  });
+
   const merged: VisibilityConfig = {
     dashboards: {
-      teacher: { ...DEFAULT_VISIBILITY_CONFIG.dashboards.teacher, ...saved.dashboards?.teacher },
-      parent: { ...DEFAULT_VISIBILITY_CONFIG.dashboards.parent, ...saved.dashboards?.parent },
-      student: { ...DEFAULT_VISIBILITY_CONFIG.dashboards.student, ...saved.dashboards?.student },
+      teacher: mergeDashboard(DEFAULT_VISIBILITY_CONFIG.dashboards.teacher, saved.dashboards?.teacher),
+      parent: mergeDashboard(DEFAULT_VISIBILITY_CONFIG.dashboards.parent, saved.dashboards?.parent),
+      student: mergeDashboard(DEFAULT_VISIBILITY_CONFIG.dashboards.student, saved.dashboards?.student),
     },
     sidebars: {
-      teacher: { ...DEFAULT_VISIBILITY_CONFIG.sidebars.teacher, ...saved.sidebars?.teacher },
-      parent: { ...DEFAULT_VISIBILITY_CONFIG.sidebars.parent, ...saved.sidebars?.parent },
-      student: { ...DEFAULT_VISIBILITY_CONFIG.sidebars.student, ...saved.sidebars?.student },
+      teacher: mergeSidebar(DEFAULT_VISIBILITY_CONFIG.sidebars.teacher, saved.sidebars?.teacher),
+      parent: mergeSidebar(DEFAULT_VISIBILITY_CONFIG.sidebars.parent, saved.sidebars?.parent),
+      student: mergeSidebar(DEFAULT_VISIBILITY_CONFIG.sidebars.student, saved.sidebars?.student),
     },
     pageElements: {
       teacher: {

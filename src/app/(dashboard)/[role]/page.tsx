@@ -158,7 +158,7 @@ const quickActionsByRole: Record<UserRole, QuickAction[]> = {
 export default function RoleDashboardPage() {
   const params = useParams();
   const roleStyles = useRoleStyles();
-  const { getDashboardConfig } = useVisibility();
+  const { getDashboardConfig, getSidebarConfig } = useVisibility();
 
   const role = (params.role as UserRole) || "teacher";
 
@@ -169,6 +169,12 @@ export default function RoleDashboardPage() {
     : (() => {
         const configurableRole = role as ConfigurableRole;
         const dashboardConfig = getDashboardConfig(configurableRole);
+        const sidebarConfig = getSidebarConfig(configurableRole);
+
+        // Build sidebar labels lookup (single source of truth)
+        const sidebarLabels = Object.fromEntries(
+          sidebarConfig.links.map(link => [link.id, link.label])
+        );
 
         return dashboardConfig.cards
           .filter(card => card.visible)
@@ -178,7 +184,8 @@ export default function RoleDashboardPage() {
             const cardInfo = ALL_DASHBOARD_CARDS[card.id as keyof typeof ALL_DASHBOARD_CARDS];
 
             return {
-              label: cardInfo?.label || card.id,
+              // Use sidebar label as source of truth, fallback to default
+              label: sidebarLabels[card.id] || cardInfo?.label || card.id,
               description: cardInfo?.description || "",
               href: metadata?.href || `/${card.id}`,
               icon: metadata?.icon || BookOpen,
