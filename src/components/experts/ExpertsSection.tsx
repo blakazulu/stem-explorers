@@ -8,14 +8,15 @@ import { AddEditExpertModal } from "./AddEditExpertModal";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToastActions } from "@/components/ui/Toast";
 import { GraduationCap, Plus } from "lucide-react";
-import type { Expert, Grade } from "@/types";
+import type { Expert, Grade, ConfigurableRole } from "@/types";
 
 interface ExpertsSectionProps {
   grade: Grade;
   isAdmin: boolean;
+  userRole?: ConfigurableRole; // For filtering experts by role
 }
 
-export function ExpertsSection({ grade, isAdmin }: ExpertsSectionProps) {
+export function ExpertsSection({ grade, isAdmin, userRole }: ExpertsSectionProps) {
   const [experts, setExperts] = useState<Expert[]>([]);
   const [allExperts, setAllExperts] = useState<Expert[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,16 +32,23 @@ export function ExpertsSection({ grade, isAdmin }: ExpertsSectionProps) {
     try {
       const data = await getExperts();
       setAllExperts(data);
-      // Filter to show global experts + grade-specific experts
-      const filtered = data.filter(
-        (e) => e.grade === null || e.grade === grade
-      );
+      // Filter by grade (global + grade-specific) and by role
+      const filtered = data.filter((e) => {
+        // Grade filter: show if global (null) or matches current grade
+        const gradeMatch = e.grade === null || e.grade === grade;
+
+        // Role filter: admin sees all, others see if their role is in expert's roles
+        // Legacy experts without roles field are visible to all
+        const roleMatch = isAdmin || !userRole || !e.roles?.length || e.roles.includes(userRole);
+
+        return gradeMatch && roleMatch;
+      });
       setExperts(filtered);
     } catch {
       toast.error("שגיאה", "שגיאה בטעינת המומחים");
     }
     setLoading(false);
-  }, [grade, toast]);
+  }, [grade, isAdmin, userRole, toast]);
 
   useEffect(() => {
     loadExperts();

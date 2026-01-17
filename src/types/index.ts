@@ -183,6 +183,7 @@ export interface Expert {
   availability: string;
   imageUrl: string;
   grade: Grade | null; // null = all grades, Grade = specific grade only
+  roles: ConfigurableRole[]; // which roles can see this expert (empty = all roles)
   order: number;
   createdAt: Date;
 }
@@ -222,7 +223,6 @@ export interface PageElementsConfig {
     curricula: boolean;
     stemLinks: boolean;
     equipment: boolean;
-    experts: boolean;
   };
   pedagogical: {
     unitCards: boolean;

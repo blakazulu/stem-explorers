@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **"שאל את המומחה" standalone page**: Moved experts section from teaching-resources to its own page
+  - New page at `/[role]/experts/[grade]` accessible to all roles (including admin)
+  - Configurable visibility per role via admin display settings sidebar
+  - Added role-based expert visibility: admin can set which roles (teacher/parent/student) see each expert
+  - Added grade-based expert visibility: experts can be global or grade-specific
+  - Removed from teaching-resources page elements
+  - Wider modal on tablet/desktop for better UX
+- **Parent sidebar links**: Added 3 new placeholder links for parent role (configurable via admin visibility settings)
+  - פעילויות קהילתיות (Community Activities)
+  - STEM במשפחה (STEM in Family)
+  - שותפים לדרך (Partners)
 - **Display Settings Admin Page** (`/admin/display`): New admin page for visibility control
   - Role tabs to switch between teacher/parent/student configuration
   - Dashboard section with intro text editor and drag-and-drop card reordering
@@ -67,6 +78,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Visibility control cleanup**: Removed reports from PageElementsConfig since AI-generated content shouldn't have element-level visibility control
 - **Pedagogical page visibility**: Now respects visibility config for unitCards (מודל פדגוגי button) and unitDetails (file indicators in tree view)
 - **Pedagogical page crash for parent role**: Fixed `getPageElements` call to pass both role and page key (was missing "pedagogical" parameter)
+- **New visibility items not appearing**: Fixed mergeWithDefaults to add new sidebar links and dashboard cards from defaults to existing saved configs
 - **Teaching resources button contrast**: Added drop shadows to text and icons on gradient buttons for better readability
 - **Firebase service functions**: Added proper error re-throwing in staff.ts and settings.ts to ensure functions always return or throw
 - **StaffGrid useEffect**: Fixed missing dependency by wrapping `loadStaff` in useCallback

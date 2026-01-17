@@ -20,6 +20,10 @@ export const ALL_SIDEBAR_LINKS = {
   reports: { defaultLabel: "דוחות", href: "/reports" },
   responses: { defaultLabel: "תגובות תלמידים", href: "/responses" },
   forum: { defaultLabel: "במה אישית", href: "/forum" },
+  experts: { defaultLabel: "שאל את המומחה", href: "/experts" },
+  "community-activities": { defaultLabel: "פעילויות קהילתיות", href: "/community-activities" },
+  "stem-family": { defaultLabel: "STEM במשפחה", href: "/stem-family" },
+  partners: { defaultLabel: "שותפים לדרך", href: "/partners" },
 } as const;
 
 // Page element labels for admin UI
@@ -29,7 +33,6 @@ export const PAGE_ELEMENT_LABELS = {
     curricula: "תוכניות לימודים",
     stemLinks: "קישורי STEM",
     equipment: "טופס הצטיידות",
-    experts: "שאל את המומחה",
   },
   pedagogical: {
     _title: "מודל פדגוגי",
@@ -82,6 +85,7 @@ const DEFAULT_TEACHER_SIDEBAR: SidebarConfig = {
     { id: "reports", label: "דוחות", visible: true },
     { id: "responses", label: "תגובות תלמידים", visible: true },
     { id: "forum", label: "במה אישית", visible: true },
+    { id: "experts", label: "שאל את המומחה", visible: true },
   ],
 };
 
@@ -90,6 +94,10 @@ const DEFAULT_PARENT_SIDEBAR: SidebarConfig = {
     { id: "pedagogical", label: "מודל פדגוגי ומו\"פ", visible: true },
     { id: "documentation", label: "תיעודים", visible: true },
     { id: "reports", label: "דוחות", visible: true },
+    { id: "experts", label: "שאל את המומחה", visible: true },
+    { id: "community-activities", label: "פעילויות קהילתיות", visible: true },
+    { id: "stem-family", label: "STEM במשפחה", visible: true },
+    { id: "partners", label: "שותפים לדרך", visible: true },
   ],
 };
 
@@ -98,23 +106,24 @@ const DEFAULT_STUDENT_SIDEBAR: SidebarConfig = {
     { id: "pedagogical", label: "מודל פדגוגי ומו\"פ", visible: true },
     { id: "journal", label: "יומן חוקר", visible: true },
     { id: "documentation", label: "תיעודים", visible: true },
+    { id: "experts", label: "שאל את המומחה", visible: true },
   ],
 };
 
 const DEFAULT_TEACHER_PAGE_ELEMENTS: PageElementsConfig = {
-  teachingResources: { curricula: true, stemLinks: true, equipment: true, experts: true },
+  teachingResources: { curricula: true, stemLinks: true, equipment: true },
   pedagogical: { unitCards: true, unitDetails: true },
   documentation: { images: true, text: true, teacherName: true },
 };
 
 const DEFAULT_PARENT_PAGE_ELEMENTS: PageElementsConfig = {
-  teachingResources: { curricula: true, stemLinks: false, equipment: false, experts: true },
+  teachingResources: { curricula: true, stemLinks: false, equipment: false },
   pedagogical: { unitCards: true, unitDetails: true },
   documentation: { images: true, text: true, teacherName: true },
 };
 
 const DEFAULT_STUDENT_PAGE_ELEMENTS: PageElementsConfig = {
-  teachingResources: { curricula: false, stemLinks: false, equipment: false, experts: false },
+  teachingResources: { curricula: false, stemLinks: false, equipment: false },
   pedagogical: { unitCards: true, unitDetails: true },
   documentation: { images: true, text: true, teacherName: false },
 };

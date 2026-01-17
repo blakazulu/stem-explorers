@@ -24,6 +24,9 @@ import {
   Rocket,
   ClipboardCheck,
   Eye,
+  Users,
+  Home,
+  Handshake,
 } from "lucide-react";
 import type { UserRole } from "@/types";
 import type { LucideIcon } from "lucide-react";
@@ -44,6 +47,10 @@ const navItems: NavItem[] = [
   { label: "דוחות", href: "/reports", roles: ["admin", "teacher", "parent"], icon: BarChart2 },
   { label: "תגובות תלמידים", href: "/responses", roles: ["admin", "teacher"], icon: ClipboardCheck },
   { label: "במה אישית", href: "/forum", roles: ["admin", "teacher"], icon: MessageSquare },
+  { label: "שאל את המומחה", href: "/experts", roles: ["admin", "teacher", "parent", "student"], icon: GraduationCap },
+  { label: "פעילויות קהילתיות", href: "/community-activities", roles: ["parent"], icon: Users },
+  { label: "STEM במשפחה", href: "/stem-family", roles: ["parent"], icon: Home },
+  { label: "שותפים לדרך", href: "/partners", roles: ["parent"], icon: Handshake },
   { label: "שאלות", href: "/questions", roles: ["admin"], icon: HelpCircle },
   { label: "סיסמאות", href: "/passwords", roles: ["admin"], icon: Key },
   { label: "הגדרות", href: "/settings", roles: ["admin"], icon: Settings },

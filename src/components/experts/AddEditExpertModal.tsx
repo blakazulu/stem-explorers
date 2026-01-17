@@ -4,7 +4,14 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { X, Upload, User } from "lucide-react";
 import { uploadImage } from "@/lib/utils/imageUpload";
-import type { Expert, Grade } from "@/types";
+import type { Expert, Grade, ConfigurableRole } from "@/types";
+
+const ALL_ROLES: ConfigurableRole[] = ["teacher", "parent", "student"];
+const ROLE_LABELS: Record<ConfigurableRole, string> = {
+  teacher: "מורים",
+  parent: "הורים",
+  student: "תלמידים",
+};
 
 interface AddEditExpertModalProps {
   isOpen: boolean;
@@ -30,10 +37,13 @@ export function AddEditExpertModal({
   const [availability, setAvailability] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [isGlobal, setIsGlobal] = useState(true);
+  const [isGlobalGrade, setIsGlobalGrade] = useState(true);
+  const [selectedRoles, setSelectedRoles] = useState<ConfigurableRole[]>([...ALL_ROLES]);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  const isAllRoles = selectedRoles.length === ALL_ROLES.length;
 
   const isEdit = !!expert;
 
@@ -45,7 +55,9 @@ export function AddEditExpertModal({
       setAvailability(expert.availability);
       setImageUrl(expert.imageUrl);
       setImagePreview(expert.imageUrl);
-      setIsGlobal(expert.grade === null);
+      setIsGlobalGrade(expert.grade === null);
+      // Handle legacy experts without roles field (treat as all roles)
+      setSelectedRoles(expert.roles?.length ? expert.roles : [...ALL_ROLES]);
     } else {
       setName("");
       setTitle("");
@@ -53,7 +65,8 @@ export function AddEditExpertModal({
       setAvailability("");
       setImageUrl("");
       setImagePreview(null);
-      setIsGlobal(true);
+      setIsGlobalGrade(true);
+      setSelectedRoles([...ALL_ROLES]);
     }
     setError("");
   }, [expert, isOpen]);
@@ -135,6 +148,11 @@ export function AddEditExpertModal({
       return;
     }
 
+    if (selectedRoles.length === 0) {
+      setError("יש לבחור לפחות תפקיד אחד");
+      return;
+    }
+
     setSaving(true);
     try {
       await onSave({
@@ -143,7 +161,8 @@ export function AddEditExpertModal({
         description: description.trim(),
         availability: availability.trim(),
         imageUrl,
-        grade: isGlobal ? null : currentGrade,
+        grade: isGlobalGrade ? null : currentGrade,
+        roles: selectedRoles,
       });
       onClose();
     } catch {
@@ -152,12 +171,29 @@ export function AddEditExpertModal({
     setSaving(false);
   };
 
+  const toggleRole = (role: ConfigurableRole) => {
+    setSelectedRoles(prev =>
+      prev.includes(role)
+        ? prev.filter(r => r !== role)
+        : [...prev, role]
+    );
+  };
+
+  const toggleAllRoles = () => {
+    if (isAllRoles) {
+      // Can't deselect all - keep at least one
+      setSelectedRoles(["teacher"]);
+    } else {
+      setSelectedRoles([...ALL_ROLES]);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
     <dialog
       ref={dialogRef}
-      className="fixed inset-0 m-auto z-50 rounded-2xl p-0 backdrop:bg-black/50 backdrop:animate-fade-in max-w-md w-[95vw] shadow-2xl animate-scale-in border-0 overflow-hidden"
+      className="fixed inset-0 m-auto z-50 rounded-2xl p-0 backdrop:bg-black/50 backdrop:animate-fade-in max-w-xl w-[95vw] shadow-2xl animate-scale-in border-0 overflow-hidden"
       onClose={onClose}
     >
       <form onSubmit={handleSubmit} className="flex flex-col" dir="rtl">
@@ -281,23 +317,59 @@ export function AddEditExpertModal({
             />
           </div>
 
-          {/* Grade Checkbox */}
-          <div className="flex items-center gap-3 p-3 bg-surface-1 rounded-xl">
-            <input
-              type="checkbox"
-              id="isGlobal"
-              checked={isGlobal}
-              onChange={(e) => setIsGlobal(e.target.checked)}
-              className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
-            />
-            <label htmlFor="isGlobal" className="text-sm text-foreground cursor-pointer">
-              מומחה לכל הכיתות
-            </label>
-            {!isGlobal && (
-              <span className="text-xs text-gray-500 mr-auto">
-                (יוצג רק בכיתה {currentGrade})
-              </span>
-            )}
+          {/* Visibility Settings */}
+          <div className="space-y-3 p-4 bg-surface-1 rounded-xl">
+            <p className="text-sm font-medium text-foreground mb-2">הגדרות תצוגה</p>
+
+            {/* Roles Selection */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="allRoles"
+                  checked={isAllRoles}
+                  onChange={toggleAllRoles}
+                  className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                />
+                <label htmlFor="allRoles" className="text-sm text-foreground cursor-pointer font-medium">
+                  כל התפקידים
+                </label>
+              </div>
+              <div className="flex flex-wrap gap-3 mr-6">
+                {ALL_ROLES.map(role => (
+                  <label key={role} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedRoles.includes(role)}
+                      onChange={() => toggleRole(role)}
+                      className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                    />
+                    <span className={`text-sm ${selectedRoles.includes(role) ? 'text-foreground' : 'text-gray-400'}`}>
+                      {ROLE_LABELS[role]}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Grade Selection */}
+            <div className="flex items-center gap-3 pt-2 border-t border-surface-2">
+              <input
+                type="checkbox"
+                id="isGlobalGrade"
+                checked={isGlobalGrade}
+                onChange={(e) => setIsGlobalGrade(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+              />
+              <label htmlFor="isGlobalGrade" className="text-sm text-foreground cursor-pointer">
+                כל הכיתות
+              </label>
+              {!isGlobalGrade && (
+                <span className="text-xs text-gray-500 mr-auto">
+                  (יוצג רק בכיתה {currentGrade})
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Error */}

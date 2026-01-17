@@ -7,7 +7,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useVisibility } from "@/contexts/VisibilityContext";
 import { StemLinksModal } from "@/components/teaching-resources/StemLinksModal";
 import { EquipmentFormModal } from "@/components/teaching-resources/EquipmentFormModal";
-import { ExpertsSection } from "@/components/experts";
 import {
   FolderOpen,
   ArrowRight,
@@ -173,11 +172,6 @@ export default function TeachingResourcesGradePage() {
           )
         )}
       </div>
-
-      {/* Experts Section - controlled by visibility */}
-      {(role === "admin" || canSee(configurableRole, "teachingResources", "experts")) && (
-        <ExpertsSection grade={grade} isAdmin={isAdmin} />
-      )}
 
       {/* STEM Links Modal */}
       <StemLinksModal

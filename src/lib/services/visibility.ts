@@ -55,16 +55,40 @@ function deduplicateById<T extends { id: string }>(items: T[]): T[] {
 export function mergeWithDefaults(saved: VisibilityConfig | null): VisibilityConfig {
   if (!saved) return DEFAULT_VISIBILITY_CONFIG;
 
-  // Merge dashboards and deduplicate cards
-  const mergeDashboard = (defaultDash: typeof DEFAULT_VISIBILITY_CONFIG.dashboards.teacher, savedDash?: typeof saved.dashboards.teacher) => ({
-    intro: savedDash?.intro ?? defaultDash.intro,
-    cards: deduplicateById(savedDash?.cards ?? defaultDash.cards),
-  });
+  // Merge dashboards: keep saved cards + add any new cards from defaults
+  const mergeDashboard = (defaultDash: typeof DEFAULT_VISIBILITY_CONFIG.dashboards.teacher, savedDash?: typeof saved.dashboards.teacher) => {
+    if (!savedDash?.cards) return { intro: defaultDash.intro, cards: defaultDash.cards };
 
-  // Merge sidebars and deduplicate links
-  const mergeSidebar = (defaultSidebar: typeof DEFAULT_VISIBILITY_CONFIG.sidebars.teacher, savedSidebar?: typeof saved.sidebars.teacher) => ({
-    links: deduplicateById(savedSidebar?.links ?? defaultSidebar.links),
-  });
+    // Get IDs of saved cards
+    const savedIds = new Set(savedDash.cards.map(c => c.id));
+
+    // Find new cards in defaults that aren't in saved (add at end with next order)
+    const maxOrder = Math.max(...savedDash.cards.map(c => c.order), -1);
+    const newCards = defaultDash.cards
+      .filter(c => !savedIds.has(c.id))
+      .map((c, i) => ({ ...c, order: maxOrder + 1 + i }));
+
+    return {
+      intro: savedDash?.intro ?? defaultDash.intro,
+      cards: deduplicateById([...savedDash.cards, ...newCards]),
+    };
+  };
+
+  // Merge sidebars: keep saved links + add any new links from defaults
+  const mergeSidebar = (defaultSidebar: typeof DEFAULT_VISIBILITY_CONFIG.sidebars.teacher, savedSidebar?: typeof saved.sidebars.teacher) => {
+    if (!savedSidebar?.links) return { links: defaultSidebar.links };
+
+    // Get IDs of saved links
+    const savedIds = new Set(savedSidebar.links.map(l => l.id));
+
+    // Find new links in defaults that aren't in saved
+    const newLinks = defaultSidebar.links.filter(l => !savedIds.has(l.id));
+
+    // Combine: saved links first, then new links at the end
+    return {
+      links: deduplicateById([...savedSidebar.links, ...newLinks]),
+    };
+  };
 
   const merged: VisibilityConfig = {
     dashboards: {
