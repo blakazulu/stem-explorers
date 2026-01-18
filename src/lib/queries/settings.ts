@@ -10,6 +10,7 @@ import {
   saveStemLinks,
   getExperts,
   saveExperts,
+  reorderExperts,
   getEmailConfig,
   saveEmailConfig,
   getReportConfig,
@@ -110,6 +111,16 @@ export function useSaveExperts() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: saveExperts,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.settings.experts });
+    },
+  });
+}
+
+export function useReorderExperts() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (orderMap: Map<string, number>) => reorderExperts(orderMap),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.settings.experts });
     },

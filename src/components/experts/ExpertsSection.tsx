@@ -1,7 +1,24 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useExperts, useSaveExperts, useBookingsByDateRange, useCreateBooking, useDeleteBooking } from "@/lib/queries";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { useExperts, useSaveExperts, useReorderExperts, useBookingsByDateRange, useCreateBooking, useDeleteBooking } from "@/lib/queries";
 import { ExpertCard } from "./ExpertCard";
 import { ExpertDetailsModal } from "./ExpertDetailsModal";
 import { AddEditExpertModal } from "./AddEditExpertModal";
@@ -22,9 +39,48 @@ interface ExpertsSectionProps {
   userRole?: ConfigurableRole; // For filtering experts by role
 }
 
+interface SortableExpertItemProps {
+  expert: Expert;
+  onView: (expert: Expert) => void;
+  onEdit: (expert: Expert) => void;
+  onDelete: (expert: Expert) => void;
+}
+
+function SortableExpertItem({ expert, onView, onEdit, onDelete }: SortableExpertItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: expert.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : undefined,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      <ExpertCard
+        expert={expert}
+        isAdmin={true}
+        isDragging={isDragging}
+        dragHandleProps={{ attributes, listeners }}
+        onClick={() => onView(expert)}
+        onEdit={onEdit}
+        onDelete={onDelete}
+      />
+    </div>
+  );
+}
+
 export function ExpertsSection({ grade, isAdmin, userRole }: ExpertsSectionProps) {
   const { data: allExperts = [], isLoading: loading } = useExperts();
   const saveExpertsMutation = useSaveExperts();
+  const reorderExpertsMutation = useReorderExperts();
   const [deleting, setDeleting] = useState(false);
   const [selectedExpert, setSelectedExpert] = useState<Expert | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -66,6 +122,50 @@ export function ExpertsSection({ grade, isAdmin, userRole }: ExpertsSectionProps
       return gradeMatch && roleMatch;
     });
   }, [allExperts, grade, isAdmin, userRole]);
+
+  // Sort experts by order
+  const sortedExperts = useMemo(() => {
+    return [...experts].sort((a, b) => a.order - b.order);
+  }, [experts]);
+
+  // Sensors for drag and drop
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // Require 8px movement before drag starts
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      // Find indices in the sorted/filtered list (what's displayed)
+      const oldIndex = sortedExperts.findIndex((e) => e.id === active.id);
+      const newIndex = sortedExperts.findIndex((e) => e.id === over.id);
+
+      // Reorder only the visible experts
+      const reorderedVisible = arrayMove(sortedExperts, oldIndex, newIndex);
+
+      // Create a map of new order values for visible experts
+      const orderMap = new Map<string, number>();
+      reorderedVisible.forEach((expert, index) => {
+        orderMap.set(expert.id, index);
+      });
+
+      try {
+        // Use dedicated reorder function that reads fresh data and only updates order
+        await reorderExpertsMutation.mutateAsync(orderMap);
+        toast.success("סדר עודכן", "סדר המומחים נשמר");
+      } catch {
+        toast.error("שגיאה", "לא הצלחנו לשמור את הסדר");
+      }
+    }
+  };
 
   const handleViewDetails = (expert: Expert) => {
     setSelectedExpert(expert);
@@ -203,33 +303,56 @@ export function ExpertsSection({ grade, isAdmin, userRole }: ExpertsSectionProps
       </div>
 
       {/* Experts Grid */}
-      <div className="flex flex-wrap gap-4">
-        {experts.map((expert) => (
-          <ExpertCard
-            key={expert.id}
-            expert={expert}
-            isAdmin={isAdmin}
-            onClick={() => handleViewDetails(expert)}
-            onEdit={handleEdit}
-            onDelete={setDeleteConfirm}
-          />
-        ))}
-
-        {/* Add Button (Admin only) */}
-        {isAdmin && (
-          <button
-            onClick={handleAdd}
-            className="flex flex-col items-center justify-center text-center p-4 rounded-2xl border-2 border-dashed border-surface-3 hover:border-primary hover:bg-primary/5 transition-all duration-300 cursor-pointer min-w-[140px] min-h-[140px] group"
+      {isAdmin ? (
+        // Admin view with drag and drop
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={sortedExperts.map((e) => e.id)}
+            strategy={rectSortingStrategy}
           >
-            <div className="w-12 h-12 rounded-full bg-surface-2 group-hover:bg-primary/10 flex items-center justify-center mb-2 transition-colors">
-              <Plus size={24} className="text-gray-400 group-hover:text-primary transition-colors" />
+            <div className="flex flex-wrap gap-4">
+              {sortedExperts.map((expert) => (
+                <SortableExpertItem
+                  key={expert.id}
+                  expert={expert}
+                  onView={handleViewDetails}
+                  onEdit={handleEdit}
+                  onDelete={setDeleteConfirm}
+                />
+              ))}
+
+              {/* Add Button */}
+              <button
+                onClick={handleAdd}
+                className="flex flex-col items-center justify-center text-center p-4 rounded-2xl border-2 border-dashed border-surface-3 hover:border-primary hover:bg-primary/5 transition-all duration-300 cursor-pointer min-w-[140px] min-h-[140px] group"
+              >
+                <div className="w-12 h-12 rounded-full bg-surface-2 group-hover:bg-primary/10 flex items-center justify-center mb-2 transition-colors">
+                  <Plus size={24} className="text-gray-400 group-hover:text-primary transition-colors" />
+                </div>
+                <span className="text-sm text-gray-500 group-hover:text-primary transition-colors">
+                  הוסף מומחה
+                </span>
+              </button>
             </div>
-            <span className="text-sm text-gray-500 group-hover:text-primary transition-colors">
-              הוסף מומחה
-            </span>
-          </button>
-        )}
-      </div>
+          </SortableContext>
+        </DndContext>
+      ) : (
+        // Non-admin view without drag and drop
+        <div className="flex flex-wrap gap-4">
+          {sortedExperts.map((expert) => (
+            <ExpertCard
+              key={expert.id}
+              expert={expert}
+              isAdmin={false}
+              onClick={() => handleViewDetails(expert)}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Empty State for Admin */}
       {experts.length === 0 && isAdmin && (

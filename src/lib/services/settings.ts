@@ -151,6 +151,36 @@ export async function saveStemLinks(links: StemLink[]): Promise<void> {
 }
 
 // Experts for "שאל את המומחה"
+
+/**
+ * Reorder experts by updating only their order field.
+ * This is safer than saveExperts for reordering as it:
+ * 1. Reads fresh data from Firestore
+ * 2. Only updates order fields
+ * 3. Preserves any concurrent edits to other fields
+ * @param orderMap - Map of expert ID to new order value
+ */
+export async function reorderExperts(orderMap: Map<string, number>): Promise<void> {
+  try {
+    // Read fresh data to avoid overwriting concurrent edits
+    const currentExperts = await getExperts();
+
+    // Update only the order field for experts in the map
+    const updatedExperts = currentExperts.map((expert) => {
+      const newOrder = orderMap.get(expert.id);
+      if (newOrder !== undefined) {
+        return { ...expert, order: newOrder };
+      }
+      return expert;
+    });
+
+    await setDoc(doc(db, SETTINGS_DOC, "experts"), { experts: updatedExperts });
+  } catch (error) {
+    handleFirebaseError(error, "reorderExperts");
+    throw error;
+  }
+}
+
 export async function getExperts(): Promise<Expert[]> {
   try {
     const docRef = doc(db, SETTINGS_DOC, "experts");

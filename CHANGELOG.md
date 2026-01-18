@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-01-18
+
+### Added
+
+- **Expert drag and drop reordering**: Admin can reorder experts via drag and drop in the experts page
+  - Drag handle appears on hover for each expert card
+  - Uses @dnd-kit library for smooth drag interactions
+  - Dedicated `reorderExperts` service function reads fresh data before saving to prevent race conditions
+  - Correctly handles filtered views (only reorders visible experts)
+  - Visual feedback during drag (opacity, scale, ring)
+
 ## [0.8.0] - 2026-01-18
 
 ### Added

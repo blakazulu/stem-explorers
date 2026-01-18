@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Edit2, Trash2 } from "lucide-react";
+import { Edit2, Trash2, GripVertical } from "lucide-react";
+import type { DraggableAttributes } from "@dnd-kit/core";
+import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import type { Expert, ExpertAvailability } from "@/types";
 import { useRoleStyles } from "@/contexts/ThemeContext";
 
@@ -60,6 +62,11 @@ function getExpertBadge(availability: ExpertAvailability[] | undefined): {
 interface ExpertCardProps {
   expert: Expert;
   isAdmin?: boolean;
+  isDragging?: boolean;
+  dragHandleProps?: {
+    attributes: DraggableAttributes;
+    listeners: SyntheticListenerMap | undefined;
+  };
   onClick: () => void;
   onEdit?: (expert: Expert) => void;
   onDelete?: (expert: Expert) => void;
@@ -68,6 +75,8 @@ interface ExpertCardProps {
 export function ExpertCard({
   expert,
   isAdmin = false,
+  isDragging = false,
+  dragHandleProps,
   onClick,
   onEdit,
   onDelete,
@@ -95,7 +104,9 @@ export function ExpertCard({
       tabIndex={0}
       role="button"
       aria-label={`${expert.name}, ${expert.title}`}
-      className={`group relative flex flex-col items-center text-center p-4 rounded-theme bg-surface-0 border border-surface-2 hover:${roleStyles.border}/30 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-${roleStyles.accent}/50 focus:${roleStyles.border} transition-all duration-theme ease-theme cursor-pointer min-w-[140px]`}
+      className={`group relative flex flex-col items-center text-center p-4 rounded-theme bg-surface-0 border border-surface-2 hover:${roleStyles.border}/30 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-${roleStyles.accent}/50 focus:${roleStyles.border} transition-all duration-theme ease-theme cursor-pointer min-w-[140px] ${
+        isDragging ? "opacity-50 scale-105 ring-2 ring-primary shadow-xl" : ""
+      }`}
     >
       {/* Availability Badge (Admin only) */}
       {badge && (
@@ -107,6 +118,19 @@ export function ExpertCard({
       {/* Admin Actions */}
       {isAdmin && (
         <div className="absolute top-2 left-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+          {/* Drag Handle */}
+          {dragHandleProps && (
+            <button
+              {...dragHandleProps.attributes}
+              {...dragHandleProps.listeners}
+              className="p-1.5 bg-white/90 backdrop-blur-sm rounded-lg shadow-md hover:bg-surface-2 transition-colors cursor-grab active:cursor-grabbing touch-none"
+              title="גרור לשינוי סדר"
+              aria-label="גרור לשינוי סדר הצגה"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <GripVertical size={14} className="text-gray-600" />
+            </button>
+          )}
           <button
             onClick={(e) => {
               e.stopPropagation();

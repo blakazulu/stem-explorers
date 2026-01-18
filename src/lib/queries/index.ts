@@ -53,6 +53,7 @@ export {
   useSaveStemLinks,
   useExperts,
   useSaveExperts,
+  useReorderExperts,
   useEmailConfig,
   useSaveEmailConfig,
   useReportConfig,
