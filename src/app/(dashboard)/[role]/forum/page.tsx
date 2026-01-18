@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { usePosts, useDeletePost } from "@/lib/queries";
+import { usePosts, useDeletePost, useUpdatePost, usePinPost } from "@/lib/queries";
 import { PostCard } from "@/components/forum/PostCard";
 import { NewPostForm } from "@/components/forum/NewPostForm";
 import { Button } from "@/components/ui/Button";
 import { SkeletonList } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useToastActions } from "@/components/ui/Toast";
-import { MessageSquare, Plus } from "lucide-react";
+import { MessageSquare, Plus, ChevronRight, ChevronLeft } from "lucide-react";
+
+const POSTS_PER_PAGE = 10;
 
 export default function ForumPage() {
   const { session } = useAuth();
@@ -20,10 +22,36 @@ export default function ForumPage() {
     refetch: loadPosts,
   } = usePosts();
   const [showNewPost, setShowNewPost] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const toast = useToastActions();
   const deletePostMutation = useDeletePost();
+  const updatePostMutation = useUpdatePost();
+  const pinPostMutation = usePinPost();
 
   const isAdmin = session?.user.role === "admin";
+
+  // Sort posts: pinned first, then by creation date
+  const sortedPosts = useMemo(() => {
+    return [...posts].sort((a, b) => {
+      if (a.pinned && !b.pinned) return -1;
+      if (!a.pinned && b.pinned) return 1;
+      return 0; // Keep original order (by createdAt desc from server)
+    });
+  }, [posts]);
+
+  // Pagination
+  const totalPages = Math.ceil(sortedPosts.length / POSTS_PER_PAGE);
+  const paginatedPosts = useMemo(() => {
+    const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
+    return sortedPosts.slice(startIndex, startIndex + POSTS_PER_PAGE);
+  }, [sortedPosts, currentPage]);
+
+  // Clamp currentPage if posts are deleted and current page no longer exists
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
+  }, [totalPages, currentPage]);
 
   async function handleDelete(id: string) {
     if (!confirm("האם למחוק פוסט זה?")) return;
@@ -31,6 +59,24 @@ export default function ForumPage() {
       await deletePostMutation.mutateAsync(id);
     } catch {
       toast.error("שגיאה", "שגיאה במחיקת הפוסט");
+    }
+  }
+
+  async function handlePin(id: string, pinned: boolean) {
+    try {
+      await pinPostMutation.mutateAsync({ id, pinned });
+      toast.success("עודכן", pinned ? "הפוסט הוצמד" : "הפוסט בוטל מהצמדה");
+    } catch {
+      toast.error("שגיאה", "שגיאה בעדכון הפוסט");
+    }
+  }
+
+  async function handleEdit(id: string, title: string, content: string) {
+    try {
+      await updatePostMutation.mutateAsync({ id, data: { title, content } });
+      toast.success("עודכן", "הפוסט עודכן בהצלחה");
+    } catch {
+      toast.error("שגיאה", "שגיאה בעדכון הפוסט");
     }
   }
 
@@ -85,19 +131,50 @@ export default function ForumPage() {
           }
         />
       ) : (
-        <div className="space-y-4">
-          {posts.map((post, index) => (
-            <PostCard
-              key={post.id}
-              post={post}
-              currentUserName={session?.user.name || ""}
-              isAdmin={isAdmin}
-              onDelete={handleDelete}
-              onReplyAdded={loadPosts}
-              index={index}
-            />
-          ))}
-        </div>
+        <>
+          <div className="space-y-4">
+            {paginatedPosts.map((post, index) => (
+              <PostCard
+                key={post.id}
+                post={post}
+                currentUserName={session?.user.name || ""}
+                isAdmin={isAdmin}
+                onDelete={handleDelete}
+                onEdit={handleEdit}
+                onPin={handlePin}
+                onReplyAdded={loadPosts}
+                index={index}
+              />
+            ))}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 pt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                rightIcon={ChevronRight}
+              >
+                הקודם
+              </Button>
+              <span className="px-4 py-2 text-sm text-gray-600">
+                עמוד {currentPage} מתוך {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                rightIcon={ChevronLeft}
+              >
+                הבא
+              </Button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

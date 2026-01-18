@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import { useToastActions } from "@/components/ui/Toast";
-import { PenLine, Send, X } from "lucide-react";
+import { PenLine, Send, X, Info } from "lucide-react";
 
 interface NewPostFormProps {
   authorName: string;
@@ -77,11 +77,19 @@ export function NewPostForm({ authorName, onCreated, onCancel }: NewPostFormProp
             rows={5}
             required
           />
-          {content.length > 0 && (
-            <p className="text-xs text-gray-400 mt-1 text-left">
-              {content.length} תווים
-            </p>
-          )}
+          <div className="flex items-center justify-between mt-2">
+            {content.length > 0 && (
+              <p className="text-xs text-gray-400 text-left">
+                {content.length} תווים
+              </p>
+            )}
+            <div className="flex items-center gap-1.5 text-xs text-gray-400 mr-auto">
+              <Info size={12} />
+              <span>
+                להוספת קישור: <code className="bg-surface-2 px-1 rounded text-primary">[כותרת](https://...)</code>
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Actions */}

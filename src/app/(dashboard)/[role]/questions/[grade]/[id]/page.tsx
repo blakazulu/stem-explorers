@@ -41,11 +41,11 @@ const questionTypes: {
   icon: typeof Star;
   color: string;
 }[] = [
-  { value: "rating", label: "דירוג (1-5)", icon: Star, color: "text-accent" },
-  { value: "single", label: "בחירה יחידה", icon: CircleDot, color: "text-primary" },
-  { value: "multiple", label: "בחירה מרובה", icon: CheckSquare, color: "text-secondary" },
-  { value: "open", label: "שאלה פתוחה", icon: PenLine, color: "text-role-student" },
-];
+    { value: "rating", label: "דירוג (1-5)", icon: Star, color: "text-accent" },
+    { value: "single", label: "בחירה יחידה", icon: CircleDot, color: "text-primary" },
+    { value: "multiple", label: "בחירה מרובה", icon: CheckSquare, color: "text-secondary" },
+    { value: "open", label: "שאלה פתוחה", icon: PenLine, color: "text-role-student" },
+  ];
 
 const ratingStyles: {
   value: RatingStyle;
@@ -54,11 +54,11 @@ const ratingStyles: {
   emoji: string | null;
   color: string;
 }[] = [
-  { value: "stars", label: "כוכבים", icon: Star, emoji: null, color: "text-accent" },
-  { value: "hearts", label: "לבבות", icon: Heart, emoji: null, color: "text-error" },
-  { value: "emojis", label: "אימוג'י", icon: null, emoji: "😊", color: "" },
-  { value: "thumbs", label: "אגודלים", icon: ThumbsUp, emoji: null, color: "text-success" },
-];
+    { value: "stars", label: "כוכבים", icon: Star, emoji: null, color: "text-accent" },
+    { value: "hearts", label: "לבבות", icon: Heart, emoji: null, color: "text-error" },
+    { value: "emojis", label: "אימוג'י", icon: null, emoji: "😊", color: "" },
+    { value: "thumbs", label: "אגודלים", icon: ThumbsUp, emoji: null, color: "text-success" },
+  ];
 
 function generateId(): string {
   return Math.random().toString(36).substring(2, 15);
@@ -288,7 +288,7 @@ export default function EditQuestionnairePage() {
 
   if (loading) {
     return (
-      <div className="space-y-6 max-w-3xl">
+      <div className="space-y-6 max-w-5xl mx-auto">
         <div className="flex items-center gap-3">
           <div className="p-3 bg-role-admin/10 rounded-xl">
             <ClipboardList size={24} className="text-role-admin" />
@@ -311,7 +311,7 @@ export default function EditQuestionnairePage() {
   const currentTypeConfig = questionTypes.find((t) => t.value === questionType);
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6 max-w-5xl mx-auto">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -400,11 +400,10 @@ export default function EditQuestionnairePage() {
                     type="button"
                     onClick={() => setQuestionType(t.value)}
                     disabled={saving}
-                    className={`p-3 rounded-lg border-2 text-center transition-all duration-200 cursor-pointer ${
-                      isSelected
+                    className={`p-3 rounded-lg border-2 text-center transition-all duration-200 cursor-pointer ${isSelected
                         ? "border-primary bg-primary/5"
                         : "border-surface-3 hover:border-primary/50"
-                    }`}
+                      }`}
                   >
                     <IconComponent
                       size={20}
@@ -449,11 +448,10 @@ export default function EditQuestionnairePage() {
                         type="button"
                         onClick={() => setRatingStyle(style.value)}
                         disabled={saving}
-                        className={`p-3 rounded-lg border-2 text-center transition-all duration-200 cursor-pointer ${
-                          isSelected
+                        className={`p-3 rounded-lg border-2 text-center transition-all duration-200 cursor-pointer ${isSelected
                             ? "border-primary bg-primary/5"
                             : "border-surface-3 hover:border-primary/50"
-                        }`}
+                          }`}
                       >
                         {style.icon ? (
                           <style.icon

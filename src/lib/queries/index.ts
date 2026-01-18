@@ -70,7 +70,7 @@ export {
 } from "./staff";
 
 // Forum
-export { usePosts, useCreatePost, useAddReply, useDeletePost } from "./forum";
+export { usePosts, useCreatePost, useAddReply, useDeletePost, useUpdatePost, usePinPost } from "./forum";
 
 // Users
 export { useAllUsers, useUpdateUserPassword } from "./users";

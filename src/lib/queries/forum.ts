@@ -5,6 +5,8 @@ import {
   createPost,
   addReply,
   deletePost,
+  updatePost,
+  pinPost,
 } from "@/lib/services/forum";
 import type { ForumPost, ForumReply } from "@/types";
 
@@ -45,6 +47,28 @@ export function useDeletePost() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: deletePost,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.forum.posts });
+    },
+  });
+}
+
+export function useUpdatePost() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: { title: string; content: string } }) =>
+      updatePost(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.forum.posts });
+    },
+  });
+}
+
+export function usePinPost() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, pinned }: { id: string; pinned: boolean }) =>
+      pinPost(id, pinned),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.forum.posts });
     },

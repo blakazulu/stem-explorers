@@ -9,6 +9,7 @@ import {
   deleteDoc,
   arrayUnion,
   serverTimestamp,
+  writeBatch,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { handleFirebaseError } from "@/lib/utils/errors";
@@ -96,5 +97,44 @@ export async function deletePost(id: string): Promise<void> {
     await deleteDoc(doc(db, COLLECTION, id));
   } catch (error) {
     handleFirebaseError(error, "deletePost");
+  }
+}
+
+export async function updatePost(
+  id: string,
+  data: { title: string; content: string }
+): Promise<void> {
+  try {
+    const sanitizedData = {
+      title: sanitizeString(data.title, MAX_TITLE_LENGTH),
+      content: sanitizeString(data.content, MAX_CONTENT_LENGTH),
+    };
+    await updateDoc(doc(db, COLLECTION, id), sanitizedData);
+  } catch (error) {
+    handleFirebaseError(error, "updatePost");
+    throw error;
+  }
+}
+
+export async function pinPost(id: string, pinned: boolean): Promise<void> {
+  try {
+    const batch = writeBatch(db);
+
+    // If pinning, first unpin any currently pinned post
+    if (pinned) {
+      const posts = await getPosts();
+      const currentlyPinned = posts.find((p) => p.pinned && p.id !== id);
+      if (currentlyPinned) {
+        batch.update(doc(db, COLLECTION, currentlyPinned.id), { pinned: false });
+      }
+    }
+    // Pin/unpin the target post
+    batch.update(doc(db, COLLECTION, id), { pinned });
+
+    // Commit both operations atomically
+    await batch.commit();
+  } catch (error) {
+    handleFirebaseError(error, "pinPost");
+    throw error;
   }
 }

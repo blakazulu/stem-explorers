@@ -109,6 +109,7 @@ export interface ForumPost {
   title: string;
   content: string;
   replies: ForumReply[];
+  pinned?: boolean;
   createdAt: Date;
 }
 

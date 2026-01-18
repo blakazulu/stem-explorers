@@ -100,7 +100,7 @@ export default function AdminQuestionList() {
   if (!isAdmin) return null;
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6 max-w-5xl mx-auto">
       {/* Header */}
       <div className="flex flex-col items-center gap-4">
         <Image

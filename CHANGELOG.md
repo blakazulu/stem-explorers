@@ -7,7 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-01-18
+
 ### Added
+
+- **Forum post pinning**: Admin can pin a single post to always appear at the top
+  - Pin/unpin button in post header (admin only)
+  - Pinned post displays with visual indicator (ring border + "פוסט מוצמד" badge)
+  - Only one post can be pinned at a time (pinning a new post unpins the previous one)
+- **Forum post editing**: Admin can edit any post's title and content
+  - Edit button in post header (admin only)
+  - Inline editing with title input and content textarea
+  - Save/cancel buttons with validation (both fields required)
+- **Forum pagination**: Posts now display 10 per page with pagination controls
+  - Previous/next buttons with page indicator
+  - Pinned post always appears on first page at the top
+- **Forum clickable links**: URLs in posts and replies are now clickable
+  - Auto-detects plain URLs and makes them clickable
+  - Supports markdown-style links: `[title](url)` for custom link text
+  - Helper hint in post form showing link syntax
 
 - **Expert scheduling system**: Complete booking system for 10-minute expert consultations
   - **Calendar view**: Monthly calendar below experts grid showing expert availability
@@ -42,6 +60,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Forum pin race condition**: Used Firestore batch write to atomically unpin old post and pin new post, preventing multiple pinned posts in concurrent admin scenarios
+- **Forum pagination edge case**: Added useEffect to clamp currentPage when posts are deleted, preventing empty page display
+- **Forum URL trailing punctuation**: LinkifiedText now strips trailing punctuation (periods, commas, etc.) from auto-detected URLs
+- **Forum edit mode state sync**: Edit fields now sync with post data when changed externally (e.g., another admin edited the same post)
+- **Forum accessibility**: Added aria-labels to all action buttons in PostCard for screen reader support
 - **Expert booking race condition**: Added server-side slot availability check before creating bookings to prevent double-booking
 - **Expert meetings page access control**: Added admin role check to prevent non-admin users from accessing the meetings page via direct URL
 - **Expert name display in meetings table**: Admin meetings page now shows expert names instead of IDs
@@ -721,7 +744,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Safe markdown rendering with react-markdown
 - Object URL cleanup to prevent memory leaks
 
-[Unreleased]: https://github.com/blakazulu/stem-explorers/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/blakazulu/stem-explorers/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/blakazulu/stem-explorers/compare/v0.6.0...v0.7.0
+[0.6.0]: https://github.com/blakazulu/stem-explorers/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/blakazulu/stem-explorers/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/blakazulu/stem-explorers/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/blakazulu/stem-explorers/compare/v0.3.0...v0.4.0

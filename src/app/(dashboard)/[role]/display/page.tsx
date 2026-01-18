@@ -104,7 +104,7 @@ export default function DisplaySettingsPage() {
 
   if (isLoading || !localConfig) {
     return (
-      <div className="max-w-3xl mx-auto space-y-6">
+      <div className="max-w-5xl mx-auto space-y-6">
         <Skeleton variant="text" width={200} height={32} />
         <Skeleton variant="card" height={60} />
         <Skeleton variant="card" height={300} />
@@ -113,7 +113,7 @@ export default function DisplaySettingsPage() {
   }
 
   return (
-    <div className="max-w-3xl">
+    <div className="space-y-6 max-w-5xl mx-auto">
       {/* Sticky Header */}
       <div className="sticky top-0 z-20 bg-surface-0 pb-4 pt-2 -mt-2 space-y-4">
         {/* Page Header */}
