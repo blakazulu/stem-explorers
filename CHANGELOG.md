@@ -7,6 +7,62 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Reusable ImageCarousel component** (`src/components/ui/ImageCarousel.tsx`): Shared carousel component with sliding effect, loading states, and responsive design
+- **xs breakpoint in Tailwind config**: Added 480px breakpoint for extra-small screens
+
+### Fixed
+
+- **Documentation modal slow image switching**: Replaced single-image display with sliding carousel
+  - All images rendered in a horizontal track for instant switching
+  - Smooth 300ms slide animation when navigating between images
+  - Each image shows its own loading spinner until loaded
+  - Images stay in browser cache after first load
+
+- **DocumentationCard missing loading state**: Thumbnail images now show loading spinner until loaded
+  - Added loading spinner overlay while image loads
+  - Image fades in smoothly once loaded
+  - Error state shows placeholder icon if image fails to load
+
+- **Public gallery lightbox missing carousel**: Gallery page (`/gallery/[grade]/[unitId]`) now has proper image carousel
+  - Added sliding carousel with 300ms transition animation
+  - Added loading spinners for each image
+  - Added dot indicators and counter badge
+  - Responsive design with smaller padding on mobile
+
+- **Public gallery thumbnails missing loading state**: Grid thumbnails now show loading spinners
+  - Extracted ThumbnailCard component with loading/error states
+  - Image fades in smoothly once loaded
+  - Error state shows camera icon placeholder
+
+- **ExpertCard missing loading state**: Expert profile images now show loading spinner
+  - Spinner displays in role-themed color while image loads
+  - Image fades in smoothly once loaded
+  - Fallback to initials if image fails to load
+
+- **ExpertDetailsModal missing loading state**: Large expert image in modal now shows loading spinner
+  - Larger spinner (40px) appropriate for the 300px image
+  - Smooth fade-in transition when image loads
+
+- **StaffMemberCard missing loading state**: Staff member images now show loading spinner
+  - Gradient background with spinner while loading
+  - Image fades in and supports hover scale effect
+  - Fallback to initials if image fails
+
+- **Pedagogical page images missing loading state**: Resource images and lightbox now show loading spinners
+  - Resource modal images show spinner until loaded
+  - Fullscreen lightbox shows spinner during load
+  - Smooth fade-in transitions
+
+### Changed
+
+- **Documentation modal responsive design**: Modal now works properly on mobile devices
+  - Content section scrollable instead of fixed height (text now visible on mobile)
+  - Reduced padding and adjusted spacing for smaller screens
+  - Image aspect ratio adjusts based on screen size (4:3 on mobile, 16:9 on tablet, 16:10 on desktop)
+  - Meta info wraps properly on narrow screens
+
 ## [0.8.1] - 2026-01-18
 
 ### Added

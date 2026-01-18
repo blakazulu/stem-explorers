@@ -32,6 +32,7 @@ import {
   Upload,
   Trash2,
   FileText,
+  Loader2,
 } from "lucide-react";
 import type { Grade, UserRole } from "@/types";
 
@@ -84,6 +85,8 @@ export default function PedagogicalGradePage() {
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const [resourceImageLoaded, setResourceImageLoaded] = useState(false);
+  const [lightboxImageLoaded, setLightboxImageLoaded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const resourceModalRef = useRef<HTMLDialogElement>(null);
   const lightboxRef = useRef<HTMLDialogElement>(null);
@@ -112,6 +115,7 @@ export default function PedagogicalGradePage() {
 
     if (activeResourceModal) {
       modal.showModal();
+      setResourceImageLoaded(false);
     } else {
       modal.close();
     }
@@ -123,6 +127,7 @@ export default function PedagogicalGradePage() {
 
     if (lightboxImage) {
       modal.showModal();
+      setLightboxImageLoaded(false);
     } else {
       modal.close();
     }
@@ -517,13 +522,22 @@ export default function PedagogicalGradePage() {
                       )}
                       <button
                         onClick={() => setLightboxImage(resource.url)}
-                        className="w-full h-full flex items-center justify-center p-4 cursor-zoom-in"
+                        className="w-full h-full flex items-center justify-center p-4 cursor-zoom-in relative"
                       >
+                        {/* Loading spinner */}
+                        {!resourceImageLoaded && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-surface-1">
+                            <Loader2 size={40} className="text-primary animate-spin" />
+                          </div>
+                        )}
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={resource.url}
                           alt={resource.fileName}
-                          className="max-w-full max-h-[75vh] object-contain rounded-lg"
+                          className={`max-w-full max-h-[75vh] object-contain rounded-lg transition-opacity duration-300 ${
+                            resourceImageLoaded ? "opacity-100" : "opacity-0"
+                          }`}
+                          onLoad={() => setResourceImageLoaded(true)}
                         />
                       </button>
                     </div>
@@ -587,12 +601,21 @@ export default function PedagogicalGradePage() {
             >
               <X size={24} />
             </button>
+            {/* Loading spinner */}
+            {!lightboxImageLoaded && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Loader2 size={48} className="text-white animate-spin" />
+              </div>
+            )}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={lightboxImage}
               alt="תצוגה מוגדלת"
-              className="max-w-[95vw] max-h-[95vh] object-contain rounded-lg"
+              className={`max-w-[95vw] max-h-[95vh] object-contain rounded-lg transition-opacity duration-300 ${
+                lightboxImageLoaded ? "opacity-100" : "opacity-0"
+              }`}
               onClick={(e) => e.stopPropagation()}
+              onLoad={() => setLightboxImageLoaded(true)}
             />
           </div>
         </dialog>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Edit2, Trash2, GripVertical } from "lucide-react";
+import { Edit2, Trash2, GripVertical, Loader2 } from "lucide-react";
 import type { DraggableAttributes } from "@dnd-kit/core";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
 import type { Expert, ExpertAvailability } from "@/types";
@@ -82,12 +82,14 @@ export function ExpertCard({
   onDelete,
 }: ExpertCardProps) {
   const [imageError, setImageError] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const roleStyles = useRoleStyles();
   const badge = isAdmin ? getExpertBadge(expert.availability) : null;
 
-  // Reset error state when image URL changes
+  // Reset error and loading state when image URL changes
   useEffect(() => {
     setImageError(false);
+    setImageLoaded(false);
   }, [expert.imageUrl]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -162,13 +164,24 @@ export function ExpertCard({
         {/* Image container */}
         <div className="relative w-20 h-20 rounded-full overflow-hidden border-3 border-white shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-theme ease-theme">
           {!imageError && expert.imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={expert.imageUrl}
-              alt={expert.name}
-              className="w-full h-full object-cover"
-              onError={() => setImageError(true)}
-            />
+            <>
+              {/* Loading spinner */}
+              {!imageLoaded && (
+                <div className={`absolute inset-0 ${roleStyles.bgLight} flex items-center justify-center`}>
+                  <Loader2 size={20} className={`${roleStyles.text} animate-spin`} />
+                </div>
+              )}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={expert.imageUrl}
+                alt={expert.name}
+                className={`w-full h-full object-cover transition-opacity duration-300 ${
+                  imageLoaded ? "opacity-100" : "opacity-0"
+                }`}
+                onLoad={() => setImageLoaded(true)}
+                onError={() => setImageError(true)}
+              />
+            </>
           ) : (
             <div className={`w-full h-full ${roleStyles.bgLight} flex items-center justify-center`}>
               <span className={`text-2xl font-bold ${roleStyles.text} opacity-60`}>

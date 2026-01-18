@@ -96,7 +96,7 @@ export default function StudentCalendarView() {
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6 max-w-5xl mx-auto">
       {/* Header */}
       <div className="flex flex-col items-center gap-4">
         <Image
@@ -170,15 +170,14 @@ export default function StudentCalendarView() {
                 <button
                   key={day}
                   onClick={() => handleDateClick(day)}
-                  className={`h-12 rounded-lg text-sm font-medium transition-all cursor-pointer relative ${
-                    isSelected
-                      ? "bg-primary text-white"
-                      : isToday
+                  className={`h-12 rounded-lg text-sm font-medium transition-all cursor-pointer relative ${isSelected
+                    ? "bg-primary text-white"
+                    : isToday
                       ? "bg-primary/20 text-primary"
                       : hasData
-                      ? "bg-success/10 hover:bg-success/20"
-                      : "hover:bg-surface-2"
-                  }`}
+                        ? "bg-success/10 hover:bg-success/20"
+                        : "hover:bg-surface-2"
+                    }`}
                 >
                   {day}
                   {hasData && !isSelected && (

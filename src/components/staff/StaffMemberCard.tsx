@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Edit2, Trash2, GripVertical } from "lucide-react";
+import { Edit2, Trash2, GripVertical, Loader2 } from "lucide-react";
 import { useRoleStyles } from "@/contexts/ThemeContext";
 import type { DraggableAttributes } from "@dnd-kit/core";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
@@ -28,12 +28,14 @@ export function StaffMemberCard({
   onDelete,
 }: StaffMemberCardProps) {
   const [imageError, setImageError] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const { accent } = useRoleStyles();
 
-  // Reset error state when image URL changes
+  // Reset error and loading state when image URL changes
   useEffect(() => {
     setImageError(false);
+    setImageLoaded(false);
   }, [member.imageUrl]);
 
   const handleToggle = () => {
@@ -57,13 +59,24 @@ export function StaffMemberCard({
       {/* Background Image */}
       <div className="absolute inset-0">
         {!imageError ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={member.imageUrl}
-            alt={member.name}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            onError={() => setImageError(true)}
-          />
+          <>
+            {/* Loading spinner */}
+            {!imageLoaded && (
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-secondary/20 to-accent/30 flex items-center justify-center z-10">
+                <Loader2 size={40} className="text-white animate-spin" />
+              </div>
+            )}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={member.imageUrl}
+              alt={member.name}
+              className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-110 ${
+                imageLoaded ? "opacity-100" : "opacity-0"
+              }`}
+              onLoad={() => setImageLoaded(true)}
+              onError={() => setImageError(true)}
+            />
+          </>
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-primary/30 via-secondary/20 to-accent/30 flex items-center justify-center">
             <span className="text-5xl font-bold text-white/80 drop-shadow-lg">

@@ -1,4 +1,7 @@
-import { Image, Calendar, User, Trash2, Images } from "lucide-react";
+"use client";
+
+import { useState } from "react";
+import { Image, Calendar, User, Trash2, Images, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import type { Documentation } from "@/types";
 
@@ -25,6 +28,9 @@ export function DocumentationCard({
   index = 0,
   visibility = { images: true, text: true, teacherName: true },
 }: DocumentationCardProps) {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
   return (
     <Card
       padding="none"
@@ -34,12 +40,22 @@ export function DocumentationCard({
     >
       {/* Image Section - controlled by visibility */}
       {visibility.images && (
-        doc.images.length > 0 ? (
-          <div className="aspect-video relative overflow-hidden">
+        doc.images.length > 0 && !imageError ? (
+          <div className="aspect-video relative overflow-hidden bg-surface-2">
+            {/* Loading spinner */}
+            {!imageLoaded && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Loader2 size={32} className="text-gray-400 animate-spin" />
+              </div>
+            )}
             <img
               src={doc.images[0]}
               alt={doc.text || "תיעוד"}
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              className={`w-full h-full object-cover transition-all duration-300 group-hover:scale-105 ${
+                imageLoaded ? "opacity-100" : "opacity-0"
+              }`}
+              onLoad={() => setImageLoaded(true)}
+              onError={() => setImageError(true)}
             />
             {/* Gradient overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

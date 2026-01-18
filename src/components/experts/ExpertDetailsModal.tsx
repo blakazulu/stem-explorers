@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { X, Clock } from "lucide-react";
+import { X, Clock, Loader2 } from "lucide-react";
 import type { Expert } from "@/types";
 import { useRoleStyles } from "@/contexts/ThemeContext";
 
@@ -18,6 +18,7 @@ export function ExpertDetailsModal({
 }: ExpertDetailsModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [imageError, setImageError] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const roleStyles = useRoleStyles();
 
   useEffect(() => {
@@ -27,6 +28,7 @@ export function ExpertDetailsModal({
     if (isOpen) {
       dialog.showModal();
       setImageError(false);
+      setImageLoaded(false);
     } else {
       dialog.close();
     }
@@ -80,13 +82,24 @@ export function ExpertDetailsModal({
               <div className={`absolute inset-0 rounded-full ${roleStyles.bg} opacity-30 blur-md scale-110`} />
               <div className="relative w-[300px] h-[300px] rounded-full overflow-hidden border-4 border-white shadow-xl">
                 {!imageError && expert.imageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={expert.imageUrl}
-                    alt={expert.name}
-                    className="w-full h-full object-cover"
-                    onError={() => setImageError(true)}
-                  />
+                  <>
+                    {/* Loading spinner */}
+                    {!imageLoaded && (
+                      <div className={`absolute inset-0 ${roleStyles.bgLight} flex items-center justify-center`}>
+                        <Loader2 size={40} className={`${roleStyles.text} animate-spin`} />
+                      </div>
+                    )}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={expert.imageUrl}
+                      alt={expert.name}
+                      className={`w-full h-full object-cover transition-opacity duration-300 ${
+                        imageLoaded ? "opacity-100" : "opacity-0"
+                      }`}
+                      onLoad={() => setImageLoaded(true)}
+                      onError={() => setImageError(true)}
+                    />
+                  </>
                 ) : (
                   <div className={`w-full h-full ${roleStyles.bgLight} flex items-center justify-center`}>
                     <span className={`text-3xl font-bold ${roleStyles.text} opacity-60`}>

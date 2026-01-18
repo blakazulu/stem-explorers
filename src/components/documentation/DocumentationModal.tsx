@@ -8,6 +8,7 @@ import {
   User,
   Calendar,
   Images,
+  Loader2,
 } from "lucide-react";
 import type { Documentation } from "@/types";
 
@@ -31,8 +32,26 @@ export function DocumentationModal({
   visibility = { images: true, text: true, teacherName: true },
 }: DocumentationModalProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set());
 
   const hasMultipleImages = doc.images.length > 1;
+
+  // Mark image as loaded when DOM img fires onLoad
+  const handleImageLoad = useCallback((index: number) => {
+    setLoadedImages((prev) => {
+      const next = new Set(prev);
+      next.add(index);
+      return next;
+    });
+  }, []);
+
+  // Reset state when modal opens with new doc
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentImageIndex(0);
+      setLoadedImages(new Set());
+    }
+  }, [isOpen, doc.id]);
 
   const goToPrevious = useCallback(() => {
     setCurrentImageIndex((prev) =>
@@ -45,13 +64,6 @@ export function DocumentationModal({
       prev === doc.images.length - 1 ? 0 : prev + 1
     );
   }, [doc.images.length]);
-
-  // Reset image index when modal opens with new doc
-  useEffect(() => {
-    if (isOpen) {
-      setCurrentImageIndex(0);
-    }
-  }, [isOpen, doc.id]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -87,23 +99,25 @@ export function DocumentationModal({
 
   if (!isOpen) return null;
 
+  const isCurrentImageLoaded = loadedImages.has(currentImageIndex);
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 animate-fade-in"
       onClick={onClose}
     >
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
 
-      {/* Modal Content */}
+      {/* Modal Content - scrollable on mobile */}
       <div
-        className="relative bg-surface-0 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl animate-scale-in"
+        className="relative bg-surface-0 rounded-2xl max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto shadow-2xl animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 left-4 z-10 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors cursor-pointer"
+          className="absolute top-2 left-2 sm:top-4 sm:left-4 z-10 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors cursor-pointer"
           aria-label="סגור"
         >
           <X size={20} />
@@ -111,14 +125,45 @@ export function DocumentationModal({
 
         {/* Image Gallery */}
         {visibility.images && doc.images.length > 0 && (
-          <div className="relative bg-black">
-            {/* Main Image */}
-            <div className="relative aspect-video md:aspect-[16/10]">
-              <img
-                src={doc.images[currentImageIndex]}
-                alt={doc.text || `תמונה ${currentImageIndex + 1}`}
-                className="w-full h-full object-contain"
-              />
+          <div className="relative bg-black overflow-hidden">
+            {/* Carousel Container */}
+            <div className="relative aspect-[4/3] sm:aspect-video md:aspect-[16/10]">
+              {/* Sliding Track - contains all images */}
+              <div
+                className="absolute inset-0 flex transition-transform duration-300 ease-out"
+                style={{
+                  width: `${doc.images.length * 100}%`,
+                  transform: `translateX(${currentImageIndex * (100 / doc.images.length)}%)`,
+                }}
+              >
+                {doc.images.map((src, index) => (
+                  <div
+                    key={index}
+                    className="relative h-full flex-shrink-0"
+                    style={{ width: `${100 / doc.images.length}%` }}
+                  >
+                    <img
+                      src={src}
+                      alt={doc.text || `תמונה ${index + 1}`}
+                      className="w-full h-full object-contain"
+                      onLoad={() => handleImageLoad(index)}
+                    />
+                    {/* Per-image loading spinner */}
+                    {!loadedImages.has(index) && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black">
+                        <Loader2 size={32} className="text-white animate-spin" />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Loading overlay for current image */}
+              {!isCurrentImageLoaded && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-10">
+                  <Loader2 size={40} className="text-white animate-spin" />
+                </div>
+              )}
             </div>
 
             {/* Navigation Arrows */}
@@ -126,14 +171,14 @@ export function DocumentationModal({
               <>
                 <button
                   onClick={goToNext}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors cursor-pointer"
+                  className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors cursor-pointer"
                   aria-label="תמונה הבאה"
                 >
                   <ChevronRight size={24} />
                 </button>
                 <button
                   onClick={goToPrevious}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors cursor-pointer"
+                  className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors cursor-pointer"
                   aria-label="תמונה קודמת"
                 >
                   <ChevronLeft size={24} />
@@ -143,9 +188,9 @@ export function DocumentationModal({
 
             {/* Image Counter */}
             {hasMultipleImages && (
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2">
-                {/* Dots */}
-                <div className="flex items-center gap-1.5 bg-black/50 backdrop-blur-sm px-3 py-2 rounded-full">
+              <div className="absolute bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2">
+                {/* Dots - hidden on very small screens */}
+                <div className="hidden xs:flex items-center gap-1.5 bg-black/50 backdrop-blur-sm px-3 py-2 rounded-full">
                   {doc.images.map((_, index) => (
                     <button
                       key={index}
@@ -169,17 +214,17 @@ export function DocumentationModal({
           </div>
         )}
 
-        {/* Content Section */}
-        <div className="p-6 max-h-[40vh] overflow-y-auto">
+        {/* Content Section - flexible height on mobile */}
+        <div className="p-4 sm:p-6">
           {/* Text */}
           {visibility.text && doc.text && (
-            <p className="text-foreground text-lg leading-relaxed mb-4 whitespace-pre-wrap">
+            <p className="text-foreground text-base sm:text-lg leading-relaxed mb-4 whitespace-pre-wrap">
               {doc.text}
             </p>
           )}
 
           {/* Meta info */}
-          <div className="flex items-center gap-4 text-sm text-gray-500 pt-4 border-t border-surface-2">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-sm text-gray-500 pt-4 border-t border-surface-2">
             {visibility.teacherName && (
               <span className="inline-flex items-center gap-1.5">
                 <User size={14} />
