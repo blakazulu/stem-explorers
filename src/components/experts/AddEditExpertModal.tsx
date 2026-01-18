@@ -115,7 +115,7 @@ export function AddEditExpertModal({
     try {
       const timestamp = Date.now();
       const path = `experts/${timestamp}-${file.name}`;
-      const url = await uploadImage(file, path);
+      const url = await uploadImage(file, path, 400);
       setImageUrl(url);
     } catch {
       // Revoke the blob URL on failure to prevent memory leak

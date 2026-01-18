@@ -85,9 +85,8 @@ function CollapsibleSection({
     <Card padding="none" className="overflow-hidden">
       <button
         onClick={onToggle}
-        className={`w-full flex items-center justify-between p-4 transition-colors duration-200 cursor-pointer hover:bg-surface-1 ${
-          isOpen ? "border-b border-surface-2" : ""
-        }`}
+        className={`w-full flex items-center justify-between p-4 transition-colors duration-200 cursor-pointer hover:bg-surface-1 ${isOpen ? "border-b border-surface-2" : ""
+          }`}
       >
         <div className="flex items-center gap-3">
           <div className={`p-2 rounded-lg ${config.bgColor}`}>
@@ -104,9 +103,8 @@ function CollapsibleSection({
         </div>
         <ChevronDown
           size={20}
-          className={`text-gray-400 transition-transform duration-300 ease-out ${
-            isOpen ? "rotate-180" : ""
-          }`}
+          className={`text-gray-400 transition-transform duration-300 ease-out ${isOpen ? "rotate-180" : ""
+            }`}
         />
       </button>
 
@@ -273,7 +271,7 @@ export default function PasswordsPage() {
     }
 
     if (trimmedPassword !== editingUser.password &&
-        users.some((u) => u.password === trimmedPassword)) {
+      users.some((u) => u.password === trimmedPassword)) {
       toast.error("שגיאה", "סיסמה זו כבר בשימוש");
       return;
     }
@@ -320,7 +318,7 @@ export default function PasswordsPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6 max-w-5xl mx-auto">
       <div className="flex items-center gap-3">
         <div className="p-3 bg-role-admin/10 rounded-xl">
           <Key size={24} className="text-role-admin" />

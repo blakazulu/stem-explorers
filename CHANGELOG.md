@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Expert image upload 403 error**: Added missing `experts/` path to Firebase Storage security rules to allow image uploads for "שאל את המומחה" feature
+- **Expert details modal centering**: Fixed modal not being centered on screen
+- **Expert details modal image size**: Increased expert profile image from 96px to 300px for better visibility
+- **Expert image upload optimization**: Expert images now resized to 400px (instead of 800px) since they display at 300px max, reducing file size
+- **Duplicate mx-auto class**: Removed duplicate `mx-auto` CSS class from 14 page components
+
 ### Changed
 
 - **Pedagogical description limit**: Increased character limit from 300 to 500 for unit descriptions

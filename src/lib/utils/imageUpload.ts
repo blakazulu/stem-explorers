@@ -48,12 +48,13 @@ export async function resizeImage(
 
 export async function uploadImage(
   file: File,
-  path: string
+  path: string,
+  maxWidth?: number
 ): Promise<string> {
   const { ref, uploadBytes, getDownloadURL } = await import("firebase/storage");
   const { storage } = await import("@/lib/firebase");
 
-  const resized = await resizeImage(file);
+  const resized = await resizeImage(file, maxWidth);
   const storageRef = ref(storage, path);
   await uploadBytes(storageRef, resized);
   return getDownloadURL(storageRef);

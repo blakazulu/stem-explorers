@@ -40,7 +40,7 @@ export default function JournalUnitSelectorPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6 max-w-5xl mx-auto">
       {/* Page Header */}
       <div className="flex items-center gap-3">
         <div className="p-3 bg-role-student/10 rounded-xl">

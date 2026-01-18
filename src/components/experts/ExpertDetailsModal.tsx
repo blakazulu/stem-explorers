@@ -59,11 +59,11 @@ export function ExpertDetailsModal({
       ref={dialogRef}
       onClick={handleBackdropClick}
       onClose={onClose}
-      className="backdrop:bg-black/50 bg-transparent p-4 max-w-lg w-full"
+      className="fixed inset-0 m-auto backdrop:bg-black/50 bg-transparent p-4 max-w-2xl w-full"
     >
       <div className="bg-surface-0 rounded-2xl shadow-xl overflow-hidden animate-scale-in">
         {/* Header with image */}
-        <div className="relative bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 pt-8 pb-16 px-6">
+        <div className="relative bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 pt-8 pb-40 px-6">
           <button
             onClick={onClose}
             className="absolute top-4 left-4 p-2 hover:bg-white/50 rounded-full transition-colors cursor-pointer"
@@ -73,10 +73,10 @@ export function ExpertDetailsModal({
           </button>
 
           {/* Large circular image */}
-          <div className="absolute left-1/2 -translate-x-1/2 -bottom-12">
+          <div className="absolute left-1/2 -translate-x-1/2 -bottom-[150px]">
             <div className="relative">
               <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary via-secondary to-accent opacity-30 blur-md scale-110" />
-              <div className="relative w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-xl">
+              <div className="relative w-[300px] h-[300px] rounded-full overflow-hidden border-4 border-white shadow-xl">
                 {!imageError && expert.imageUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -98,7 +98,7 @@ export function ExpertDetailsModal({
         </div>
 
         {/* Content */}
-        <div className="pt-16 pb-6 px-6 text-center">
+        <div className="pt-40 pb-6 px-6 text-center">
           {/* Name */}
           <h2 className="text-xl font-rubik font-bold text-foreground mb-1">
             {expert.name}
