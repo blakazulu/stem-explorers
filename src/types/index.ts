@@ -235,3 +235,11 @@ export interface PageElementsConfig {
     teacherName: boolean;
   };
 }
+
+// Globe Monitor
+export type {
+  GlobeMonitorQuestionType,
+  GlobeMonitorQuestion,
+  GlobeMonitorSubmission,
+} from "./globeMonitor";
+export { DEFAULT_GLOBE_MONITOR_QUESTIONS } from "./globeMonitor";

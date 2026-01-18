@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Globe Monitor visibility defaults**: Added globe-monitor to visibility configuration for admin control
+  - Added to `ALL_DASHBOARD_CARDS` with label "גלוב-ניטורר" and description "צפייה בנתוני ניטור סביבתי"
+  - Added to `ALL_SIDEBAR_LINKS` with href "/globe-monitor"
+  - Added to `DEFAULT_STUDENT_DASHBOARD` cards (visible by default, order 4)
+  - Added to `DEFAULT_STUDENT_SIDEBAR` links (visible by default)
+- **Globe Monitor sidebar navigation**: Added "גלוב-ניטורר" link to sidebar for admin and student roles with Globe icon
+- **Globe Monitor types**: Added TypeScript types for the Globe Monitor feature (`src/types/globeMonitor.ts`)
+  - `GlobeMonitorQuestionType` - Type union for question types (text, number, date, time, single, multi)
+  - `GlobeMonitorQuestion` - Question definition interface with label, type, options, unit, min/max, required, order
+  - `GlobeMonitorSubmission` - Submission interface with answers, submitter info, and date for calendar grouping
+  - `DEFAULT_GLOBE_MONITOR_QUESTIONS` - Default questions configuration for weather observation (date, time, temperature, humidity, cloud types, coverage, precipitation, ground condition)
 - **React Query caching documentation**: Added comprehensive docs at `docs/react-query-caching.md` covering configuration, refresh behavior, cache invalidation, and how to extend for new features
 - **Sidenav structure documentation**: Added `docs/sidenav-structure.md` documenting all sidebar navigation links per role, admin display settings capabilities, and grade-aware sections
 

@@ -48,4 +48,12 @@ export const queryKeys = {
   users: {
     all: ["users", "all"] as const,
   },
+  globeMonitor: {
+    questions: ["globeMonitor", "questions"] as const,
+    question: (id: string) => ["globeMonitor", "questions", id] as const,
+    submissions: ["globeMonitor", "submissions"] as const,
+    submissionsByMonth: (year: number, month: number) =>
+      ["globeMonitor", "submissions", year, month] as const,
+    submission: (id: string) => ["globeMonitor", "submissions", id] as const,
+  },
 };
