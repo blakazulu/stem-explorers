@@ -6,7 +6,7 @@ import { AddEditStaffModal } from "./AddEditStaffModal";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToastActions } from "@/components/ui/Toast";
 import {
-  useStaffByGrade,
+  useAllStaff,
   useCreateStaffMember,
   useUpdateStaffMember,
   useDeleteStaffMember,
@@ -14,17 +14,16 @@ import {
 import { getNextStaffOrder } from "@/lib/services/staff";
 import { deleteStorageFile } from "@/lib/utils/imageUpload";
 import { Plus, Users, Sparkles } from "lucide-react";
-import type { StaffMember, Grade } from "@/types";
+import type { StaffMember } from "@/types";
 
 interface StaffGridProps {
-  grade: Grade;
   isAdmin?: boolean;
 }
 
-export function StaffGrid({ grade, isAdmin = false }: StaffGridProps) {
+export function StaffGrid({ isAdmin = false }: StaffGridProps) {
   const toast = useToastActions();
 
-  const { data: staff = [], isLoading: loading, error } = useStaffByGrade(grade);
+  const { data: staff = [], isLoading: loading, error } = useAllStaff();
   const createMutation = useCreateStaffMember();
   const updateMutation = useUpdateStaffMember();
   const deleteMutation = useDeleteStaffMember();
@@ -58,10 +57,9 @@ export function StaffGrid({ grade, isAdmin = false }: StaffGridProps) {
         toast.success("עודכן", "פרטי איש הצוות עודכנו");
       } else {
         // Create new
-        const order = await getNextStaffOrder(grade);
+        const order = await getNextStaffOrder();
         await createMutation.mutateAsync({
           ...data,
-          gradeId: grade,
           order,
         });
         toast.success("נוסף", "איש הצוות נוסף בהצלחה");
@@ -179,7 +177,6 @@ export function StaffGrid({ grade, isAdmin = false }: StaffGridProps) {
       {/* Add/Edit Modal */}
       <AddEditStaffModal
         isOpen={showModal}
-        grade={grade}
         member={editingMember}
         onSave={handleSave}
         onClose={() => {

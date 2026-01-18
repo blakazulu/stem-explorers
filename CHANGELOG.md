@@ -7,12 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Pedagogical description limit**: Increased character limit from 300 to 500 for unit descriptions
+- **Pedagogical section - global resources**: Staff Team (צוות מו"פ), Training Schedule (לוז הדרכה), and Timetable (מערכת שעות) are now global instead of per-grade
+  - Staff members are shared across all grades
+  - Resource files (training schedule, timetable) are shared across all grades
+  - Removed grade from modal titles for these items
+  - Updated Firestore document paths: `resource-{type}` instead of `resource-{type}-{grade}`
+  - Updated storage paths: `resources/{type}/` and `staff/` instead of `resources/{grade}/{type}/` and `staff/{grade}/`
+
 ### Fixed
 
+- **Globe Monitor typo**: Fixed "גלוב-ניטורר" to "גלוב-ניטור" (removed duplicate ר) in sidebar, dashboard cards, and page headers
 - **Sidebar scrolling**: Changed sidebar from `min-h-screen` to `h-screen` so navigation content is scrollable when it exceeds viewport height
 
 ### Added
 
+- **Equipment form "Other" field**: Added optional free-text field (אחר) to equipment request form with 500 character limit
 - **Documentation lightbox modal**: Click on documentation cards to view full content in a modal
   - Image gallery with navigation arrows for multiple images
   - Dot indicators for image position

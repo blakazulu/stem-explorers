@@ -61,7 +61,7 @@ export {
 
 // Staff
 export {
-  useStaffByGrade,
+  useAllStaff,
   useStaffMember,
   useCreateStaffMember,
   useUpdateStaffMember,

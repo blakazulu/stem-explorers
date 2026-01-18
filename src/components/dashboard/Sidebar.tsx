@@ -49,7 +49,7 @@ const navItems: NavItem[] = [
   { label: "תגובות תלמידים", href: "/responses", roles: ["admin", "teacher"], icon: ClipboardCheck },
   { label: "במה אישית", href: "/forum", roles: ["admin", "teacher"], icon: MessageSquare },
   { label: "שאל את המומחה", href: "/experts", roles: ["admin", "teacher", "parent", "student"], icon: GraduationCap },
-  { label: "גלוב-ניטורר", href: "/globe-monitor", roles: ["admin", "student"], icon: Globe },
+  { label: "גלוב-ניטור", href: "/globe-monitor", roles: ["admin", "student"], icon: Globe },
   { label: "פעילויות קהילתיות", href: "/community-activities", roles: ["parent"], icon: Users },
   { label: "STEM במשפחה", href: "/stem-family", roles: ["parent"], icon: Home },
   { label: "שותפים לדרך", href: "/partners", roles: ["parent"], icon: Handshake },

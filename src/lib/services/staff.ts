@@ -7,20 +7,18 @@ import {
   updateDoc,
   deleteDoc,
   query,
-  where,
   orderBy,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { handleFirebaseError } from "@/lib/utils/errors";
-import type { StaffMember, Grade } from "@/types";
+import type { StaffMember } from "@/types";
 
 const COLLECTION = "staff";
 
-export async function getStaffByGrade(grade: Grade): Promise<StaffMember[]> {
+export async function getAllStaff(): Promise<StaffMember[]> {
   try {
     const q = query(
       collection(db, COLLECTION),
-      where("gradeId", "==", grade),
       orderBy("order", "asc")
     );
     const snapshot = await getDocs(q);
@@ -30,8 +28,8 @@ export async function getStaffByGrade(grade: Grade): Promise<StaffMember[]> {
       createdAt: doc.data().createdAt?.toDate() || new Date(),
     })) as StaffMember[];
   } catch (error) {
-    handleFirebaseError(error, "getStaffByGrade");
-    throw error; // Unreachable but ensures TypeScript knows function always returns or throws
+    handleFirebaseError(error, "getAllStaff");
+    throw error;
   }
 }
 
@@ -87,9 +85,9 @@ export async function deleteStaffMember(id: string): Promise<void> {
   }
 }
 
-export async function getNextStaffOrder(grade: Grade): Promise<number> {
+export async function getNextStaffOrder(): Promise<number> {
   try {
-    const staff = await getStaffByGrade(grade);
+    const staff = await getAllStaff();
     if (!staff || staff.length === 0) return 1;
     return Math.max(...staff.map((s) => s.order)) + 1;
   } catch {

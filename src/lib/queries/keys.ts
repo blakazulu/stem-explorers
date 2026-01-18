@@ -30,8 +30,8 @@ export const queryKeys = {
   settings: {
     pedagogicalIntro: (grade: Grade) =>
       ["settings", "pedagogicalIntro", grade] as const,
-    resourceFile: (grade: Grade, type: ResourceType) =>
-      ["settings", "resourceFile", grade, type] as const,
+    resourceFile: (type: ResourceType) =>
+      ["settings", "resourceFile", type] as const,
     experts: ["settings", "experts"] as const,
     stemLinks: ["settings", "stemLinks"] as const,
     emailConfig: ["settings", "emailConfig"] as const,

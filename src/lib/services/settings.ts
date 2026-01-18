@@ -74,9 +74,9 @@ export interface ResourceFile {
   uploadedAt: Date;
 }
 
-export async function getResourceFile(grade: Grade, type: ResourceType): Promise<ResourceFile | null> {
+export async function getResourceFile(type: ResourceType): Promise<ResourceFile | null> {
   try {
-    const docRef = doc(db, SETTINGS_DOC, `resource-${type}-${grade}`);
+    const docRef = doc(db, SETTINGS_DOC, `resource-${type}`);
     const docSnap = await getDoc(docRef);
     if (!docSnap.exists()) return null;
     const data = docSnap.data();
@@ -93,12 +93,11 @@ export async function getResourceFile(grade: Grade, type: ResourceType): Promise
 }
 
 export async function saveResourceFile(
-  grade: Grade,
   type: ResourceType,
   file: ResourceFile
 ): Promise<void> {
   try {
-    await setDoc(doc(db, SETTINGS_DOC, `resource-${type}-${grade}`), {
+    await setDoc(doc(db, SETTINGS_DOC, `resource-${type}`), {
       url: file.url,
       fileName: file.fileName,
       fileType: file.fileType,
@@ -110,9 +109,9 @@ export async function saveResourceFile(
   }
 }
 
-export async function deleteResourceFile(grade: Grade, type: ResourceType): Promise<void> {
+export async function deleteResourceFile(type: ResourceType): Promise<void> {
   try {
-    await deleteDoc(doc(db, SETTINGS_DOC, `resource-${type}-${grade}`));
+    await deleteDoc(doc(db, SETTINGS_DOC, `resource-${type}`));
   } catch (error) {
     handleFirebaseError(error, "deleteResourceFile");
     throw error;

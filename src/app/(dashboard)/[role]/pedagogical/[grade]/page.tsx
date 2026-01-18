@@ -61,8 +61,9 @@ export default function PedagogicalGradePage() {
 
   // React Query hooks for data fetching
   const { data: introData, isLoading: introLoading } = usePedagogicalIntro(isValidGrade ? grade : null);
-  const { data: trainingSchedule } = useResourceFile(isValidGrade ? grade : null, "training-schedule");
-  const { data: timetable } = useResourceFile(isValidGrade ? grade : null, "timetable");
+  // Resource files are global (not per-grade)
+  const { data: trainingSchedule } = useResourceFile("training-schedule");
+  const { data: timetable } = useResourceFile("timetable");
 
   // Mutations for saving/deleting
   const savePedagogicalIntroMutation = useSavePedagogicalIntro();
@@ -174,7 +175,7 @@ export default function PedagogicalGradePage() {
     setUploading(true);
     try {
       const timestamp = Date.now();
-      const path = `resources/${grade}/${resourceType}/${timestamp}-${file.name}`;
+      const path = `resources/${resourceType}/${timestamp}-${file.name}`;
       const url = await uploadResourceFile(file, path);
 
       const resourceFile: ResourceFile = {
@@ -185,7 +186,7 @@ export default function PedagogicalGradePage() {
       };
 
       // Use mutation which automatically invalidates the query
-      await saveResourceFileMutation.mutateAsync({ grade, type: resourceType, file: resourceFile });
+      await saveResourceFileMutation.mutateAsync({ type: resourceType, file: resourceFile });
 
       toast.success("הועלה בהצלחה", "הקובץ נשמר");
     } catch {
@@ -222,7 +223,7 @@ export default function PedagogicalGradePage() {
       }
 
       // Use mutation which automatically invalidates the query
-      await deleteResourceFileMutation.mutateAsync({ grade, type: resourceType });
+      await deleteResourceFileMutation.mutateAsync({ type: resourceType });
 
       toast.success("נמחק", "הקובץ הוסר בהצלחה");
     } catch {
@@ -307,15 +308,15 @@ export default function PedagogicalGradePage() {
           <div className="space-y-3">
             <textarea
               value={editText}
-              onChange={(e) => setEditText(e.target.value.slice(0, 300))}
+              onChange={(e) => setEditText(e.target.value.slice(0, 500))}
               className="w-full p-3 rounded-lg border border-surface-3 bg-surface-0 text-foreground leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-primary/50"
               rows={4}
-              maxLength={300}
+              maxLength={500}
               autoFocus
             />
             <div className="flex items-center justify-between">
-              <span className={`text-xs ${editText.length >= 280 ? 'text-amber-500' : 'text-gray-400'}`}>
-                {editText.length}/300
+              <span className={`text-xs ${editText.length >= 480 ? 'text-amber-500' : 'text-gray-400'}`}>
+                {editText.length}/500
               </span>
               <div className="flex gap-2">
                 <Button
@@ -458,7 +459,7 @@ export default function PedagogicalGradePage() {
             {/* Modal Header */}
             <div className="flex items-center justify-between p-4 border-b border-surface-2 bg-surface-1">
               <h2 className="text-xl font-rubik font-bold text-foreground">
-                {getResourceTitle(activeResourceModal)} - כיתה {grade}
+                {getResourceTitle(activeResourceModal)}
               </h2>
               <button
                 onClick={handleCloseResourceModal}
@@ -620,7 +621,7 @@ export default function PedagogicalGradePage() {
             {/* Modal Header */}
             <div className="flex items-center justify-between p-4 border-b border-surface-2 bg-surface-1">
               <h2 className="text-xl font-rubik font-bold text-foreground">
-                צוות מו&quot;פ - כיתה {grade}
+                צוות מו&quot;פ
               </h2>
               <button
                 onClick={() => setShowStaffModal(false)}
@@ -633,7 +634,7 @@ export default function PedagogicalGradePage() {
 
             {/* Modal Content */}
             <div className="flex-1 overflow-y-auto p-6">
-              <StaffGrid grade={grade} isAdmin={isAdmin} />
+              <StaffGrid isAdmin={isAdmin} />
             </div>
           </div>
         </dialog>

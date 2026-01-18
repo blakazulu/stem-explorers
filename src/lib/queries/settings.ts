@@ -17,7 +17,7 @@ import {
   type ResourceType,
   type ResourceFile,
 } from "@/lib/services/settings";
-import type { Grade, StemLink, Expert, EmailConfig, ReportConfig } from "@/types";
+import type { StemLink, Expert, EmailConfig, ReportConfig, Grade } from "@/types";
 
 // Pedagogical Intro
 export function usePedagogicalIntro(grade: Grade | null | undefined) {
@@ -41,15 +41,12 @@ export function useSavePedagogicalIntro() {
   });
 }
 
-// Resource Files
-export function useResourceFile(
-  grade: Grade | null | undefined,
-  type: ResourceType | null | undefined
-) {
+// Resource Files (global - not per grade)
+export function useResourceFile(type: ResourceType | null | undefined) {
   return useQuery({
-    queryKey: queryKeys.settings.resourceFile(grade!, type!),
-    queryFn: () => getResourceFile(grade!, type!),
-    enabled: !!grade && !!type,
+    queryKey: queryKeys.settings.resourceFile(type!),
+    queryFn: () => getResourceFile(type!),
+    enabled: !!type,
   });
 }
 
@@ -57,17 +54,15 @@ export function useSaveResourceFile() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({
-      grade,
       type,
       file,
     }: {
-      grade: Grade;
       type: ResourceType;
       file: ResourceFile;
-    }) => saveResourceFile(grade, type, file),
-    onSuccess: (_, { grade, type }) => {
+    }) => saveResourceFile(type, file),
+    onSuccess: (_, { type }) => {
       queryClient.invalidateQueries({
-        queryKey: queryKeys.settings.resourceFile(grade, type),
+        queryKey: queryKeys.settings.resourceFile(type),
       });
     },
   });
@@ -76,11 +71,10 @@ export function useSaveResourceFile() {
 export function useDeleteResourceFile() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ grade, type }: { grade: Grade; type: ResourceType }) =>
-      deleteResourceFile(grade, type),
-    onSuccess: (_, { grade, type }) => {
+    mutationFn: ({ type }: { type: ResourceType }) => deleteResourceFile(type),
+    onSuccess: (_, { type }) => {
       queryClient.invalidateQueries({
-        queryKey: queryKeys.settings.resourceFile(grade, type),
+        queryKey: queryKeys.settings.resourceFile(type),
       });
     },
   });

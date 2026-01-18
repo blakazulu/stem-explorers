@@ -4,11 +4,10 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { X, Upload, User } from "lucide-react";
 import { uploadImage } from "@/lib/utils/imageUpload";
-import type { StaffMember, Grade } from "@/types";
+import type { StaffMember } from "@/types";
 
 interface AddEditStaffModalProps {
   isOpen: boolean;
-  grade: Grade;
   member?: StaffMember | null;
   onSave: (data: { name: string; description: string; imageUrl: string }) => Promise<void>;
   onClose: () => void;
@@ -16,7 +15,6 @@ interface AddEditStaffModalProps {
 
 export function AddEditStaffModal({
   isOpen,
-  grade,
   member,
   onSave,
   onClose,
@@ -92,7 +90,7 @@ export function AddEditStaffModal({
     setError("");
     try {
       const timestamp = Date.now();
-      const path = `staff/${grade}/${timestamp}-${file.name}`;
+      const path = `staff/${timestamp}-${file.name}`;
       const url = await uploadImage(file, path);
       setImageUrl(url);
     } catch {

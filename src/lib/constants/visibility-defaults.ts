@@ -13,7 +13,7 @@ export const ALL_DASHBOARD_CARDS = {
   "community-activities": { label: "פעילויות קהילתיות", description: "פעילויות קהילתיות להורים" },
   "stem-family": { label: "STEM במשפחה", description: "פעילויות STEM במשפחה" },
   partners: { label: "שותפים לדרך", description: "שותפים לדרך" },
-  "globe-monitor": { label: "גלוב-ניטורר", description: "צפייה בנתוני ניטור סביבתי" },
+  "globe-monitor": { label: "גלוב-ניטור", description: "צפייה בנתוני ניטור סביבתי" },
 } as const;
 
 // All possible sidebar links with their metadata
@@ -29,7 +29,7 @@ export const ALL_SIDEBAR_LINKS = {
   "community-activities": { defaultLabel: "פעילויות קהילתיות", href: "/community-activities" },
   "stem-family": { defaultLabel: "STEM במשפחה", href: "/stem-family" },
   partners: { defaultLabel: "שותפים לדרך", href: "/partners" },
-  "globe-monitor": { defaultLabel: "גלוב-ניטורר", href: "/globe-monitor" },
+  "globe-monitor": { defaultLabel: "גלוב-ניטור", href: "/globe-monitor" },
 } as const;
 
 // Page element labels for admin UI
@@ -120,7 +120,7 @@ const DEFAULT_STUDENT_SIDEBAR: SidebarConfig = {
     { id: "journal", label: "יומן חוקר", visible: true },
     { id: "documentation", label: "תיעודים", visible: true },
     { id: "experts", label: "שאל את המומחה", visible: true },
-    { id: "globe-monitor", label: "גלוב-ניטורר", visible: true },
+    { id: "globe-monitor", label: "גלוב-ניטור", visible: true },
   ],
 };
 

@@ -113,7 +113,7 @@ export default function AdminQuestionList() {
         <div className="text-center">
           <h1 className="text-xl md:text-2xl font-rubik font-bold text-foreground flex items-center justify-center gap-2">
             <Globe className="text-role-admin" size={28} />
-            גלוב-ניטורר
+            גלוב-ניטור
           </h1>
           <p className="text-sm text-gray-500 mt-1">ניהול שאלות הניטור</p>
         </div>

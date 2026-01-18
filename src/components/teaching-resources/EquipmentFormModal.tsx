@@ -41,6 +41,7 @@ export function EquipmentFormModal({
   const [classes, setClasses] = useState("");
   const [selectedAgeGroups, setSelectedAgeGroups] = useState<string[]>([]);
   const [selectedResources, setSelectedResources] = useState<string[]>([]);
+  const [other, setOther] = useState("");
   const [sending, setSending] = useState(false);
 
   useEffect(() => {
@@ -117,6 +118,7 @@ export function EquipmentFormModal({
           resources: selectedResources.map(
             (id) => RESOURCES.find((r) => r.id === id)?.label || id
           ),
+          other: other.trim(),
         }),
       });
 
@@ -132,6 +134,7 @@ export function EquipmentFormModal({
       setClasses("");
       setSelectedAgeGroups([]);
       setSelectedResources([]);
+      setOther("");
       onClose();
     } catch {
       toast.error("שגיאה", "שגיאה בשליחת הבקשה. נסה שוב מאוחר יותר.");
@@ -266,6 +269,26 @@ export function EquipmentFormModal({
                   <span className="text-foreground">{resource.label}</span>
                 </label>
               ))}
+            </div>
+          </div>
+
+          {/* Other */}
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">
+              אחר
+            </label>
+            <textarea
+              value={other}
+              onChange={(e) => setOther(e.target.value.slice(0, 500))}
+              placeholder="משאבים נוספים או הערות..."
+              maxLength={500}
+              rows={3}
+              className="w-full px-3 py-2 border border-surface-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+            />
+            <div className="flex justify-end mt-1">
+              <span className={`text-xs ${other.length >= 480 ? 'text-amber-500' : 'text-gray-400'}`}>
+                {other.length}/500
+              </span>
             </div>
           </div>
         </div>

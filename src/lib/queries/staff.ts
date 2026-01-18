@@ -1,19 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "./keys";
 import {
-  getStaffByGrade,
+  getAllStaff,
   getStaffMember,
   createStaffMember,
   updateStaffMember,
   deleteStaffMember,
 } from "@/lib/services/staff";
-import type { StaffMember, Grade } from "@/types";
+import type { StaffMember } from "@/types";
 
-export function useStaffByGrade(grade: Grade | null | undefined) {
+export function useAllStaff() {
   return useQuery({
-    queryKey: queryKeys.staff.byGrade(grade!),
-    queryFn: () => getStaffByGrade(grade!),
-    enabled: !!grade,
+    queryKey: queryKeys.staff.all,
+    queryFn: getAllStaff,
   });
 }
 

@@ -8,6 +8,7 @@ interface EquipmentRequestData {
   classes: string;
   ageGroups: string[];
   resources: string[];
+  other?: string;
 }
 
 // Escape HTML to prevent XSS in email content
@@ -34,6 +35,9 @@ function validateData(data: unknown): data is EquipmentRequestData {
   // Validate array contents are strings
   if (!d.ageGroups.every((g) => typeof g === "string" && g.length <= 50)) return false;
   if (!d.resources.every((r) => typeof r === "string" && r.length <= 100)) return false;
+
+  // Validate optional other field
+  if (d.other !== undefined && (typeof d.other !== "string" || d.other.length > 500)) return false;
 
   return true;
 }
@@ -99,6 +103,13 @@ export async function POST(request: NextRequest) {
             ${data.resources.map((r) => `<li style="margin: 5px 0;">✓ ${escapeHtml(r)}</li>`).join("")}
           </ul>
         </div>
+
+        ${data.other ? `
+        <div style="margin: 20px 0;">
+          <h3 style="color: #374151;">אחר:</h3>
+          <p style="background: #f8f9fa; padding: 15px; border-radius: 8px; white-space: pre-wrap;">${escapeHtml(data.other)}</p>
+        </div>
+        ` : ""}
 
         <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;" />
         <p style="color: #6b7280; font-size: 12px;">
