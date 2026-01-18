@@ -22,6 +22,7 @@ import {
   Check,
   X,
   Save,
+  Globe,
 } from "lucide-react";
 import type { UserRole } from "@/types";
 
@@ -163,13 +164,19 @@ function CollapsibleSection({
                   ) : (
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-sm font-medium text-foreground">
                             {user.grade ? `כיתה ${user.grade}` : roleSingular[user.role]}
                           </span>
                           {user.password === currentUserId && (
                             <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
                               את/ה
+                            </span>
+                          )}
+                          {user.canSubmitGlobeMonitor && (
+                            <span className="text-xs bg-role-student/10 text-role-student px-2 py-0.5 rounded-full flex items-center gap-1">
+                              <Globe size={10} />
+                              מדווח גלוב
                             </span>
                           )}
                         </div>

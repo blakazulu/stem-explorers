@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Globe Monitor submission feature**: Users with `canSubmitGlobeMonitor` flag can now submit monitoring data
+  - New `SubmissionFormModal` component with dynamic form based on admin-configured questions
+  - Submission button appears below globe logo, above calendar for authorized users
+  - Daily limit of 2 submissions per user (per calendar day)
+  - Button shows submission count (X/2) and disables when limit reached
+  - Admin password management page shows "מדווח גלוב" badge for users with flag
+  - Seed script to create globe monitor user: `npx tsx scripts/seed-globe-monitor-user.ts`
 - **Reusable ImageCarousel component** (`src/components/ui/ImageCarousel.tsx`): Shared carousel component with sliding effect, loading states, and responsive design
 - **xs breakpoint in Tailwind config**: Added 480px breakpoint for extra-small screens
 

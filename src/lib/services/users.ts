@@ -16,17 +16,19 @@ export interface UserDocument {
   password: string; // Document ID
   role: UserRole;
   grade: Grade | null;
+  canSubmitGlobeMonitor?: boolean;
   createdAt: Date;
 }
 
 export async function getAllUsers(): Promise<UserDocument[]> {
   try {
     const snapshot = await getDocs(collection(db, "users"));
-    return snapshot.docs.map((doc) => ({
-      password: doc.id,
-      role: doc.data().role as UserRole,
-      grade: doc.data().grade as Grade | null,
-      createdAt: doc.data().createdAt?.toDate() || new Date(),
+    return snapshot.docs.map((d) => ({
+      password: d.id,
+      role: d.data().role as UserRole,
+      grade: d.data().grade as Grade | null,
+      canSubmitGlobeMonitor: d.data().canSubmitGlobeMonitor ?? false,
+      createdAt: d.data().createdAt?.toDate() || new Date(),
     }));
   } catch (error) {
     handleFirebaseError(error, "getAllUsers");

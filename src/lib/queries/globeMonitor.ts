@@ -9,8 +9,10 @@ import {
   seedDefaultQuestions,
   getGlobeMonitorSubmissionsByMonth,
   getGlobeMonitorSubmission,
+  createGlobeMonitorSubmission,
+  getSubmissionsCountToday,
 } from "@/lib/services/globeMonitor";
-import type { GlobeMonitorQuestion } from "@/types";
+import type { GlobeMonitorQuestion, GlobeMonitorSubmission } from "@/types";
 
 // ============ QUESTIONS ============
 
@@ -89,5 +91,32 @@ export function useGlobeMonitorSubmission(id: string | null | undefined) {
     queryKey: queryKeys.globeMonitor.submission(id!),
     queryFn: () => getGlobeMonitorSubmission(id!),
     enabled: !!id,
+  });
+}
+
+export function useCreateGlobeMonitorSubmission() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Omit<GlobeMonitorSubmission, "id" | "submittedAt">) =>
+      createGlobeMonitorSubmission(data),
+    onSuccess: (_data, variables) => {
+      // Invalidate submissions for the month of this submission
+      const [year, month] = variables.date.split("-").map(Number);
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.globeMonitor.submissionsByMonth(year, month),
+      });
+      // Invalidate today's count for the user
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.globeMonitor.userSubmissionsCountToday(variables.submittedBy),
+      });
+    },
+  });
+}
+
+export function useUserSubmissionsCountToday(userId: string | null | undefined) {
+  return useQuery({
+    queryKey: queryKeys.globeMonitor.userSubmissionsCountToday(userId!),
+    queryFn: () => getSubmissionsCountToday(userId!),
+    enabled: !!userId,
   });
 }

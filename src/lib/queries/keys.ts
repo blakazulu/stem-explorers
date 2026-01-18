@@ -55,6 +55,8 @@ export const queryKeys = {
     submissionsByMonth: (year: number, month: number) =>
       ["globeMonitor", "submissions", year, month] as const,
     submission: (id: string) => ["globeMonitor", "submissions", id] as const,
+    userSubmissionsCountToday: (userId: string) =>
+      ["globeMonitor", "submissions", "countToday", userId] as const,
   },
   bookings: {
     all: ["bookings"] as const,

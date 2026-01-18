@@ -9,6 +9,7 @@ export interface User {
   name: string;
   role: UserRole;
   grade: Grade | null;
+  canSubmitGlobeMonitor?: boolean; // Flag for users who can submit globe monitoring data
   createdAt: Date;
 }
 

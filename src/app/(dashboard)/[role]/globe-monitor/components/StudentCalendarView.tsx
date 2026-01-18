@@ -2,12 +2,15 @@
 
 import { useState, useMemo } from "react";
 import Image from "next/image";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   useGlobeMonitorSubmissionsByMonth,
   useGlobeMonitorQuestions,
+  useUserSubmissionsCountToday,
 } from "@/lib/queries";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import {
   Globe,
@@ -20,8 +23,10 @@ import {
   Cloud,
   Eye,
   X,
+  FileEdit,
 } from "lucide-react";
 import type { GlobeMonitorSubmission, GlobeMonitorQuestion } from "@/types";
+import SubmissionFormModal from "./SubmissionFormModal";
 
 const HEBREW_MONTHS = [
   "ינואר",
@@ -40,18 +45,30 @@ const HEBREW_MONTHS = [
 
 const HEBREW_DAYS = ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"];
 
+const MAX_DAILY_SUBMISSIONS = 2;
+
 export default function StudentCalendarView() {
+  const { session } = useAuth();
   const today = new Date();
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [currentMonth, setCurrentMonth] = useState(today.getMonth() + 1);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedSubmission, setSelectedSubmission] = useState<GlobeMonitorSubmission | null>(null);
+  const [showSubmitModal, setShowSubmitModal] = useState(false);
 
   const { data: submissions, isLoading: submissionsLoading } =
     useGlobeMonitorSubmissionsByMonth(currentYear, currentMonth);
   const { data: questions, isLoading: questionsLoading } = useGlobeMonitorQuestions();
 
+  // Get today's submission count for users who can submit
+  const canSubmitGlobeMonitor = session?.user?.canSubmitGlobeMonitor ?? false;
+  const userId = session?.documentId ?? "";
+  const { data: todayCount = 0, refetch: refetchCount } = useUserSubmissionsCountToday(
+    canSubmitGlobeMonitor ? userId : null
+  );
+
   const isLoading = submissionsLoading || questionsLoading;
+  const canSubmitNow = canSubmitGlobeMonitor && todayCount < MAX_DAILY_SUBMISSIONS;
 
   // Group submissions by date
   const submissionsByDate = useMemo(() => {
@@ -114,6 +131,30 @@ export default function StudentCalendarView() {
           <p className="text-sm text-gray-500 mt-1">צפייה בנתוני ניטור</p>
         </div>
       </div>
+
+      {/* Submit Button - Only for users with canSubmitGlobeMonitor flag */}
+      {canSubmitGlobeMonitor && (
+        <Card className="p-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="text-center sm:text-right">
+              <p className="text-sm font-medium text-foreground">דיווח יומי</p>
+              <p className="text-xs text-gray-500">
+                {canSubmitNow
+                  ? `${todayCount}/${MAX_DAILY_SUBMISSIONS} דיווחים היום`
+                  : `הגשת ${MAX_DAILY_SUBMISSIONS} דיווחים היום`}
+              </p>
+            </div>
+            <Button
+              onClick={() => setShowSubmitModal(true)}
+              disabled={!canSubmitNow}
+              rightIcon={FileEdit}
+              className="w-full sm:w-auto"
+            >
+              {canSubmitNow ? "מלא דיווח ניטור" : "הושלמו הדיווחים להיום"}
+            </Button>
+          </div>
+        </Card>
+      )}
 
       {/* Calendar */}
       <Card className="p-4">
@@ -225,6 +266,16 @@ export default function StudentCalendarView() {
           submission={selectedSubmission}
           questions={questions || []}
           onClose={() => setSelectedSubmission(null)}
+        />
+      )}
+
+      {/* Submission Form Modal */}
+      {showSubmitModal && session && (
+        <SubmissionFormModal
+          userId={session.documentId}
+          userName={session.user.name}
+          onClose={() => setShowSubmitModal(false)}
+          onSuccess={() => refetchCount()}
         />
       )}
     </div>

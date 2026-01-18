@@ -178,3 +178,36 @@ export async function getGlobeMonitorSubmission(id: string): Promise<GlobeMonito
     return null;
   }
 }
+
+export async function createGlobeMonitorSubmission(
+  data: Omit<GlobeMonitorSubmission, "id" | "submittedAt">
+): Promise<string> {
+  try {
+    const docRef = await addDoc(collection(db, SUBMISSIONS_COLLECTION), {
+      ...data,
+      submittedAt: serverTimestamp(),
+    });
+    return docRef.id;
+  } catch (error) {
+    handleFirebaseError(error, "createGlobeMonitorSubmission");
+    throw error;
+  }
+}
+
+export async function getSubmissionsCountToday(userId: string): Promise<number> {
+  try {
+    // Use local date to match what the user sees
+    const d = new Date();
+    const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const q = query(
+      collection(db, SUBMISSIONS_COLLECTION),
+      where("submittedBy", "==", userId),
+      where("date", "==", today)
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.size;
+  } catch (error) {
+    handleFirebaseError(error, "getSubmissionsCountToday");
+    return 0;
+  }
+}
