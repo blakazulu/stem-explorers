@@ -53,16 +53,18 @@ function parseText(text: string): TextPart[] {
   // Find plain URLs (that aren't inside markdown links)
   const urlRegex = new RegExp(URL_REGEX.source, "g");
   while ((match = urlRegex.exec(text)) !== null) {
+    const matchIndex = match.index;
+    const matchText = match[0];
     // Check if this URL is inside a markdown link
     const isInsideMarkdown = allMatches.some(
-      (m) => match.index >= m.start && match.index < m.end
+      (m) => matchIndex >= m.start && matchIndex < m.end
     );
     if (!isInsideMarkdown) {
       // Clean trailing punctuation from URL
-      const { url: cleanedUrl, trailing } = cleanUrl(match[0]);
+      const { url: cleanedUrl } = cleanUrl(matchText);
       allMatches.push({
-        start: match.index,
-        end: match.index + cleanedUrl.length,
+        start: matchIndex,
+        end: matchIndex + cleanedUrl.length,
         part: { type: "link", title: cleanedUrl, url: cleanedUrl },
       });
       // The trailing punctuation will be included in the next text segment
