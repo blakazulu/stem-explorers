@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Expert cards/modal not using role-based theming**: Updated ExpertCard and ExpertDetailsModal components to use `useRoleStyles()` hook and theme utilities (`rounded-theme`, `duration-theme`, `ease-theme`) instead of hardcoded `primary/secondary/accent` colors
 - **Staff image upload 403 error**: Added missing `staff/` path to Firebase Storage security rules to allow image uploads for צוות מו"פ
 - **Resource file upload 403 error**: Added missing `resources/` path to Firebase Storage security rules to allow uploads for לוז הדרכה and מערכת שעות
 - **Expert image upload 403 error**: Added missing `experts/` path to Firebase Storage security rules to allow image uploads for "שאל את המומחה" feature
