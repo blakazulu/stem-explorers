@@ -1,14 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { getUnitsByGrade } from "@/lib/services/units";
+import { useUnitsByGrade } from "@/lib/queries";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
-import type { Grade, Unit } from "@/types";
+import type { Grade } from "@/types";
 
 const VALID_GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
 
@@ -26,29 +25,9 @@ export default function GradeGalleryPage() {
   const grade = decodeURIComponent(params.grade as string) as Grade;
   const isValidGrade = VALID_GRADES.includes(grade);
 
-  const [units, setUnits] = useState<Unit[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!isValidGrade) return;
-
-    async function loadUnits() {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await getUnitsByGrade(grade);
-        setUnits(data);
-      } catch (err) {
-        console.error("Failed to load units:", err);
-        setError("שגיאה בטעינת יחידות הלימוד");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadUnits();
-  }, [grade, isValidGrade]);
+  const { data: units = [], isLoading: loading, error, refetch } = useUnitsByGrade(
+    isValidGrade ? grade : null
+  );
 
   if (!isValidGrade) {
     return (
@@ -115,10 +94,10 @@ export default function GradeGalleryPage() {
             <EmptyState
               icon="alert-circle"
               title="שגיאה"
-              description={error}
+              description="שגיאה בטעינת יחידות הלימוד"
               action={{
                 label: "נסה שוב",
-                onClick: () => window.location.reload(),
+                onClick: () => refetch(),
               }}
             />
           </div>

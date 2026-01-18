@@ -1,15 +1,14 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, X, ChevronLeft, ChevronRight, Camera, Loader2, Images } from "lucide-react";
-import { getUnit } from "@/lib/services/units";
-import { getDocumentationByUnit } from "@/lib/services/documentation";
+import { useUnit, useDocumentationByUnit } from "@/lib/queries";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
-import type { Grade, Unit, Documentation } from "@/types";
+import type { Grade, Documentation } from "@/types";
 
 const VALID_GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
 
@@ -297,41 +296,32 @@ export default function UnitGalleryPage() {
   const unitId = params.unitId as string;
   const isValidGrade = VALID_GRADES.includes(grade);
 
-  const [unit, setUnit] = useState<Unit | null>(null);
-  const [docs, setDocs] = useState<Documentation[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [lightbox, setLightbox] = useState<LightboxState | null>(null);
 
-  useEffect(() => {
-    if (!isValidGrade || !unitId) return;
+  const {
+    data: unit,
+    isLoading: unitLoading,
+    error: unitError,
+    refetch: refetchUnit
+  } = useUnit(isValidGrade ? unitId : null);
 
-    async function loadData() {
-      setLoading(true);
-      setError(null);
-      try {
-        const [unitData, docsData] = await Promise.all([
-          getUnit(unitId),
-          getDocumentationByUnit(unitId, grade),
-        ]);
+  const {
+    data: docs = [],
+    isLoading: docsLoading,
+    error: docsError,
+    refetch: refetchDocs
+  } = useDocumentationByUnit(
+    isValidGrade ? unitId : null,
+    isValidGrade ? grade : null
+  );
 
-        if (!unitData || unitData.gradeId !== grade) {
-          setError("יחידת הלימוד לא נמצאה");
-          return;
-        }
+  const loading = unitLoading || docsLoading;
+  const error = unitError || docsError || (unit && unit.gradeId !== grade ? true : null);
 
-        setUnit(unitData);
-        setDocs(docsData);
-      } catch (err) {
-        console.error("Failed to load documentation:", err);
-        setError("שגיאה בטעינת התיעודים");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadData();
-  }, [grade, unitId, isValidGrade]);
+  const handleRetry = () => {
+    refetchUnit();
+    refetchDocs();
+  };
 
   const openLightbox = (docIndex: number, imageIndex: number = 0) => {
     setLightbox({ docIndex, imageIndex });
@@ -420,10 +410,10 @@ export default function UnitGalleryPage() {
             <EmptyState
               icon="alert-circle"
               title="שגיאה"
-              description={error}
+              description={unit && unit.gradeId !== grade ? "יחידת הלימוד לא נמצאה" : "שגיאה בטעינת התיעודים"}
               action={{
                 label: "נסה שוב",
-                onClick: () => window.location.reload(),
+                onClick: handleRetry,
               }}
             />
           </div>

@@ -29,7 +29,6 @@ import {
   useDeleteStaffMember,
   useReorderStaff,
 } from "@/lib/queries";
-import { getNextStaffOrder } from "@/lib/services/staff";
 import { deleteStorageFile } from "@/lib/utils/imageUpload";
 import { Plus, Users } from "lucide-react";
 import type { StaffMember } from "@/types";
@@ -126,11 +125,11 @@ export function StaffGrid({ isAdmin = false }: StaffGridProps) {
         await updateMutation.mutateAsync({ id: editingMember.id, data });
         toast.success("עודכן", "פרטי איש הצוות עודכנו");
       } else {
-        // Create new
-        const order = await getNextStaffOrder();
+        // Create new - derive order from existing staff data
+        const maxOrder = staff.length > 0 ? Math.max(...staff.map(m => m.order)) : 0;
         await createMutation.mutateAsync({
           ...data,
-          order,
+          order: maxOrder + 1,
         });
         toast.success("נוסף", "איש הצוות נוסף בהצלחה");
       }

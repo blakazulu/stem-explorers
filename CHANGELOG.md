@@ -12,6 +12,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Reusable ImageCarousel component** (`src/components/ui/ImageCarousel.tsx`): Shared carousel component with sliding effect, loading states, and responsive design
 - **xs breakpoint in Tailwind config**: Added 480px breakpoint for extra-small screens
 
+### Changed
+
+- **Complete React Query caching coverage**: All Firebase data fetching now uses React Query hooks
+  - Gallery pages (`/gallery/[grade]`, `/gallery/[grade]/[unitId]`) now use cached queries instead of direct service calls
+  - Gallery error retry buttons now use React Query `refetch()` instead of page reload
+  - `UnitTree` component now uses `useUnitsByGrade` hook
+  - New unit page now uses `useUnitsByGrade` for order calculation
+  - `StaffGrid` derives next order from cached data instead of calling `getNextStaffOrder()`
+
+### Removed
+
+- **Dead code cleanup**: Removed unused `src/lib/services/questions.ts` - questions are handled through questionnaires service which has proper caching
+
 ### Fixed
 
 - **Documentation modal slow image switching**: Replaced single-image display with sliding carousel

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { getUnitsByGrade, createUnit } from "@/lib/services/units";
+import { useUnitsByGrade, useCreateUnit } from "@/lib/queries";
 import { uploadDocument } from "@/lib/utils/fileUpload";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -32,7 +32,6 @@ export default function NewUnitPage() {
   const role = params.role as UserRole;
   const grade = decodeURIComponent(params.grade as string) as Grade;
 
-  const [unitsCount, setUnitsCount] = useState(0);
   const [saving, setSaving] = useState(false);
 
   // Form state
@@ -45,6 +44,16 @@ export default function NewUnitPage() {
   const baseUrl = `/${role}/teaching-resources/${encodeURIComponent(grade)}`;
   const backUrl = `${baseUrl}/curricula`;
 
+  // Load units to get count for default order
+  const { data: units = [] } = useUnitsByGrade(VALID_GRADES.includes(grade) ? grade : null);
+  const unitsCount = units.length;
+  const createUnitMutation = useCreateUnit();
+
+  // Set default order when units load
+  useEffect(() => {
+    setOrder(units.length + 1);
+  }, [units.length]);
+
   // Validate grade and permissions
   useEffect(() => {
     if (!VALID_GRADES.includes(grade)) {
@@ -55,22 +64,6 @@ export default function NewUnitPage() {
       router.replace(backUrl);
     }
   }, [grade, role, router, isAdmin, backUrl]);
-
-  // Load units count to set default order
-  const loadUnitsCount = useCallback(async () => {
-    if (!VALID_GRADES.includes(grade)) return;
-    try {
-      const units = await getUnitsByGrade(grade);
-      setUnitsCount(units.length);
-      setOrder(units.length + 1);
-    } catch {
-      // Ignore error, default order is 1
-    }
-  }, [grade]);
-
-  useEffect(() => {
-    loadUnitsCount();
-  }, [loadUnitsCount]);
 
   async function handleSubmit() {
     if (!name.trim()) return;
@@ -88,7 +81,7 @@ export default function NewUnitPage() {
         unitFileUrl = await uploadDocument(unitFile, `units/${grade}/unit`);
       }
 
-      await createUnit({
+      await createUnitMutation.mutateAsync({
         gradeId: grade,
         name,
         order,

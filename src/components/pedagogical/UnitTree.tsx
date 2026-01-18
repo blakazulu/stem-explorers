@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { getUnitsByGrade } from "@/lib/services/units";
+import { useEffect } from "react";
+import { useUnitsByGrade } from "@/lib/queries";
 import { UnitCard } from "./UnitCard";
 import { SkeletonGrid } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -17,40 +17,27 @@ interface UnitTreeProps {
 }
 
 export function UnitTree({ grade, onSelectUnit, onAddUnit }: UnitTreeProps) {
-  const [units, setUnits] = useState<Unit[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
   const toast = useToastActions();
-
-  async function loadUnits() {
-    setLoading(true);
-    setLoadError(false);
-    try {
-      const data = await getUnitsByGrade(grade);
-      setUnits(data);
-    } catch {
-      setLoadError(true);
-      toast.error("שגיאה", "שגיאה בטעינת יחידות הלימוד");
-    }
-    setLoading(false);
-  }
+  const { data: units = [], isLoading: loading, error, refetch } = useUnitsByGrade(grade);
 
   useEffect(() => {
-    loadUnits();
-  }, [grade]);
+    if (error) {
+      toast.error("שגיאה", "שגיאה בטעינת יחידות הלימוד");
+    }
+  }, [error, toast]);
 
   if (loading) {
     return <SkeletonGrid count={6} columns={3} />;
   }
 
-  if (loadError) {
+  if (error) {
     return (
       <EmptyState
         icon="alert-triangle"
         title="שגיאה בטעינה"
         description="לא הצלחנו לטעון את יחידות הלימוד"
         action={
-          <Button onClick={loadUnits} rightIcon={RefreshCw}>
+          <Button onClick={() => refetch()} rightIcon={RefreshCw}>
             נסה שוב
           </Button>
         }
