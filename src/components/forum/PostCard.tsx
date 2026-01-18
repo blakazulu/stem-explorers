@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { useToastActions } from "@/components/ui/Toast";
 import { Trash2, MessageCircle, Calendar, Send, Pin, PinOff, Pencil, X, Check } from "lucide-react";
 import { LinkifiedText } from "./LinkifiedText";
+import { LinkPreview, extractUrls } from "./LinkPreview";
 import type { ForumPost } from "@/types";
 
 interface PostCardProps {
@@ -225,9 +226,15 @@ export function PostCard({
             />
           </div>
         ) : (
-          <p className="text-foreground leading-relaxed">
-            <LinkifiedText text={post.content} />
-          </p>
+          <>
+            <p className="text-foreground leading-relaxed whitespace-pre-wrap">
+              <LinkifiedText text={post.content} />
+            </p>
+            {/* Link Previews */}
+            {extractUrls(post.content).map((url) => (
+              <LinkPreview key={url} url={url} />
+            ))}
+          </>
         )}
 
         {/* Replies section */}
@@ -250,7 +257,7 @@ export function PostCard({
                     {reply.authorName.charAt(0)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-foreground">
+                    <p className="text-sm text-foreground whitespace-pre-wrap">
                       <LinkifiedText text={reply.content} />
                     </p>
                     <p className="text-xs text-gray-400 mt-1">

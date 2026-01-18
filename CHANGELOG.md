@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-01-18
+
+### Added
+
+- **Forum link previews**: URLs in posts now show rich preview cards with Open Graph metadata
+  - Displays title, description, and image from linked pages
+  - Netlify function fetches metadata server-side (CORS-safe)
+  - In-memory caching prevents duplicate requests
+  - Maximum 3 previews per post
+  - Graceful fallback for sites without metadata
+
+### Fixed
+
+- **Forum newlines not preserved**: Post and reply content now preserves line breaks using `whitespace-pre-wrap`
+- **Link preview SSRF vulnerability**: Netlify function now blocks requests to localhost, private IPs, and cloud metadata endpoints
+- **Link preview ReDoS vulnerability**: HTML content limited to 100KB before regex processing
+- **Link preview unbounded cache**: Added LRU-style cache with 100 entry limit to prevent memory growth
+- **Link preview response validation**: Added runtime validation of API responses for type safety
+
+### Changed
+
+- **Link preview theming**: Applied role-based theming utilities (`rounded-theme`, `duration-theme`) to LinkPreview component
+
 ## [0.7.0] - 2026-01-18
 
 ### Added
@@ -744,7 +767,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Safe markdown rendering with react-markdown
 - Object URL cleanup to prevent memory leaks
 
-[Unreleased]: https://github.com/blakazulu/stem-explorers/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/blakazulu/stem-explorers/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/blakazulu/stem-explorers/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/blakazulu/stem-explorers/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/blakazulu/stem-explorers/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/blakazulu/stem-explorers/compare/v0.4.1...v0.5.0
