@@ -40,7 +40,7 @@ function parseText(text: string): TextPart[] {
   const allMatches: Array<{ start: number; end: number; part: TextPart }> = [];
 
   // Find markdown links
-  let match;
+  let match: RegExpExecArray | null;
   const mdRegex = new RegExp(MARKDOWN_LINK_REGEX.source, "g");
   while ((match = mdRegex.exec(text)) !== null) {
     allMatches.push({
