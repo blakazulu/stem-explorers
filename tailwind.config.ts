@@ -6,6 +6,17 @@ const config: Config = {
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  safelist: [
+    // Role-specific ring colors for dynamic theming
+    "ring-role-admin",
+    "ring-role-teacher",
+    "ring-role-parent",
+    "ring-role-student",
+    "ring-role-admin/50",
+    "ring-role-teacher/50",
+    "ring-role-parent/50",
+    "ring-role-student/50",
+  ],
   theme: {
     extend: {
       colors: {

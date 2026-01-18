@@ -84,11 +84,9 @@ export default function PedagogicalGradePage() {
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
-  const [showStaffModal, setShowStaffModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const resourceModalRef = useRef<HTMLDialogElement>(null);
   const lightboxRef = useRef<HTMLDialogElement>(null);
-  const staffModalRef = useRef<HTMLDialogElement>(null);
 
   // Redirect if grade is invalid
   useEffect(() => {
@@ -129,17 +127,6 @@ export default function PedagogicalGradePage() {
       modal.close();
     }
   }, [lightboxImage]);
-
-  useEffect(() => {
-    const modal = staffModalRef.current;
-    if (!modal) return;
-
-    if (showStaffModal) {
-      modal.showModal();
-    } else {
-      modal.close();
-    }
-  }, [showStaffModal]);
 
   const getResourceData = (type: ResourceType): ResourceFile | null | undefined => {
     return type === "training-schedule" ? trainingSchedule : timetable;
@@ -357,8 +344,17 @@ export default function PedagogicalGradePage() {
         )}
       </div>
 
-      {/* Action Buttons - 2x2 Grid */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* Staff Section */}
+      <div className="p-6 bg-surface-1 rounded-2xl border border-surface-2">
+        <div className="flex items-center gap-2 mb-4">
+          <Users size={20} className="text-accent" />
+          <h2 className="text-lg font-rubik font-semibold text-foreground">צוות מו&quot;פ</h2>
+        </div>
+        <StaffGrid isAdmin={isAdmin} />
+      </div>
+
+      {/* Action Buttons - Responsive Row */}
+      <div className={`grid gap-4 ${pageElements.unitCards ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-2"}`}>
         {pageElements.unitCards && (
           <Button
             variant="outline"
@@ -369,14 +365,6 @@ export default function PedagogicalGradePage() {
             <span>מודל פדגוגי</span>
           </Button>
         )}
-        <Button
-          variant="outline"
-          className="h-24 flex-col gap-2"
-          onClick={() => setShowStaffModal(true)}
-        >
-          <Users size={24} />
-          <span>צוות מו&quot;פ</span>
-        </Button>
         <Button
           variant="outline"
           className="h-24 flex-col gap-2"
@@ -606,36 +594,6 @@ export default function PedagogicalGradePage() {
               className="max-w-[95vw] max-h-[95vh] object-contain rounded-lg"
               onClick={(e) => e.stopPropagation()}
             />
-          </div>
-        </dialog>
-      )}
-
-      {/* Staff Modal */}
-      {showStaffModal && (
-        <dialog
-          ref={staffModalRef}
-          className="fixed inset-0 m-auto z-50 rounded-2xl p-0 backdrop:bg-black/50 backdrop:animate-fade-in max-w-4xl w-[95vw] max-h-[90vh] shadow-2xl animate-scale-in border-0 overflow-hidden"
-          onClose={() => setShowStaffModal(false)}
-        >
-          <div className="flex flex-col h-full max-h-[90vh]" dir="rtl">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 border-b border-surface-2 bg-surface-1">
-              <h2 className="text-xl font-rubik font-bold text-foreground">
-                צוות מו&quot;פ
-              </h2>
-              <button
-                onClick={() => setShowStaffModal(false)}
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-surface-2 rounded-lg transition-all duration-200 cursor-pointer"
-                aria-label="סגור חלון"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* Modal Content */}
-            <div className="flex-1 overflow-y-auto p-6">
-              <StaffGrid isAdmin={isAdmin} />
-            </div>
           </div>
         </dialog>
       )}

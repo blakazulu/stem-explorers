@@ -66,6 +66,7 @@ export {
   useCreateStaffMember,
   useUpdateStaffMember,
   useDeleteStaffMember,
+  useReorderStaff,
 } from "./staff";
 
 // Forum

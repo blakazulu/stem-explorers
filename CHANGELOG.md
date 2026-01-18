@@ -9,14 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Staff image upload 403 error**: Added missing `staff/` path to Firebase Storage security rules to allow image uploads for צוות מו"פ
+- **Resource file upload 403 error**: Added missing `resources/` path to Firebase Storage security rules to allow uploads for לוז הדרכה and מערכת שעות
 - **Expert image upload 403 error**: Added missing `experts/` path to Firebase Storage security rules to allow image uploads for "שאל את המומחה" feature
 - **Expert details modal centering**: Fixed modal not being centered on screen
 - **Expert details modal image size**: Increased expert profile image from 96px to 300px for better visibility
 - **Expert image upload optimization**: Expert images now resized to 400px (instead of 800px) since they display at 300px max, reducing file size
 - **Duplicate mx-auto class**: Removed duplicate `mx-auto` CSS class from 14 page components
 
+### Added
+
+- **Staff drag and drop reordering**: Admins can now reorder staff members by dragging the grip handle on hover; order persists to Firestore using batch writes
+
 ### Changed
 
+- **Staff member cards redesign**: New image-focused card design (4:5 aspect ratio) with name overlay at bottom; hover/click reveals description with smooth sliding animation, glass backdrop effect, and shine animation on hover
+  - Admins can now preview expanded card state on hover
+  - Increased description max-height and added scroll for long text
+  - Removed duplicate "צוות מו״פ" header from StaffGrid (page has its own)
+  - Added drag handle (grip icon) for reordering in admin mode
+- **Pedagogical page layout**: Moved "צוות מו"פ" (Staff Team) from a button to a full section below the intro; remaining buttons now display in responsive row
+  - Mobile: stacked (1 column), Desktop: side-by-side (2-3 columns based on visibility)
+  - Grid dynamically adjusts columns when "מודל פדגוגי" button is hidden
 - **Pedagogical description limit**: Increased character limit from 300 to 500 for unit descriptions
 - **Pedagogical section - global resources**: Staff Team (צוות מו"פ), Training Schedule (לוז הדרכה), and Timetable (מערכת שעות) are now global instead of per-grade
   - Staff members are shared across all grades

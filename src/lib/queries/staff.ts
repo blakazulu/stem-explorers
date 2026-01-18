@@ -6,6 +6,7 @@ import {
   createStaffMember,
   updateStaffMember,
   deleteStaffMember,
+  reorderStaff,
 } from "@/lib/services/staff";
 import type { StaffMember } from "@/types";
 
@@ -54,6 +55,16 @@ export function useDeleteStaffMember() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: deleteStaffMember,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.staff.all });
+    },
+  });
+}
+
+export function useReorderStaff() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: reorderStaff,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.staff.all });
     },

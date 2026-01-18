@@ -1,6 +1,23 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { StaffMemberCard } from "./StaffMemberCard";
 import { AddEditStaffModal } from "./AddEditStaffModal";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -10,14 +27,54 @@ import {
   useCreateStaffMember,
   useUpdateStaffMember,
   useDeleteStaffMember,
+  useReorderStaff,
 } from "@/lib/queries";
 import { getNextStaffOrder } from "@/lib/services/staff";
 import { deleteStorageFile } from "@/lib/utils/imageUpload";
-import { Plus, Users, Sparkles } from "lucide-react";
+import { Plus, Users } from "lucide-react";
 import type { StaffMember } from "@/types";
 
 interface StaffGridProps {
   isAdmin?: boolean;
+}
+
+interface SortableStaffItemProps {
+  member: StaffMember;
+  onEdit: (member: StaffMember) => void;
+  onDelete: (member: StaffMember) => void;
+}
+
+function SortableStaffItem({ member, onEdit, onDelete }: SortableStaffItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: member.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : undefined,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+    >
+      <StaffMemberCard
+        member={member}
+        isAdmin={true}
+        isDragging={isDragging}
+        dragHandleProps={{ attributes, listeners }}
+        onEdit={onEdit}
+        onDelete={onDelete}
+      />
+    </div>
+  );
 }
 
 export function StaffGrid({ isAdmin = false }: StaffGridProps) {
@@ -27,10 +84,23 @@ export function StaffGrid({ isAdmin = false }: StaffGridProps) {
   const createMutation = useCreateStaffMember();
   const updateMutation = useUpdateStaffMember();
   const deleteMutation = useDeleteStaffMember();
+  const reorderMutation = useReorderStaff();
 
   const [showModal, setShowModal] = useState(false);
   const [editingMember, setEditingMember] = useState<StaffMember | null>(null);
   const [deletingMember, setDeletingMember] = useState<StaffMember | null>(null);
+
+  // Sensors for drag and drop
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // Require 8px movement before drag starts
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   // Show error toast if query fails
   useEffect(() => {
@@ -93,17 +163,37 @@ export function StaffGrid({ isAdmin = false }: StaffGridProps) {
     setDeletingMember(null);
   };
 
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = staff.findIndex((m) => m.id === active.id);
+      const newIndex = staff.findIndex((m) => m.id === over.id);
+
+      const newOrder = arrayMove(staff, oldIndex, newIndex);
+      const orderedIds = newOrder.map((m) => m.id);
+
+      try {
+        await reorderMutation.mutateAsync(orderedIds);
+        toast.success("סדר עודכן", "סדר הצוות נשמר");
+      } catch {
+        toast.error("שגיאה", "לא הצלחנו לשמור את הסדר");
+      }
+    }
+  };
+
   if (loading) {
     return (
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {[1, 2, 3, 4].map((i) => (
           <div
             key={i}
-            className="flex flex-col items-center p-4 rounded-2xl bg-surface-1 animate-pulse"
+            className="aspect-[4/5] rounded-2xl bg-surface-2 animate-pulse relative overflow-hidden"
           >
-            <div className="w-24 h-24 rounded-full bg-surface-2 mb-4" />
-            <div className="h-5 w-20 bg-surface-2 rounded mb-2" />
-            <div className="h-4 w-32 bg-surface-2 rounded" />
+            <div className="absolute bottom-0 left-0 right-0 p-4">
+              <div className="h-5 w-24 bg-surface-3 rounded mb-2" />
+              <div className="h-1 w-8 bg-surface-3 rounded mx-auto" />
+            </div>
           </div>
         ))}
       </div>
@@ -121,51 +211,72 @@ export function StaffGrid({ isAdmin = false }: StaffGridProps) {
     );
   }
 
-  return (
-    <div className="space-y-6">
-      {/* Header with decoration */}
-      <div className="flex items-center justify-center gap-3">
-        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-        <div className="flex items-center gap-2 px-4 py-2 bg-primary/5 rounded-full border border-primary/20">
-          <Sparkles size={16} className="text-primary" />
-          <span className="text-sm font-medium text-primary">צוות מו״פ</span>
-          <Sparkles size={16} className="text-primary" />
-        </div>
-        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-      </div>
+  // Sort staff by order
+  const sortedStaff = [...staff].sort((a, b) => a.order - b.order);
 
-      {/* Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {staff.map((member, index) => (
-          <div
-            key={member.id}
-            className="animate-scale-in"
-            style={{ animationDelay: `${index * 50}ms` }}
+  const gridContent = (
+    <>
+      {isAdmin ? (
+        // Admin view with sortable items
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={sortedStaff.map((m) => m.id)}
+            strategy={rectSortingStrategy}
           >
-            <StaffMemberCard
-              member={member}
-              isAdmin={isAdmin}
-              onEdit={handleEdit}
-              onDelete={setDeletingMember}
-            />
-          </div>
-        ))}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {sortedStaff.map((member) => (
+                <SortableStaffItem
+                  key={member.id}
+                  member={member}
+                  onEdit={handleEdit}
+                  onDelete={setDeletingMember}
+                />
+              ))}
 
-        {/* Add button for admin */}
-        {isAdmin && (
-          <button
-            onClick={handleAdd}
-            className="flex flex-col items-center justify-center p-4 rounded-2xl border-2 border-dashed border-surface-3 hover:border-primary hover:bg-primary/5 transition-all duration-300 cursor-pointer group min-h-[200px]"
-          >
-            <div className="w-16 h-16 rounded-full bg-surface-2 group-hover:bg-primary/20 flex items-center justify-center mb-3 transition-colors">
-              <Plus size={24} className="text-gray-400 group-hover:text-primary transition-colors" />
+              {/* Add button */}
+              <button
+                onClick={handleAdd}
+                className="aspect-[4/5] flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-surface-3 hover:border-primary hover:bg-primary/5 transition-all duration-300 cursor-pointer group"
+              >
+                <div className="w-16 h-16 rounded-full bg-surface-2 group-hover:bg-primary/20 flex items-center justify-center mb-3 transition-colors">
+                  <Plus size={28} className="text-gray-400 group-hover:text-primary transition-colors" />
+                </div>
+                <span className="text-sm font-medium text-gray-500 group-hover:text-primary transition-colors">
+                  הוסף איש צוות
+                </span>
+              </button>
             </div>
-            <span className="text-sm font-medium text-gray-500 group-hover:text-primary transition-colors">
-              הוסף איש צוות
-            </span>
-          </button>
-        )}
-      </div>
+          </SortableContext>
+        </DndContext>
+      ) : (
+        // Non-admin view without drag and drop
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {sortedStaff.map((member, index) => (
+            <div
+              key={member.id}
+              className="animate-scale-in"
+              style={{ animationDelay: `${index * 50}ms` }}
+            >
+              <StaffMemberCard
+                member={member}
+                isAdmin={false}
+                onEdit={handleEdit}
+                onDelete={setDeletingMember}
+              />
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+
+  return (
+    <div className="space-y-4">
+      {gridContent}
 
       {/* Empty state for admin */}
       {staff.length === 0 && isAdmin && (

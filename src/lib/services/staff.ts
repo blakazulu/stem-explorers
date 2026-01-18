@@ -8,6 +8,7 @@ import {
   deleteDoc,
   query,
   orderBy,
+  writeBatch,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { handleFirebaseError } from "@/lib/utils/errors";
@@ -92,5 +93,21 @@ export async function getNextStaffOrder(): Promise<number> {
     return Math.max(...staff.map((s) => s.order)) + 1;
   } catch {
     return 1;
+  }
+}
+
+export async function reorderStaff(
+  orderedIds: string[]
+): Promise<void> {
+  try {
+    const batch = writeBatch(db);
+    orderedIds.forEach((id, index) => {
+      const docRef = doc(db, COLLECTION, id);
+      batch.update(docRef, { order: index });
+    });
+    await batch.commit();
+  } catch (error) {
+    handleFirebaseError(error, "reorderStaff");
+    throw error;
   }
 }
