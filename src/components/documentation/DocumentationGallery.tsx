@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { DocumentationCard } from "./DocumentationCard";
+import { DocumentationModal } from "./DocumentationModal";
 import { SkeletonGrid } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
@@ -25,6 +27,9 @@ export function DocumentationGallery({
   const { session } = useAuth();
   const { getPageElements } = useVisibility();
   const toast = useToastActions();
+
+  // Modal state for viewing documentation
+  const [selectedDoc, setSelectedDoc] = useState<Documentation | null>(null);
 
   // Use React Query for data fetching
   const {
@@ -120,11 +125,22 @@ export function DocumentationGallery({
               doc={doc}
               canDelete={isAdmin || (isTeacher && doc.teacherName === session?.user.name)}
               onDelete={handleDelete}
+              onClick={setSelectedDoc}
               index={index}
               visibility={documentationVisibility}
             />
           ))}
         </div>
+      )}
+
+      {/* Documentation Modal */}
+      {selectedDoc && (
+        <DocumentationModal
+          doc={selectedDoc}
+          isOpen={!!selectedDoc}
+          onClose={() => setSelectedDoc(null)}
+          visibility={documentationVisibility}
+        />
       )}
     </div>
   );

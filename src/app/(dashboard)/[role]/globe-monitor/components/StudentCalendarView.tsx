@@ -212,7 +212,7 @@ export default function StudentCalendarView() {
             </div>
           ) : (
             <EmptyState
-              icon={Calendar}
+              icon="file-text"
               title="אין נתונים"
               description="לא נרשמו נתוני ניטור בתאריך זה"
             />

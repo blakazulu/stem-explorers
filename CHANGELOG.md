@@ -13,6 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Documentation lightbox modal**: Click on documentation cards to view full content in a modal
+  - Image gallery with navigation arrows for multiple images
+  - Dot indicators for image position
+  - Keyboard navigation (arrow keys for images, Escape to close)
+  - Click outside modal to close
+  - Full text display (no truncation)
+  - Respects visibility settings per role
 - **Role-themed custom scrollbars**: Added custom scrollbar styling that matches the role-based theme system
   - Thin, rounded scrollbars with transparent track by default
   - Admin theme: indigo scrollbars (#6366F1)

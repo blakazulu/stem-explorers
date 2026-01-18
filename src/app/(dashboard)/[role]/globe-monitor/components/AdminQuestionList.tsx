@@ -27,7 +27,6 @@ import {
   Clock,
   List,
   CheckSquare,
-  AlertCircle,
 } from "lucide-react";
 import type { GlobeMonitorQuestion, GlobeMonitorQuestionType } from "@/types";
 
@@ -154,7 +153,7 @@ export default function AdminQuestionList() {
         </div>
       ) : (
         <EmptyState
-          icon={AlertCircle}
+          icon="alert-circle"
           title="אין שאלות"
           description="לא נמצאו שאלות. הוסף שאלה חדשה להתחיל."
         />

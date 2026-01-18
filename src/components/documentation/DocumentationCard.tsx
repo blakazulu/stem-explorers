@@ -12,6 +12,7 @@ interface DocumentationCardProps {
   doc: Documentation;
   canDelete: boolean;
   onDelete: (doc: Documentation) => void;
+  onClick?: (doc: Documentation) => void;
   index?: number;
   visibility?: DocumentationVisibility;
 }
@@ -20,13 +21,16 @@ export function DocumentationCard({
   doc,
   canDelete,
   onDelete,
+  onClick,
   index = 0,
   visibility = { images: true, text: true, teacherName: true },
 }: DocumentationCardProps) {
   return (
     <Card
       padding="none"
-      className={`group overflow-hidden animate-slide-up stagger-${Math.min(index + 1, 6)}`}
+      interactive={!!onClick}
+      onClick={onClick ? () => onClick(doc) : undefined}
+      className={`group overflow-hidden animate-slide-up stagger-${Math.min(index + 1, 6)} ${onClick ? "cursor-pointer" : ""}`}
     >
       {/* Image Section - controlled by visibility */}
       {visibility.images && (
@@ -78,7 +82,10 @@ export function DocumentationCard({
         {/* Delete button */}
         {canDelete && (
           <button
-            onClick={() => onDelete(doc)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(doc);
+            }}
             className="mt-3 inline-flex items-center gap-1.5 text-sm text-error hover:text-error/80 hover:underline cursor-pointer transition-colors"
           >
             <Trash2 size={14} />
