@@ -82,6 +82,116 @@
 }
 
 @layer base {
+  /* ===== CUSTOM SCROLLBARS ===== */
+  /* Base scrollbar styling */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-surface-3) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 4px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: var(--color-surface-3);
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: var(--color-surface-3);
+    background-clip: content-box;
+  }
+
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  /* Role-themed scrollbars */
+  .theme-admin {
+    scrollbar-color: rgba(99, 102, 241, 0.4) rgba(99, 102, 241, 0.1);
+  }
+
+  .theme-admin *::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.4);
+    background-clip: content-box;
+    border: 2px solid transparent;
+  }
+
+  .theme-admin *::-webkit-scrollbar-thumb:hover {
+    background: rgba(99, 102, 241, 0.6);
+    background-clip: content-box;
+  }
+
+  .theme-admin *::-webkit-scrollbar-track {
+    background: rgba(99, 102, 241, 0.05);
+  }
+
+  .theme-teacher {
+    scrollbar-color: rgba(2, 132, 199, 0.4) rgba(2, 132, 199, 0.1);
+  }
+
+  .theme-teacher *::-webkit-scrollbar-thumb {
+    background: rgba(2, 132, 199, 0.4);
+    background-clip: content-box;
+    border: 2px solid transparent;
+  }
+
+  .theme-teacher *::-webkit-scrollbar-thumb:hover {
+    background: rgba(2, 132, 199, 0.6);
+    background-clip: content-box;
+  }
+
+  .theme-teacher *::-webkit-scrollbar-track {
+    background: rgba(2, 132, 199, 0.05);
+  }
+
+  .theme-parent {
+    scrollbar-color: rgba(245, 158, 11, 0.4) rgba(245, 158, 11, 0.1);
+  }
+
+  .theme-parent *::-webkit-scrollbar-thumb {
+    background: rgba(245, 158, 11, 0.4);
+    background-clip: content-box;
+    border: 2px solid transparent;
+  }
+
+  .theme-parent *::-webkit-scrollbar-thumb:hover {
+    background: rgba(245, 158, 11, 0.6);
+    background-clip: content-box;
+  }
+
+  .theme-parent *::-webkit-scrollbar-track {
+    background: rgba(245, 158, 11, 0.05);
+  }
+
+  .theme-student {
+    scrollbar-color: rgba(16, 185, 129, 0.4) rgba(16, 185, 129, 0.1);
+  }
+
+  .theme-student *::-webkit-scrollbar-thumb {
+    background: rgba(16, 185, 129, 0.4);
+    background-clip: content-box;
+    border: 2px solid transparent;
+  }
+
+  .theme-student *::-webkit-scrollbar-thumb:hover {
+    background: rgba(16, 185, 129, 0.6);
+    background-clip: content-box;
+  }
+
+  .theme-student *::-webkit-scrollbar-track {
+    background: rgba(16, 185, 129, 0.05);
+  }
+
   body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;

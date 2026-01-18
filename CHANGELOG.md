@@ -7,14 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Sidebar scrolling**: Changed sidebar from `min-h-screen` to `h-screen` so navigation content is scrollable when it exceeds viewport height
+
 ### Added
 
+- **Role-themed custom scrollbars**: Added custom scrollbar styling that matches the role-based theme system
+  - Thin, rounded scrollbars with transparent track by default
+  - Admin theme: indigo scrollbars (#6366F1)
+  - Teacher theme: blue scrollbars (#0284C7)
+  - Parent theme: amber scrollbars (#F59E0B)
+  - Student theme: emerald scrollbars (#10B981)
+  - Hover states with increased opacity
+  - Cross-browser support (WebKit and Firefox scrollbar-color)
 - **Globe Monitor visibility defaults**: Added globe-monitor to visibility configuration for admin control
   - Added to `ALL_DASHBOARD_CARDS` with label "גלוב-ניטורר" and description "צפייה בנתוני ניטור סביבתי"
   - Added to `ALL_SIDEBAR_LINKS` with href "/globe-monitor"
   - Added to `DEFAULT_STUDENT_DASHBOARD` cards (visible by default, order 4)
   - Added to `DEFAULT_STUDENT_SIDEBAR` links (visible by default)
 - **Globe Monitor sidebar navigation**: Added "גלוב-ניטורר" link to sidebar for admin and student roles with Globe icon
+- **Globe Monitor question form component**: Shared form component for creating and editing questions
+  - Question type selector with visual icons (text, number, date, time, single, multi)
+  - Dynamic fields based on type (unit/min/max for numbers, options for choices)
+  - Validation requiring at least 2 options for choice questions
+  - Required field checkbox
+- **Globe Monitor new question page**: Admin page at `/[role]/globe-monitor/questions/new` for creating questions
+- **Globe Monitor edit question page**: Admin page at `/[role]/globe-monitor/questions/[id]` for editing questions
+- **Globe Monitor student calendar view**: Calendar component for students to view submission data
+  - Monthly calendar grid with Hebrew day/month names
+  - Navigation arrows for prev/next month
+  - Dates with submissions highlighted with green indicator
+  - Click date to show submission cards with summary (time, temp, humidity, clouds)
+  - Click card to see full details in modal with all question answers
 - **Globe Monitor types**: Added TypeScript types for the Globe Monitor feature (`src/types/globeMonitor.ts`)
   - `GlobeMonitorQuestionType` - Type union for question types (text, number, date, time, single, multi)
   - `GlobeMonitorQuestion` - Question definition interface with label, type, options, unit, min/max, required, order

@@ -315,7 +315,7 @@ export function Sidebar({ onClose }: SidebarProps) {
   };
 
   return (
-    <aside className={`w-64 ${theme.bg} border-l ${theme.border} min-h-screen flex flex-col transition-colors duration-theme`}>
+    <aside className={`w-64 ${theme.bg} border-l ${theme.border} h-screen flex flex-col transition-colors duration-theme`}>
       {/* Logo Header */}
       <div className={`p-6 border-b ${theme.headerBorder} ${theme.headerBg}`}>
         <Link
