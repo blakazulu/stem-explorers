@@ -7,8 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Expert scheduling system**: Complete booking system for 10-minute expert consultations
+  - **Calendar view**: Monthly calendar below experts grid showing expert availability
+    - Hebrew month/day names with RTL layout
+    - Day cells show expert names with color-coded availability indicators (green=3+ slots, amber=1-2 slots, red=full)
+    - Clicking a day opens modal with available experts
+  - **Booking flow**: Select day → choose expert → pick time slot → enter details → confirm
+    - Participants field for listing meeting attendees
+    - Topic field for meeting subject
+    - 10-minute slots generated from expert time ranges
+    - Users can cancel own bookings within 5 minutes of creation (same session only)
+    - Admins can delete any booking
+  - **Admin availability management**: New "זמינות" section in AddEditExpertModal
+    - Multi-month calendar picker for selecting dates
+    - Time range inputs for each selected date
+    - Validates time ranges (end > start, minimum 10 minutes)
+  - **Admin meetings page**: New page at `/[role]/expert-meetings` with sidebar link
+    - Tabs for upcoming and past meetings
+    - Search by user name or topic, filter by grade
+    - Table with booking details and delete action
+  - **Expert card badges** (admin only): Shows availability status
+    - Red "לא זמין" badge if no future dates
+    - Amber "לא זמין החודש" badge if no current month dates
+  - **New types**: `TimeRange`, `ExpertAvailability`, `ExpertBooking`
+  - **New service**: `src/lib/services/bookings.ts` with React Query hooks
+  - **New utilities**: `src/lib/utils/slots.ts` (slot generation), `src/lib/utils/sessionToken.ts` (cancel window)
+  - **Firestore indexes**: Added composite indexes for `expert-bookings` collection
+
+### Changed
+
+- **Expert availability field**: Changed `Expert.availability` from `string` to `ExpertAvailability[]` for structured scheduling data
+
 ### Fixed
 
+- **Expert booking race condition**: Added server-side slot availability check before creating bookings to prevent double-booking
+- **Expert meetings page access control**: Added admin role check to prevent non-admin users from accessing the meetings page via direct URL
+- **Expert name display in meetings table**: Admin meetings page now shows expert names instead of IDs
+- **Time range validation**: TimeRangeInput now validates that end time is after start time, with visual feedback and auto-adjustment
+- **Calendar availability accuracy**: Calendar now fetches all bookings for the month to show accurate availability indicators
+- **Cancel button auto-refresh**: TimeSlotsModal now auto-refreshes cancel button eligibility every 30 seconds
 - **Tailwind config TypeScript error**: Extended Config type with `{ safelist?: string[] }` to allow safelist property in Tailwind v4
 - **Expert cards/modal not using role-based theming**: Updated ExpertCard and ExpertDetailsModal components to use `useRoleStyles()` hook and theme utilities (`rounded-theme`, `duration-theme`, `ease-theme`) instead of hardcoded `primary/secondary/accent` colors
 - **Staff image upload 403 error**: Added missing `staff/` path to Firebase Storage security rules to allow image uploads for צוות מו"פ
@@ -16,6 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Expert image upload 403 error**: Added missing `experts/` path to Firebase Storage security rules to allow image uploads for "שאל את המומחה" feature
 - **Expert details modal centering**: Fixed modal not being centered on screen
 - **Expert details modal image size**: Increased expert profile image from 96px to 300px for better visibility
+- **Expert details modal availability display**: Fixed crash when rendering availability (changed from string to array format) - now shows count of available days
 - **Expert image upload optimization**: Expert images now resized to 400px (instead of 800px) since they display at 300px max, reducing file size
 - **Duplicate mx-auto class**: Removed duplicate `mx-auto` CSS class from 14 page components
 

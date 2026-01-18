@@ -1,7 +1,7 @@
 import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { handleFirebaseError } from "@/lib/utils/errors";
-import type { EmailConfig, ReportConfig, Grade, StemLink, Expert } from "@/types";
+import type { EmailConfig, ReportConfig, Grade, StemLink, Expert, ExpertAvailability, ConfigurableRole } from "@/types";
 
 const SETTINGS_DOC = "settings";
 
@@ -160,14 +160,22 @@ export async function getExperts(): Promise<Expert[]> {
     return (data.experts || [])
       .map((expert: Record<string, unknown>) => {
         const createdAt = expert.createdAt as { toDate?: () => Date } | undefined;
+        // Handle availability - convert old string format to empty array
+        let availability: ExpertAvailability[] = [];
+        if (Array.isArray(expert.availability)) {
+          availability = expert.availability as ExpertAvailability[];
+        }
+        // Old string format gets converted to empty array (migration)
+
         return {
           id: expert.id as string,
           name: expert.name as string,
           title: expert.title as string,
           description: expert.description as string,
-          availability: expert.availability as string,
+          availability,
           imageUrl: expert.imageUrl as string,
           grade: expert.grade as Grade | null,
+          roles: (expert.roles as ConfigurableRole[]) || [],
           order: (expert.order as number) || 0,
           createdAt: createdAt?.toDate?.() || new Date(),
         };

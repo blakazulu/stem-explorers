@@ -117,10 +117,10 @@ export function ExpertDetailsModal({
           </p>
 
           {/* Availability */}
-          {expert.availability && (
+          {expert.availability && expert.availability.length > 0 && (
             <div className="flex items-center gap-2 justify-center text-sm text-gray-500 bg-surface-1 rounded-theme py-2 px-4">
               <Clock size={16} className={roleStyles.text} />
-              <span>{expert.availability}</span>
+              <span>{expert.availability.length} ימים זמינים בלוח</span>
             </div>
           )}
         </div>

@@ -2,8 +2,60 @@
 
 import { useState, useEffect } from "react";
 import { Edit2, Trash2 } from "lucide-react";
-import type { Expert } from "@/types";
+import type { Expert, ExpertAvailability } from "@/types";
 import { useRoleStyles } from "@/contexts/ThemeContext";
+
+function getExpertBadge(availability: ExpertAvailability[] | undefined): {
+  type: "none" | "no-month" | "no-future";
+  label: string;
+  color: string;
+} | null {
+  if (!availability || availability.length === 0) {
+    return {
+      type: "no-future",
+      label: "לא זמין",
+      color: "bg-red-500 text-white",
+    };
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayStr = today.toISOString().split("T")[0];
+
+  const currentMonth = today.getMonth();
+  const currentYear = today.getFullYear();
+
+  // Check for any future dates
+  const hasFutureDates = availability.some((a) => a.date >= todayStr);
+
+  if (!hasFutureDates) {
+    return {
+      type: "no-future",
+      label: "לא זמין",
+      color: "bg-red-500 text-white",
+    };
+  }
+
+  // Check for dates in current month
+  const hasCurrentMonthDates = availability.some((a) => {
+    const date = new Date(a.date);
+    return (
+      date >= today &&
+      date.getMonth() === currentMonth &&
+      date.getFullYear() === currentYear
+    );
+  });
+
+  if (!hasCurrentMonthDates) {
+    return {
+      type: "no-month",
+      label: "לא זמין החודש",
+      color: "bg-amber-500 text-white",
+    };
+  }
+
+  return null;
+}
 
 interface ExpertCardProps {
   expert: Expert;
@@ -22,6 +74,7 @@ export function ExpertCard({
 }: ExpertCardProps) {
   const [imageError, setImageError] = useState(false);
   const roleStyles = useRoleStyles();
+  const badge = isAdmin ? getExpertBadge(expert.availability) : null;
 
   // Reset error state when image URL changes
   useEffect(() => {
@@ -44,6 +97,13 @@ export function ExpertCard({
       aria-label={`${expert.name}, ${expert.title}`}
       className={`group relative flex flex-col items-center text-center p-4 rounded-theme bg-surface-0 border border-surface-2 hover:${roleStyles.border}/30 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-${roleStyles.accent}/50 focus:${roleStyles.border} transition-all duration-theme ease-theme cursor-pointer min-w-[140px]`}
     >
+      {/* Availability Badge (Admin only) */}
+      {badge && (
+        <div className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-medium ${badge.color} z-10`}>
+          {badge.label}
+        </div>
+      )}
+
       {/* Admin Actions */}
       {isAdmin && (
         <div className="absolute top-2 left-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">

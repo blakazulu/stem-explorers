@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { X, Upload, User } from "lucide-react";
 import { uploadImage } from "@/lib/utils/imageUpload";
-import type { Expert, Grade, ConfigurableRole } from "@/types";
+import type { Expert, Grade, ConfigurableRole, ExpertAvailability } from "@/types";
+import { AvailabilityPicker } from "./AvailabilityPicker";
 
 const ALL_ROLES: ConfigurableRole[] = ["teacher", "parent", "student"];
 const ROLE_LABELS: Record<ConfigurableRole, string> = {
@@ -34,7 +35,7 @@ export function AddEditExpertModal({
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [availability, setAvailability] = useState("");
+  const [availability, setAvailability] = useState<ExpertAvailability[]>([]);
   const [imageUrl, setImageUrl] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isGlobalGrade, setIsGlobalGrade] = useState(true);
@@ -52,7 +53,7 @@ export function AddEditExpertModal({
       setName(expert.name);
       setTitle(expert.title);
       setDescription(expert.description);
-      setAvailability(expert.availability);
+      setAvailability(expert.availability || []);
       setImageUrl(expert.imageUrl);
       setImagePreview(expert.imageUrl);
       setIsGlobalGrade(expert.grade === null);
@@ -62,7 +63,7 @@ export function AddEditExpertModal({
       setName("");
       setTitle("");
       setDescription("");
-      setAvailability("");
+      setAvailability([]);
       setImageUrl("");
       setImagePreview(null);
       setIsGlobalGrade(true);
@@ -159,7 +160,7 @@ export function AddEditExpertModal({
         name: name.trim(),
         title: title.trim(),
         description: description.trim(),
-        availability: availability.trim(),
+        availability,
         imageUrl,
         grade: isGlobalGrade ? null : currentGrade,
         roles: selectedRoles,
@@ -302,20 +303,11 @@ export function AddEditExpertModal({
             </p>
           </div>
 
-          {/* Availability */}
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">
-              זמינות
-            </label>
-            <input
-              type="text"
-              value={availability}
-              onChange={(e) => setAvailability(e.target.value.slice(0, 200))}
-              className="w-full px-4 py-2.5 rounded-xl border border-surface-3 bg-surface-0 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
-              placeholder="לדוגמה: ימים א-ג, 9:00-14:00"
-              maxLength={200}
-            />
-          </div>
+          {/* Availability Picker */}
+          <AvailabilityPicker
+            availability={availability}
+            onChange={setAvailability}
+          />
 
           {/* Visibility Settings */}
           <div className="space-y-3 p-4 bg-surface-1 rounded-xl">

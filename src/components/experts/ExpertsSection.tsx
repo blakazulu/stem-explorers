@@ -1,12 +1,18 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useExperts, useSaveExperts } from "@/lib/queries";
+import { useExperts, useSaveExperts, useBookingsByDateRange, useCreateBooking, useDeleteBooking } from "@/lib/queries";
 import { ExpertCard } from "./ExpertCard";
 import { ExpertDetailsModal } from "./ExpertDetailsModal";
 import { AddEditExpertModal } from "./AddEditExpertModal";
+import { ExpertsCalendar } from "./ExpertsCalendar";
+import { DayExpertsModal } from "./DayExpertsModal";
+import { TimeSlotsModal } from "./TimeSlotsModal";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToastActions } from "@/components/ui/Toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { getSessionToken } from "@/lib/utils/sessionToken";
+import { getCurrentMonthDates } from "@/lib/utils/slots";
 import { GraduationCap, Plus } from "lucide-react";
 import type { Expert, Grade, ConfigurableRole } from "@/types";
 
@@ -26,6 +32,26 @@ export function ExpertsSection({ grade, isAdmin, userRole }: ExpertsSectionProps
   const [editingExpert, setEditingExpert] = useState<Expert | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<Expert | null>(null);
   const toast = useToastActions();
+
+  // Calendar and booking state
+  const { session } = useAuth();
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [dayExpertsOpen, setDayExpertsOpen] = useState(false);
+  const [dayExperts, setDayExperts] = useState<Expert[]>([]);
+  const [selectedExpertForSlots, setSelectedExpertForSlots] = useState<Expert | null>(null);
+  const [timeSlotsOpen, setTimeSlotsOpen] = useState(false);
+
+  const { startDate, endDate } = useMemo(() => getCurrentMonthDates(), []);
+  // Fetch all bookings for the current month for accurate calendar availability
+  const { data: monthBookings = [] } = useBookingsByDateRange(startDate, endDate);
+  const createBookingMutation = useCreateBooking();
+  const deleteBookingMutation = useDeleteBooking();
+
+  // Filter bookings for the selected date (for modals)
+  const selectedDateBookings = useMemo(() => {
+    if (!selectedDate) return [];
+    return monthBookings.filter((b) => b.date === selectedDate);
+  }, [monthBookings, selectedDate]);
 
   // Filter experts by grade and role
   const experts = useMemo(() => {
@@ -99,6 +125,43 @@ export function ExpertsSection({ grade, isAdmin, userRole }: ExpertsSectionProps
     }
     setDeleting(false);
     setDeleteConfirm(null);
+  };
+
+  const handleDayClick = (date: string, expertsForDay: Expert[]) => {
+    setSelectedDate(date);
+    setDayExperts(expertsForDay);
+    setDayExpertsOpen(true);
+  };
+
+  const handleSelectExpertForSlots = (expert: Expert) => {
+    setSelectedExpertForSlots(expert);
+    setDayExpertsOpen(false);
+    setTimeSlotsOpen(true);
+  };
+
+  const handleBook = async (startTime: string, endTime: string, participants: string, topic: string) => {
+    if (!session || !selectedExpertForSlots || !selectedDate) return;
+
+    await createBookingMutation.mutateAsync({
+      expertId: selectedExpertForSlots.id,
+      date: selectedDate,
+      startTime,
+      endTime,
+      userId: session.documentId,
+      userName: session.user.name,
+      userRole: session.user.role,
+      userGrade: session.user.grade,
+      participants,
+      topic,
+      sessionToken: getSessionToken(),
+    });
+
+    toast.success("נקבע", "הפגישה נקבעה בהצלחה");
+  };
+
+  const handleCancelBooking = async (bookingId: string) => {
+    await deleteBookingMutation.mutateAsync(bookingId);
+    toast.success("בוטל", "הפגישה בוטלה");
   };
 
   // Don't show section if loading or no experts and not admin
@@ -192,6 +255,39 @@ export function ExpertsSection({ grade, isAdmin, userRole }: ExpertsSectionProps
           setEditModalOpen(false);
           setEditingExpert(null);
         }}
+      />
+
+      {/* Calendar */}
+      <ExpertsCalendar
+        experts={allExperts}
+        bookings={monthBookings}
+        grade={grade}
+        userRole={userRole}
+        isAdmin={isAdmin}
+        onDayClick={handleDayClick}
+      />
+
+      {/* Day Experts Modal */}
+      <DayExpertsModal
+        isOpen={dayExpertsOpen}
+        date={selectedDate}
+        experts={dayExperts}
+        bookings={selectedDateBookings}
+        onSelectExpert={handleSelectExpertForSlots}
+        onClose={() => setDayExpertsOpen(false)}
+      />
+
+      {/* Time Slots Modal */}
+      <TimeSlotsModal
+        isOpen={timeSlotsOpen}
+        expert={selectedExpertForSlots}
+        date={selectedDate}
+        bookings={selectedDateBookings}
+        currentUserId={session?.documentId || ""}
+        isAdmin={isAdmin}
+        onBook={handleBook}
+        onCancelBooking={handleCancelBooking}
+        onClose={() => setTimeSlotsOpen(false)}
       />
 
       {/* Delete Confirmation */}

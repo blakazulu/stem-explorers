@@ -56,4 +56,12 @@ export const queryKeys = {
       ["globeMonitor", "submissions", year, month] as const,
     submission: (id: string) => ["globeMonitor", "submissions", id] as const,
   },
+  bookings: {
+    all: ["bookings"] as const,
+    byDate: (date: string) => ["bookings", "date", date] as const,
+    byDateRange: (startDate: string, endDate: string) =>
+      ["bookings", "dateRange", startDate, endDate] as const,
+    byExpert: (expertId: string) => ["bookings", "expert", expertId] as const,
+    single: (id: string) => ["bookings", id] as const,
+  },
 };

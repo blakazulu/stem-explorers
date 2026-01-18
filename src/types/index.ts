@@ -173,13 +173,42 @@ export interface StemLink {
   createdAt: Date;
 }
 
+// Expert availability time range
+export interface TimeRange {
+  start: string;  // "10:00" (HH:mm format)
+  end: string;    // "11:00"
+}
+
+// Expert availability for a specific date
+export interface ExpertAvailability {
+  date: string;           // "2025-01-15" (ISO date YYYY-MM-DD)
+  timeRanges: TimeRange[];
+}
+
+// Expert consultation booking
+export interface ExpertBooking {
+  id: string;
+  expertId: string;
+  date: string;              // "2025-01-15"
+  startTime: string;         // "10:00"
+  endTime: string;           // "10:10"
+  userId: string;
+  userName: string;
+  userRole: UserRole;
+  userGrade: Grade | null;
+  participants: string;      // Names of meeting participants
+  topic: string;
+  createdAt: Date;
+  sessionToken: string;      // For 5-min cancel window check
+}
+
 // Expert for "שאל את המומחה" section
 export interface Expert {
   id: string;
   name: string;
   title: string;
   description: string;
-  availability: string;
+  availability: ExpertAvailability[];  // Structured availability (replaces old string field)
   imageUrl: string;
   grade: Grade | null; // null = all grades, Grade = specific grade only
   roles: ConfigurableRole[]; // which roles can see this expert (empty = all roles)
