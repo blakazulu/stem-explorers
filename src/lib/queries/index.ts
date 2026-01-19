@@ -118,3 +118,11 @@ export {
   useDeletePersonalMedia,
   useReorderPersonalMedia,
 } from "./personal";
+
+// Parent Content
+export {
+  useParentContent,
+  useUpdateParentContentIntro,
+  useUpdateParentContentEvents,
+  useDeleteParentContentImage,
+} from "./parentContent";

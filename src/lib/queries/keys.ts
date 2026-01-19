@@ -74,4 +74,7 @@ export const queryKeys = {
     media: (grade?: Grade) => ["personal", "media", grade] as const,
     allMedia: ["personal", "media", "all"] as const,
   },
+  parentContent: {
+    page: (pageId: string) => ["parentContent", pageId] as const,
+  },
 };
