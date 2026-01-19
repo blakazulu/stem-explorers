@@ -3,6 +3,55 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY || "");
 
+/**
+ * Core report generation logic - used by both on-demand handler and scheduled function
+ */
+export async function generateReportContent(
+  journals: Array<{ answers: unknown }>,
+  unitName: string,
+  aiPromptInstructions?: string
+): Promise<{ teacherContent: string; parentContent: string }> {
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+  const journalSummary = journals
+    .map((j, i: number) => `תלמיד ${i + 1}: ${JSON.stringify(j.answers)}`)
+    .join("\n");
+
+  const prompt = `
+אתה מנתח נתונים חינוכיים. יש לך ${journals.length} יומני חוקר מיחידה "${unitName}".
+
+נתוני היומנים:
+${journalSummary}
+
+${aiPromptInstructions || ""}
+
+צור שני דוחות:
+1. דוח למורים - מפורט, כולל ניתוח דפוסים, אתגרים, והמלצות פדגוגיות
+2. דוח להורים - תמציתי וידידותי, מתמקד בהישגים והתקדמות
+
+החזר בפורמט JSON:
+{
+  "teacherContent": "תוכן הדוח למורים בעברית (markdown)",
+  "parentContent": "תוכן הדוח להורים בעברית (markdown)"
+}
+`;
+
+  const result = await model.generateContent(prompt);
+  const text = result.response.text();
+
+  // Extract JSON from response
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    throw new Error("Failed to parse AI response");
+  }
+
+  return JSON.parse(jsonMatch[0]);
+}
+
+/**
+ * On-demand report generation endpoint
+ * Used by the admin settings page for manual daily report generation
+ */
 export const handler: Handler = async (event) => {
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, body: "Method not allowed" };
@@ -24,45 +73,15 @@ export const handler: Handler = async (event) => {
       };
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-    const journalSummary = journals
-      .map((j: any, i: number) => `תלמיד ${i + 1}: ${JSON.stringify(j.answers)}`)
-      .join("\n");
-
-    const prompt = `
-אתה מנתח נתונים חינוכיים. יש לך ${journals.length} יומני חוקר מיחידה "${unitName}".
-
-נתוני היומנים:
-${journalSummary}
-
-${reportConfig?.aiPromptInstructions || ""}
-
-צור שני דוחות:
-1. דוח למורים - מפורט, כולל ניתוח דפוסים, אתגרים, והמלצות פדגוגיות
-2. דוח להורים - תמציתי וידידותי, מתמקד בהישגים והתקדמות
-
-החזר בפורמט JSON:
-{
-  "teacherContent": "תוכן הדוח למורים בעברית (markdown)",
-  "parentContent": "תוכן הדוח להורים בעברית (markdown)"
-}
-`;
-
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
-
-    // Extract JSON from response
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error("Failed to parse AI response");
-    }
-
-    const reportData = JSON.parse(jsonMatch[0]);
+    const { teacherContent, parentContent } = await generateReportContent(
+      journals,
+      unitName,
+      reportConfig?.aiPromptInstructions
+    );
 
     return {
       statusCode: 200,
-      body: JSON.stringify(reportData),
+      body: JSON.stringify({ teacherContent, parentContent }),
     };
   } catch (error) {
     console.error("Report generation error:", error);

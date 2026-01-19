@@ -7,9 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.15] - 2026-01-19
+
+### Added
+
+- **Daily Summary Report Generation**: Added button to Admin Settings → Report Settings to batch generate AI reports for all research journals submitted today
+  - Shows count of today's journals grouped by grade
+  - Generates one daily summary report per grade using Gemini AI
+  - Progress indicator with completed/skipped grades
+  - Skips grades that already have a report for today
+  - New service functions: `getTodaysJournals`, `generateDailyReport`, `checkDailyReportExists`
+  - New query hook: `useTodaysJournals`
+- **Scheduled Daily Report Generation**: Added Netlify scheduled function (`generate-daily-reports.ts`) that automatically generates AI reports every day at 23:00 Israel time
+  - Fetches all research journals submitted that day
+  - Groups journals by grade and generates one report per grade
+  - Skips grades that already have a report for the day
+  - Uses Gemini 1.5 Flash for AI analysis
+  - Logs summary of generated, skipped, and errored reports
+
 ### Changed
 
 - **Email sender domain**: Updated equipment request emails to send from `noreply@floatjet.com` (verified domain)
+- **Report generation architecture**: Refactored `generate-report.ts` to export reusable `generateReportContent` function used by both on-demand and scheduled report generation
 
 ## [0.9.14] - 2026-01-19
 

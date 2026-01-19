@@ -85,3 +85,18 @@ export async function deleteUnit(id: string): Promise<void> {
     handleFirebaseError(error, "deleteUnit");
   }
 }
+
+export async function getAllUnits(): Promise<Unit[]> {
+  try {
+    const q = query(collection(db, COLLECTION), orderBy("gradeId", "asc"));
+
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate(),
+    })) as Unit[];
+  } catch (error) {
+    handleFirebaseError(error, "getAllUnits");
+  }
+}

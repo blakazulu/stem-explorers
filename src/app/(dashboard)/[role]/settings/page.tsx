@@ -8,7 +8,12 @@ import {
   useSaveEmailConfig,
   useReportConfig,
   useSaveReportConfig,
+  useTodaysJournals,
 } from "@/lib/queries";
+import {
+  generateDailyReport,
+  checkDailyReportExists,
+} from "@/lib/services/reports";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
@@ -20,8 +25,11 @@ import {
   Plus,
   X,
   Save,
+  Sparkles,
+  AlertCircle,
+  CheckCircle2,
 } from "lucide-react";
-import type { EmailConfig, ReportConfig, UserRole } from "@/types";
+import type { EmailConfig, ReportConfig, UserRole, Grade, ResearchJournal } from "@/types";
 
 type Tab = "email" | "report";
 
@@ -48,11 +56,35 @@ export default function SettingsPage() {
   // React Query hooks
   const { data: fetchedEmailConfig, isLoading: emailLoading } = useEmailConfig();
   const { data: fetchedReportConfig, isLoading: reportLoading } = useReportConfig();
+  const { data: todaysJournals = [], isLoading: journalsLoading } = useTodaysJournals();
   const saveEmailMutation = useSaveEmailConfig();
   const saveReportMutation = useSaveReportConfig();
 
   const loading = emailLoading || reportLoading;
   const saving = saveEmailMutation.isPending || saveReportMutation.isPending;
+
+  // Daily report generation state
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState<{
+    current: number;
+    total: number;
+    completedGrades: Grade[];
+    skippedGrades: Grade[];
+  } | null>(null);
+  const [generationError, setGenerationError] = useState<string | null>(null);
+
+  // Group today's journals by grade
+  const ALL_GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
+  const journalsByGrade = todaysJournals.reduce((acc, journal) => {
+    const grade = journal.gradeId;
+    if (!acc[grade]) acc[grade] = [];
+    acc[grade].push(journal);
+    return acc;
+  }, {} as Record<Grade, ResearchJournal[]>);
+
+  const gradesWithJournals = ALL_GRADES.filter(
+    (grade) => journalsByGrade[grade]?.length > 0
+  );
 
   // Local state for form editing
   const [emailConfig, setEmailConfig] = useState<EmailConfig>({
@@ -132,6 +164,51 @@ export default function SettingsPage() {
         e.id === id ? { ...e, [field]: !e[field] } : e
       ),
     });
+  }
+
+  async function handleGenerateDailyReports() {
+    if (gradesWithJournals.length === 0) return;
+
+    setIsGenerating(true);
+    setGenerationError(null);
+    setGenerationProgress({
+      current: 0,
+      total: gradesWithJournals.length,
+      completedGrades: [],
+      skippedGrades: [],
+    });
+
+    const today = new Date();
+    const completedGrades: Grade[] = [];
+    const skippedGrades: Grade[] = [];
+
+    for (let i = 0; i < gradesWithJournals.length; i++) {
+      const grade = gradesWithJournals[i];
+      const journals = journalsByGrade[grade];
+
+      try {
+        // Check if report already exists for this grade today
+        const exists = await checkDailyReportExists(grade, today);
+        if (exists) {
+          skippedGrades.push(grade);
+        } else {
+          await generateDailyReport(grade, journals, today);
+          completedGrades.push(grade);
+        }
+      } catch (error) {
+        console.error(`Failed to generate report for grade ${grade}:`, error);
+        setGenerationError(`שגיאה ביצירת דוח לכיתה ${grade}`);
+      }
+
+      setGenerationProgress({
+        current: i + 1,
+        total: gradesWithJournals.length,
+        completedGrades: [...completedGrades],
+        skippedGrades: [...skippedGrades],
+      });
+    }
+
+    setIsGenerating(false);
   }
 
   if (session?.user.role !== "admin") {
@@ -302,6 +379,102 @@ export default function SettingsPage() {
               הגדרות דוח AI
             </h2>
           </div>
+
+          {/* Daily Summary Generation Card */}
+          <Card className="bg-gradient-to-l from-primary/5 to-secondary/5 border-primary/20">
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-primary/10 rounded-xl shrink-0">
+                <Sparkles size={24} className="text-primary" />
+              </div>
+              <div className="flex-1 space-y-3">
+                <div>
+                  <h3 className="font-rubik font-semibold text-foreground">
+                    יצירת סיכום יומי
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    צור דוחות AI עבור כל יומני החוקר שהוגשו היום
+                  </p>
+                </div>
+
+                {journalsLoading ? (
+                  <p className="text-sm text-gray-400">טוען נתונים...</p>
+                ) : todaysJournals.length === 0 ? (
+                  <div className="flex items-center gap-2 text-gray-500">
+                    <AlertCircle size={16} />
+                    <span className="text-sm">אין יומני חוקר להיום</span>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex flex-wrap gap-2">
+                      {gradesWithJournals.map((grade) => (
+                        <span
+                          key={grade}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-surface-0 border border-surface-3 rounded-lg text-sm"
+                        >
+                          <span className="font-medium">כיתה {grade}</span>
+                          <span className="text-gray-400">
+                            ({journalsByGrade[grade].length} יומנים)
+                          </span>
+                        </span>
+                      ))}
+                    </div>
+
+                    {generationProgress && (
+                      <div className="space-y-2 p-3 bg-surface-1 rounded-lg">
+                        <div className="flex justify-between text-sm">
+                          <span>התקדמות</span>
+                          <span>
+                            {generationProgress.current} / {generationProgress.total}
+                          </span>
+                        </div>
+                        <div className="h-2 bg-surface-2 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-primary transition-all duration-300"
+                            style={{
+                              width: `${(generationProgress.current / generationProgress.total) * 100}%`,
+                            }}
+                          />
+                        </div>
+                        {generationProgress.completedGrades.length > 0 && (
+                          <div className="flex items-center gap-2 text-sm text-success">
+                            <CheckCircle2 size={14} />
+                            <span>
+                              נוצרו דוחות: {generationProgress.completedGrades.join(", ")}
+                            </span>
+                          </div>
+                        )}
+                        {generationProgress.skippedGrades.length > 0 && (
+                          <div className="flex items-center gap-2 text-sm text-gray-500">
+                            <AlertCircle size={14} />
+                            <span>
+                              דוחות קיימים (דולגו): {generationProgress.skippedGrades.join(", ")}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {generationError && (
+                      <div className="flex items-center gap-2 text-sm text-error">
+                        <AlertCircle size={14} />
+                        <span>{generationError}</span>
+                      </div>
+                    )}
+
+                    <Button
+                      onClick={handleGenerateDailyReports}
+                      disabled={isGenerating || gradesWithJournals.length === 0}
+                      loading={isGenerating}
+                      loadingText="מייצר דוחות..."
+                      rightIcon={Sparkles}
+                    >
+                      צור סיכום יומי ({todaysJournals.length} יומנים)
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+          </Card>
 
           <p className="text-sm text-gray-500">
             בחר אילו אלמנטים יופיעו בדוחות למורים ולהורים

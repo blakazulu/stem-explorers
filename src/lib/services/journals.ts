@@ -117,3 +117,32 @@ export async function deleteJournal(id: string): Promise<void> {
     handleFirebaseError(error, "deleteJournal");
   }
 }
+
+export async function getTodaysJournals(): Promise<ResearchJournal[]> {
+  try {
+    // Get start of today in local time
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const q = query(
+      collection(db, COLLECTION),
+      where("createdAt", ">=", today)
+    );
+
+    const snapshot = await getDocs(q);
+    const results = snapshot.docs.map((d) => ({
+      id: d.id,
+      ...d.data(),
+      createdAt: d.data().createdAt?.toDate(),
+    })) as ResearchJournal[];
+
+    // Sort by createdAt descending (newest first)
+    return results.sort((a, b) => {
+      const aTime = a.createdAt?.getTime() || 0;
+      const bTime = b.createdAt?.getTime() || 0;
+      return bTime - aTime;
+    });
+  } catch (error) {
+    handleFirebaseError(error, "getTodaysJournals");
+  }
+}

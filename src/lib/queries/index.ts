@@ -26,6 +26,7 @@ export {
 export {
   useJournalsByGrade,
   useJournalsByQuestionnaire,
+  useTodaysJournals,
   useSubmitJournal,
   useDeleteJournal,
 } from "./journals";

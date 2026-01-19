@@ -17,6 +17,7 @@ export const queryKeys = {
     byGrade: (gradeId: Grade) => ["journals", "byGrade", gradeId] as const,
     byQuestionnaire: (questionnaireId: string) =>
       ["journals", "byQuestionnaire", questionnaireId] as const,
+    today: ["journals", "today"] as const,
   },
   reports: {
     single: (unitId: string, gradeId: Grade) =>

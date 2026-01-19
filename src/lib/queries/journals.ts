@@ -3,6 +3,7 @@ import { queryKeys } from "./keys";
 import {
   getJournalsByGrade,
   getJournalsByQuestionnaire,
+  getTodaysJournals,
   submitJournal,
   deleteJournal,
 } from "@/lib/services/journals";
@@ -26,6 +27,13 @@ export function useJournalsByQuestionnaire(
   });
 }
 
+export function useTodaysJournals() {
+  return useQuery({
+    queryKey: queryKeys.journals.today,
+    queryFn: getTodaysJournals,
+  });
+}
+
 export function useSubmitJournal() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -41,6 +49,9 @@ export function useSubmitJournal() {
       });
       queryClient.invalidateQueries({
         queryKey: queryKeys.journals.byQuestionnaire(questionnaireId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.journals.today,
       });
     },
   });
@@ -67,6 +78,9 @@ export function useDeleteJournal() {
           queryKey: queryKeys.journals.byQuestionnaire(questionnaireId),
         });
       }
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.journals.today,
+      });
     },
   });
 }
