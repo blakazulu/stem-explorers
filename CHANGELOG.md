@@ -14,6 +14,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `ParentContentEvent` - Event interface with title, description, date, image, and link
   - `ParentContentDocument` - Document structure with intro text and events array
   - `ParentContentDocumentFirestore` - Firestore variant with Timestamp fields
+- **Parent Content React Query hooks** (`src/lib/queries/parentContent.ts`): Caching hooks for parent content CRUD operations
+  - `useParentContent(pageId)` - Fetch content for a page
+  - `useUpdateParentContentIntro()` - Update intro text with cache invalidation
+  - `useUpdateParentContentEvents()` - Update events array with cache invalidation
+  - `useDeleteParentContentImage()` - Delete image from storage
+- **Parent Content event form modal** (`src/components/parent-content/EventForm.tsx`): Modal component for creating/editing events
+  - Fields: title (required, 100 char limit), description (required, 1000 char limit), date (optional), image (optional with upload), link URL (optional)
+  - Image upload to Firebase Storage with preview and removal
+  - URL validation for link field
+  - Character counters for text fields
 
 ### Changed
 
