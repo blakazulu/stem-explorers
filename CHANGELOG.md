@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Partners page** (`/[role]/partners`): Static page for parent role with STEM partnership info
+  - Intro section with placeholder text
+  - "קול קורא" button opens full-screen modal displaying `/voice.png` image
+  - "הירשמו כאן" button links to Google registration form
+  - Responsive layout with centered action buttons
 - **Parent Content types**: Added TypeScript types for parent content pages feature
   - `ParentContentPageId` - Type for page identifiers ("community-activities" | "stem-family")
   - `ParentContentEvent` - Event interface with title, description, date, image, and link
@@ -29,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Intro text editing section with 500 character limit
   - Events management with EventList (drag-and-drop reordering) and EventForm (add/edit)
   - Delete confirmation dialog for events with image cleanup
+- **Parent Content sidebar link**: Added "תוכן הורים" link to admin sidebar below forums
 
 ### Changed
 

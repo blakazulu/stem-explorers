@@ -48,6 +48,7 @@ const navItems: NavItem[] = [
   { label: "יומן חוקר", href: "/journal", roles: ["student"], icon: PenTool },
   { label: "במה אישית - תלמידים", href: "/personal", roles: ["admin", "student"], icon: Heart },
   { label: "פורומים", href: "/forum", roles: ["admin"], icon: MessageSquare },
+  { label: "תוכן הורים", href: "/parent-content", roles: ["admin"], icon: Users },
   { label: "במה אישית", href: "/forum", roles: ["teacher"], icon: MessageSquare },
   { label: "דוחות", href: "/reports", roles: ["admin", "teacher", "parent"], icon: BarChart2 },
   { label: "תגובות תלמידים", href: "/responses", roles: ["admin", "teacher"], icon: ClipboardCheck },
