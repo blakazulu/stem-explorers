@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Email sender domain**: Updated equipment request emails to send from `noreply@floatjet.com` (verified domain)
+
 ## [0.9.14] - 2026-01-19
 
 ### Added

@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
 
     // Send email to all admin emails
     const { error } = await resend.emails.send({
-      from: "חוקרי STEM <noreply@resend.dev>",
+      from: "חוקרי STEM <noreply@floatjet.com>",
       to: emailConfig.adminEmails,
       subject: `בקשה למשאבי למידה - ${escapeHtml(data.teacherName)}`,
       html: emailHtml,
