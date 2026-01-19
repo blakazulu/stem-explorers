@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Collapsible Forum Posts**: Posts now show collapsed by default with title, author, date, and comment count. Click to expand and see full content, replies, and reply form. Chevron indicator shows expand/collapse state.
+  - Added keyboard navigation support (Enter/Space to toggle)
+  - Added ARIA attributes for screen readers (role, aria-expanded, aria-controls)
+  - Prevents accidental collapse when reply form has content
+  - Uses theme utilities (rounded-theme, duration-theme) for consistency
+
 ## [0.9.13] - 2026-01-19
 
 ### Added
