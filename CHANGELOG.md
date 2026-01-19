@@ -7,8 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.14] - 2026-01-19
+
 ### Added
 
+- **Upload progress animation**: All image and video upload locations now show a spinner overlay with progress bar during upload
+  - Created reusable `UploadOverlay` component with spinner, progress bar, and accessibility attributes (role="status", aria-live)
+  - Added `uploadImageWithProgress` and `uploadResourceFileWithProgress` utilities using Firebase's `uploadBytesResumable` for real progress tracking
+  - Applied to: staff modal, experts modal, event form, documentation page, pedagogical page resource uploads, and personal media uploader
+  - Video uploads now also show real upload progress (in addition to existing compression progress)
+  - Resource modal in pedagogical page prevents closing during active upload
+- **Pedagogical Model resource button**: Added "מודל פדגוגי" button to pedagogical page that allows admin to upload an image/file (same functionality as "מערכת שעות")
+  - New `pedagogical-model` resource type
+  - Uses Image icon to indicate visual content
+- **Pedagogical page button visibility controls**: Admin can now control visibility of all 4 buttons (תוכניות לימודים, מודל פדגוגי, לוז הדרכה, מערכת שעות) per role in admin/display page elements section
+  - Added `pedagogicalModel`, `trainingSchedule`, `timetable` to `PageElementsConfig`
+  - Grid layout dynamically adjusts based on number of visible buttons
 - **Partners page** (`/[role]/partners`): Static page for parent role with STEM partnership info
   - Intro section with placeholder text
   - "קול קורא" button opens full-screen modal displaying `/voice.png` image
@@ -24,8 +38,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - "תוכן הורים" sidebar link for admin
   - Firebase Storage rules for `parent-content/` path (5MB image limit)
 
+### Fixed
+
+- **Page elements visibility not showing new fields**: Fixed PageElementsSection to derive available elements from labels instead of stored config, ensuring newly added visibility options appear in admin panel
+- **Personal media upload error**: Fixed Firebase error when uploading images/videos without description. The `createPersonalMedia` and `updatePersonalMedia` functions now filter out `undefined` values before writing to Firestore, which doesn't accept them.
+- **Storage delete permissions**: Added `delete` permission to Firebase Storage rules for paths that support deletion: `documentation/`, `staff/`, `resources/`, `personal/media/`, and `parent-content/`. Firebase treats delete operations separately from write operations.
+
+### Removed
+
+- **unitDetails visibility option**: Removed "פרטי יחידה" from pedagogical page visibility settings - unit details are now always shown in the תוכניות לימודים modal
+
 ### Changed
 
+- **Pedagogical page button label**: Changed "מודל פדגוגי" to "תוכניות לימודים" in the action buttons section
 - **Collapsible Forum Posts**: Posts now show collapsed by default with title, author, date, and comment count. Click to expand and see full content, replies, and reply form. Chevron indicator shows expand/collapse state.
   - Added keyboard navigation support (Enter/Space to toggle)
   - Added ARIA attributes for screen readers (role, aria-expanded, aria-controls)

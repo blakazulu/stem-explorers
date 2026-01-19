@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/Button";
+import { UploadOverlay } from "@/components/ui/UploadOverlay";
 import { X, Upload, User } from "lucide-react";
-import { uploadImage } from "@/lib/utils/imageUpload";
+import { uploadImageWithProgress } from "@/lib/utils/imageUpload";
 import type { StaffMember } from "@/types";
 
 interface AddEditStaffModalProps {
@@ -27,6 +28,7 @@ export function AddEditStaffModal({
   const [imageUrl, setImageUrl] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -87,17 +89,21 @@ export function AddEditStaffModal({
 
     // Upload to Firebase
     setUploading(true);
+    setUploadProgress(0);
     setError("");
     try {
       const timestamp = Date.now();
       const path = `staff/${timestamp}-${file.name}`;
-      const url = await uploadImage(file, path);
+      const url = await uploadImageWithProgress(file, path, (percent) => {
+        setUploadProgress(percent);
+      });
       setImageUrl(url);
     } catch {
       setError("שגיאה בהעלאת התמונה");
       setImagePreview(member?.imageUrl || null);
     }
     setUploading(false);
+    setUploadProgress(0);
 
     // Reset file input
     if (fileInputRef.current) {
@@ -186,11 +192,7 @@ export function AddEditStaffModal({
                   <span className="text-xs mt-1">העלאת תמונה</span>
                 </div>
               )}
-              {uploading && (
-                <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
-                  <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                </div>
-              )}
+              {uploading && <UploadOverlay progress={uploadProgress} />}
             </div>
             <input
               ref={fileInputRef}

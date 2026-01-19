@@ -2,10 +2,11 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Loader2, X, Upload, Link as LinkIcon, Calendar } from "lucide-react";
+import { X, Upload, Link as LinkIcon, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { UploadOverlay } from "@/components/ui/UploadOverlay";
 import { useToastActions } from "@/components/ui/Toast";
-import { uploadImage } from "@/lib/utils/imageUpload";
+import { uploadImageWithProgress } from "@/lib/utils/imageUpload";
 import type { ParentContentEvent, ParentContentPageId } from "@/types";
 
 interface EventFormProps {
@@ -35,16 +36,20 @@ export function EventForm({
   const [imageUrl, setImageUrl] = useState(event?.imageUrl || "");
   const [linkUrl, setLinkUrl] = useState(event?.linkUrl || "");
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setUploading(true);
+    setUploadProgress(0);
     try {
       const eventId = event?.id || `temp-${Date.now()}`;
       const path = `parent-content/${pageId}/${eventId}`;
-      const url = await uploadImage(file, path);
+      const url = await uploadImageWithProgress(file, path, (percent) => {
+        setUploadProgress(percent);
+      });
       setImageUrl(url);
       toast.success("התמונה הועלתה בהצלחה");
     } catch (error) {
@@ -52,6 +57,7 @@ export function EventForm({
       toast.error("שגיאה בהעלאת התמונה");
     }
     setUploading(false);
+    setUploadProgress(0);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -179,21 +185,18 @@ export function EventForm({
                   </button>
                 </div>
               ) : (
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploading}
-                  className="w-full py-8 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary/50 transition-colors flex flex-col items-center gap-2 text-gray-500"
-                >
-                  {uploading ? (
-                    <Loader2 className="animate-spin" />
-                  ) : (
-                    <>
-                      <Upload size={24} />
-                      <span>לחץ להעלאת תמונה</span>
-                    </>
-                  )}
-                </button>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                    className="w-full py-8 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary/50 transition-colors flex flex-col items-center gap-2 text-gray-500"
+                  >
+                    <Upload size={24} />
+                    <span>לחץ להעלאת תמונה</span>
+                  </button>
+                  {uploading && <UploadOverlay progress={uploadProgress} />}
+                </div>
               )}
               <input
                 ref={fileInputRef}

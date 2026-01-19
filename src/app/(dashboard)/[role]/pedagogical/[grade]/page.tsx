@@ -17,8 +17,9 @@ import {
   useDeleteResourceFile,
 } from "@/lib/queries";
 import { type ResourceFile, type ResourceType } from "@/lib/services/settings";
-import { uploadResourceFile, isValidResourceFile, deleteStorageFile } from "@/lib/utils/imageUpload";
+import { uploadResourceFileWithProgress, isValidResourceFile, deleteStorageFile } from "@/lib/utils/imageUpload";
 import { DocumentViewer } from "@/components/ui/DocumentViewer";
+import { UploadOverlay } from "@/components/ui/UploadOverlay";
 import {
   Lightbulb,
   ArrowRight,
@@ -33,6 +34,7 @@ import {
   Trash2,
   FileText,
   Loader2,
+  Image,
 } from "lucide-react";
 import type { Grade, UserRole } from "@/types";
 
@@ -65,6 +67,7 @@ export default function PedagogicalGradePage() {
   // Resource files are global (not per-grade)
   const { data: trainingSchedule } = useResourceFile("training-schedule");
   const { data: timetable } = useResourceFile("timetable");
+  const { data: pedagogicalModel } = useResourceFile("pedagogical-model");
 
   // Mutations for saving/deleting
   const savePedagogicalIntroMutation = useSavePedagogicalIntro();
@@ -83,6 +86,7 @@ export default function PedagogicalGradePage() {
   // Resource file UI state
   const [activeResourceModal, setActiveResourceModal] = useState<ResourceType | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [deleting, setDeleting] = useState(false);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [resourceImageLoaded, setResourceImageLoaded] = useState(false);
@@ -134,11 +138,15 @@ export default function PedagogicalGradePage() {
   }, [lightboxImage]);
 
   const getResourceData = (type: ResourceType): ResourceFile | null | undefined => {
-    return type === "training-schedule" ? trainingSchedule : timetable;
+    if (type === "training-schedule") return trainingSchedule;
+    if (type === "timetable") return timetable;
+    return pedagogicalModel;
   };
 
   const getResourceTitle = (type: ResourceType) => {
-    return type === "training-schedule" ? "לוז הדרכה" : "מערכת שעות";
+    if (type === "training-schedule") return "לוז הדרכה";
+    if (type === "timetable") return "מערכת שעות";
+    return "מודל פדגוגי";
   };
 
   const handleOpenResourceModal = (type: ResourceType) => {
@@ -146,6 +154,8 @@ export default function PedagogicalGradePage() {
   };
 
   const handleCloseResourceModal = () => {
+    // Prevent closing during upload
+    if (uploading) return;
     setActiveResourceModal(null);
   };
 
@@ -165,10 +175,13 @@ export default function PedagogicalGradePage() {
     }
 
     setUploading(true);
+    setUploadProgress(0);
     try {
       const timestamp = Date.now();
       const path = `resources/${resourceType}/${timestamp}-${file.name}`;
-      const url = await uploadResourceFile(file, path);
+      const url = await uploadResourceFileWithProgress(file, path, (percent) => {
+        setUploadProgress(percent);
+      });
 
       const resourceFile: ResourceFile = {
         url,
@@ -185,6 +198,7 @@ export default function PedagogicalGradePage() {
       toast.error("שגיאה", "לא הצלחנו להעלות את הקובץ");
     }
     setUploading(false);
+    setUploadProgress(0);
 
     // Reset file input
     if (fileInputRef.current) {
@@ -359,36 +373,69 @@ export default function PedagogicalGradePage() {
       </div>
 
       {/* Action Buttons - Responsive Row */}
-      <div className={`grid gap-4 ${pageElements.unitCards ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-2"}`}>
-        {pageElements.unitCards && (
-          <Button
-            variant="outline"
-            className="h-24 flex-col gap-2"
-            onClick={() => setShowPedagogicalModal(true)}
-          >
-            <BookOpen size={24} />
-            <span>מודל פדגוגי</span>
-          </Button>
-        )}
-        <Button
-          variant="outline"
-          className="h-24 flex-col gap-2"
-          onClick={() => handleOpenResourceModal("training-schedule")}
-        >
-          <Calendar size={24} />
-          <span>לוז הדרכה</span>
-          {trainingSchedule && <span className="text-xs text-green-500">קובץ קיים</span>}
-        </Button>
-        <Button
-          variant="outline"
-          className="h-24 flex-col gap-2"
-          onClick={() => handleOpenResourceModal("timetable")}
-        >
-          <Clock size={24} />
-          <span>מערכת שעות</span>
-          {timetable && <span className="text-xs text-green-500">קובץ קיים</span>}
-        </Button>
-      </div>
+      {(() => {
+        const visibleButtons = [
+          pageElements.unitCards,
+          pageElements.pedagogicalModel,
+          pageElements.trainingSchedule,
+          pageElements.timetable,
+        ].filter(Boolean).length;
+
+        if (visibleButtons === 0) return null;
+
+        const gridCols = visibleButtons === 1 ? "grid-cols-1" :
+                         visibleButtons === 2 ? "grid-cols-1 sm:grid-cols-2" :
+                         visibleButtons === 3 ? "grid-cols-1 sm:grid-cols-3" :
+                         "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4";
+
+        return (
+          <div className={`grid gap-4 ${gridCols}`}>
+            {pageElements.unitCards && (
+              <Button
+                variant="outline"
+                className="h-24 flex-col gap-2"
+                onClick={() => setShowPedagogicalModal(true)}
+              >
+                <BookOpen size={24} />
+                <span>תוכניות לימודים</span>
+              </Button>
+            )}
+            {pageElements.pedagogicalModel && (
+              <Button
+                variant="outline"
+                className="h-24 flex-col gap-2"
+                onClick={() => handleOpenResourceModal("pedagogical-model")}
+              >
+                <Image size={24} />
+                <span>מודל פדגוגי</span>
+                {pedagogicalModel && <span className="text-xs text-green-500">קובץ קיים</span>}
+              </Button>
+            )}
+            {pageElements.trainingSchedule && (
+              <Button
+                variant="outline"
+                className="h-24 flex-col gap-2"
+                onClick={() => handleOpenResourceModal("training-schedule")}
+              >
+                <Calendar size={24} />
+                <span>לוז הדרכה</span>
+                {trainingSchedule && <span className="text-xs text-green-500">קובץ קיים</span>}
+              </Button>
+            )}
+            {pageElements.timetable && (
+              <Button
+                variant="outline"
+                className="h-24 flex-col gap-2"
+                onClick={() => handleOpenResourceModal("timetable")}
+              >
+                <Clock size={24} />
+                <span>מערכת שעות</span>
+                {timetable && <span className="text-xs text-green-500">קובץ קיים</span>}
+              </Button>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Hidden file input */}
       <input
@@ -426,7 +473,6 @@ export default function PedagogicalGradePage() {
               <UnitTreeView
                 grade={grade}
                 role={role}
-                showDetails={pageElements.unitDetails}
                 onAddUnit={
                   isTeacherOrAdmin
                     ? () => {
@@ -456,7 +502,12 @@ export default function PedagogicalGradePage() {
               </h2>
               <button
                 onClick={handleCloseResourceModal}
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-surface-2 rounded-lg transition-all duration-200 cursor-pointer"
+                disabled={uploading}
+                className={`p-2 rounded-lg transition-all duration-200 ${
+                  uploading
+                    ? "text-gray-300 cursor-not-allowed"
+                    : "text-gray-400 hover:text-gray-600 hover:bg-surface-2 cursor-pointer"
+                }`}
                 aria-label="סגור חלון"
               >
                 <X size={20} />
@@ -471,7 +522,7 @@ export default function PedagogicalGradePage() {
                 if (!resource) {
                   // No file uploaded
                   return (
-                    <div className="text-center py-12 px-6">
+                    <div className="relative text-center py-12 px-6">
                       <div className="w-16 h-16 mx-auto mb-4 bg-surface-2 rounded-full flex items-center justify-center">
                         <FileText size={32} className="text-gray-400" />
                       </div>
@@ -486,6 +537,7 @@ export default function PedagogicalGradePage() {
                           ניתן להעלות PDF, Word או תמונה
                         </p>
                       )}
+                      {uploading && <UploadOverlay progress={uploadProgress} />}
                     </div>
                   );
                 }
@@ -540,6 +592,7 @@ export default function PedagogicalGradePage() {
                           onLoad={() => setResourceImageLoaded(true)}
                         />
                       </button>
+                      {uploading && <UploadOverlay progress={uploadProgress} message="מחליף קובץ..." />}
                     </div>
                   );
                 }
@@ -577,6 +630,7 @@ export default function PedagogicalGradePage() {
                       fileName={resource.fileName}
                       className="h-full"
                     />
+                    {uploading && <UploadOverlay progress={uploadProgress} message="מחליף קובץ..." />}
                   </div>
                 );
               })()}

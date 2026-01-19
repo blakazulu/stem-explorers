@@ -65,7 +65,7 @@ export async function savePedagogicalIntro(grade: Grade, text: string): Promise<
   }
 }
 
-export type ResourceType = "training-schedule" | "timetable";
+export type ResourceType = "training-schedule" | "timetable" | "pedagogical-model";
 
 export interface ResourceFile {
   url: string;

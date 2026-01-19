@@ -35,9 +35,11 @@ export function PageElementsSection({ config, sidebarConfig, dashboardConfig, on
 
   const handleToggle = (page: PageKey, element: string) => {
     const pageConfig = config[page] as Record<string, boolean>;
+    // Use ?? true to handle new fields that aren't in stored config yet
+    const currentValue = pageConfig[element] ?? true;
     const newPageConfig = {
       ...pageConfig,
-      [element]: !pageConfig[element],
+      [element]: !currentValue,
     };
     onChange({
       ...config,
@@ -63,10 +65,13 @@ export function PageElementsSection({ config, sidebarConfig, dashboardConfig, on
         {enabledPages.map((pageKey) => {
           const labels = PAGE_ELEMENT_LABELS[pageKey];
           const pageConfig = config[pageKey] as Record<string, boolean>;
-          const elements = Object.keys(pageConfig);
           // Use sidebar label as title, fallback to default
           const itemId = PAGE_TO_ITEM_ID[pageKey];
           const pageTitle = sidebarLabels[itemId] || labels._title;
+
+          // Get all elements from labels (excluding _title), not from stored config
+          // This ensures new fields are always shown even if not in stored config
+          const allElements = Object.keys(labels).filter(k => k !== "_title");
 
           return (
             <div key={pageKey} className="p-4 bg-white border border-surface-2 rounded-lg">
@@ -74,22 +79,26 @@ export function PageElementsSection({ config, sidebarConfig, dashboardConfig, on
                 {pageTitle}
               </h4>
               <div className="grid grid-cols-2 gap-2">
-                {elements.map((element) => (
-                  <label
-                    key={element}
-                    className="flex items-center gap-2 cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={pageConfig[element]}
-                      onChange={() => handleToggle(pageKey, element)}
-                      className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
-                    />
-                    <span className={pageConfig[element] ? "text-foreground" : "text-gray-400"}>
-                      {labels[element as keyof typeof labels] || element}
-                    </span>
-                  </label>
-                ))}
+                {allElements.map((element) => {
+                  // Default to true if element not in stored config
+                  const isChecked = pageConfig[element] ?? true;
+                  return (
+                    <label
+                      key={element}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => handleToggle(pageKey, element)}
+                        className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                      />
+                      <span className={isChecked ? "text-foreground" : "text-gray-400"}>
+                        {labels[element as keyof typeof labels] || element}
+                      </span>
+                    </label>
+                  );
+                })}
               </div>
             </div>
           );

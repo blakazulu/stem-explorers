@@ -3,7 +3,8 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { Upload, Video, ImageIcon, Youtube, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { uploadImage } from "@/lib/utils/imageUpload";
+import { UploadOverlay } from "@/components/ui/UploadOverlay";
+import { uploadImageWithProgress } from "@/lib/utils/imageUpload";
 import {
   compressVideo,
   generateVideoThumbnail,
@@ -43,6 +44,7 @@ export default function PersonalMediaUploader({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [compressionProgress, setCompressionProgress] =
     useState<CompressionProgress | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -124,12 +126,15 @@ export default function PersonalMediaUploader({
           grades,
         });
       } else if (mode === "image" && selectedFile) {
+        setUploadProgress(0);
         const timestamp = Date.now();
         const path = `personal/media/${timestamp}-${selectedFile.name.replace(
           /[^a-zA-Z0-9.-]/g,
           "_"
         )}.webp`;
-        const url = await uploadImage(selectedFile, path);
+        const url = await uploadImageWithProgress(selectedFile, path, (percent) => {
+          setUploadProgress(percent);
+        });
 
         await onUpload({
           type: "image",
@@ -159,7 +164,7 @@ export default function PersonalMediaUploader({
         setCompressionProgress({
           stage: "finalizing",
           progress: 75,
-          message: "מעלה את הסרטון...",
+          message: "מעלה תמונה ממוזערת...",
         });
 
         // Generate thumbnail
@@ -181,18 +186,50 @@ export default function PersonalMediaUploader({
           console.error("Failed to generate thumbnail:", e);
         }
 
-        // Upload video
+        setCompressionProgress({
+          stage: "finalizing",
+          progress: 80,
+          message: "מעלה את הסרטון...",
+        });
+
+        // Upload video with progress tracking
         const timestamp = Date.now();
         const videoPath = `personal/media/${timestamp}-video.mp4`;
 
-        const { ref, uploadBytes, getDownloadURL } = await import(
+        const { ref, uploadBytesResumable, getDownloadURL } = await import(
           "firebase/storage"
         );
         const { storage } = await import("@/lib/firebase");
 
         const videoRef = ref(storage, videoPath);
-        await uploadBytes(videoRef, result.blob);
-        const videoUrl = await getDownloadURL(videoRef);
+
+        // Use uploadBytesResumable for progress tracking
+        const videoUrl = await new Promise<string>((resolve, reject) => {
+          const uploadTask = uploadBytesResumable(videoRef, result.blob);
+
+          uploadTask.on(
+            "state_changed",
+            (snapshot) => {
+              // Map upload progress from 80% to 100%
+              const uploadPercent = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              const overallProgress = 80 + (uploadPercent * 0.2); // 80% + (0-20%)
+              setCompressionProgress({
+                stage: "finalizing",
+                progress: overallProgress,
+                message: `מעלה את הסרטון... ${Math.round(uploadPercent)}%`,
+              });
+            },
+            reject,
+            async () => {
+              try {
+                const url = await getDownloadURL(uploadTask.snapshot.ref);
+                resolve(url);
+              } catch (error) {
+                reject(error);
+              }
+            }
+          );
+        });
 
         await onUpload({
           type: "video",
@@ -219,6 +256,7 @@ export default function PersonalMediaUploader({
       toast.error(error instanceof Error ? error.message : "שגיאה בהעלאה");
     } finally {
       setIsUploading(false);
+      setUploadProgress(0);
       setCompressionProgress(null);
     }
   };
@@ -321,21 +359,28 @@ export default function PersonalMediaUploader({
                     setFilePreview(null);
                     setSelectedFile(null);
                   }}
-                  className="absolute top-2 left-2 p-1 bg-red-500 text-white rounded-full"
+                  className="absolute top-2 left-2 p-1 bg-red-500 text-white rounded-full z-20"
+                  disabled={isUploading}
                 >
                   <X className="w-4 h-4" />
                 </button>
+                {isUploading && mode === "image" && !compressionProgress && (
+                  <UploadOverlay progress={uploadProgress} />
+                )}
               </div>
             ) : (
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full h-32 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 flex flex-col items-center justify-center gap-2"
-              >
-                <Upload className="w-8 h-8 text-gray-400" />
-                <span className="text-sm text-gray-500">
-                  לחץ לבחירת {mode === "image" ? "תמונה" : "סרטון"}
-                </span>
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full h-32 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 flex flex-col items-center justify-center gap-2"
+                  disabled={isUploading}
+                >
+                  <Upload className="w-8 h-8 text-gray-400" />
+                  <span className="text-sm text-gray-500">
+                    לחץ לבחירת {mode === "image" ? "תמונה" : "סרטון"}
+                  </span>
+                </button>
+              </div>
             )}
             <input
               ref={fileInputRef}

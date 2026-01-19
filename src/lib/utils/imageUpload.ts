@@ -60,6 +60,40 @@ export async function uploadImage(
   return getDownloadURL(storageRef);
 }
 
+export async function uploadImageWithProgress(
+  file: File,
+  path: string,
+  onProgress?: (percent: number) => void,
+  maxWidth?: number
+): Promise<string> {
+  const { ref, uploadBytesResumable, getDownloadURL } = await import("firebase/storage");
+  const { storage } = await import("@/lib/firebase");
+
+  const resized = await resizeImage(file, maxWidth);
+  const storageRef = ref(storage, path);
+
+  return new Promise((resolve, reject) => {
+    const uploadTask = uploadBytesResumable(storageRef, resized);
+
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        const percent = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        onProgress?.(percent);
+      },
+      reject,
+      async () => {
+        try {
+          const url = await getDownloadURL(uploadTask.snapshot.ref);
+          resolve(url);
+        } catch (error) {
+          reject(error);
+        }
+      }
+    );
+  });
+}
+
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 const DOCUMENT_TYPES = [
   "application/pdf",
@@ -96,6 +130,45 @@ export async function uploadResourceFile(
   const storageRef = ref(storage, path);
   await uploadBytes(storageRef, uploadData);
   return getDownloadURL(storageRef);
+}
+
+export async function uploadResourceFileWithProgress(
+  file: File,
+  path: string,
+  onProgress?: (percent: number) => void
+): Promise<string> {
+  const { ref, uploadBytesResumable, getDownloadURL } = await import("firebase/storage");
+  const { storage } = await import("@/lib/firebase");
+
+  let uploadData: Blob | File = file;
+
+  // Compress images, upload documents as-is
+  if (isImageFile(file)) {
+    uploadData = await resizeImage(file);
+  }
+
+  const storageRef = ref(storage, path);
+
+  return new Promise((resolve, reject) => {
+    const uploadTask = uploadBytesResumable(storageRef, uploadData);
+
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        const percent = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        onProgress?.(percent);
+      },
+      reject,
+      async () => {
+        try {
+          const url = await getDownloadURL(uploadTask.snapshot.ref);
+          resolve(url);
+        } catch (error) {
+          reject(error);
+        }
+      }
+    );
+  });
 }
 
 export async function deleteStorageFile(path: string): Promise<void> {

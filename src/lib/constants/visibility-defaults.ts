@@ -44,8 +44,10 @@ export const PAGE_ELEMENT_LABELS = {
   },
   pedagogical: {
     _title: "מודל פדגוגי",
-    unitCards: "כרטיסי יחידות",
-    unitDetails: "פרטי יחידה",
+    unitCards: "תוכניות לימודים",
+    pedagogicalModel: "מודל פדגוגי",
+    trainingSchedule: "לוז הדרכה",
+    timetable: "מערכת שעות",
   },
   documentation: {
     _title: "תיעודים",
@@ -130,19 +132,19 @@ const DEFAULT_STUDENT_SIDEBAR: SidebarConfig = {
 
 const DEFAULT_TEACHER_PAGE_ELEMENTS: PageElementsConfig = {
   teachingResources: { curricula: true, stemLinks: true, equipment: true },
-  pedagogical: { unitCards: true, unitDetails: true },
+  pedagogical: { unitCards: true, pedagogicalModel: true, trainingSchedule: true, timetable: true },
   documentation: { images: true, text: true, teacherName: true },
 };
 
 const DEFAULT_PARENT_PAGE_ELEMENTS: PageElementsConfig = {
   teachingResources: { curricula: true, stemLinks: false, equipment: false },
-  pedagogical: { unitCards: true, unitDetails: true },
+  pedagogical: { unitCards: true, pedagogicalModel: true, trainingSchedule: true, timetable: true },
   documentation: { images: true, text: true, teacherName: true },
 };
 
 const DEFAULT_STUDENT_PAGE_ELEMENTS: PageElementsConfig = {
   teachingResources: { curricula: false, stemLinks: false, equipment: false },
-  pedagogical: { unitCards: true, unitDetails: true },
+  pedagogical: { unitCards: true, pedagogicalModel: true, trainingSchedule: true, timetable: true },
   documentation: { images: true, text: true, teacherName: false },
 };
 

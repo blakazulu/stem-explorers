@@ -259,7 +259,9 @@ export interface PageElementsConfig {
   };
   pedagogical: {
     unitCards: boolean;
-    unitDetails: boolean;
+    pedagogicalModel: boolean;
+    trainingSchedule: boolean;
+    timetable: boolean;
   };
   documentation: {
     images: boolean;

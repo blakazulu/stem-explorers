@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/Button";
+import { UploadOverlay } from "@/components/ui/UploadOverlay";
 import { X, Upload, User } from "lucide-react";
-import { uploadImage } from "@/lib/utils/imageUpload";
+import { uploadImageWithProgress } from "@/lib/utils/imageUpload";
 import type { Expert, Grade, ConfigurableRole, ExpertAvailability } from "@/types";
 import { AvailabilityPicker } from "./AvailabilityPicker";
 
@@ -41,6 +42,7 @@ export function AddEditExpertModal({
   const [isGlobalGrade, setIsGlobalGrade] = useState(true);
   const [selectedRoles, setSelectedRoles] = useState<ConfigurableRole[]>([...ALL_ROLES]);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -112,11 +114,14 @@ export function AddEditExpertModal({
 
     // Upload to Firebase
     setUploading(true);
+    setUploadProgress(0);
     setError("");
     try {
       const timestamp = Date.now();
       const path = `experts/${timestamp}-${file.name}`;
-      const url = await uploadImage(file, path, 400);
+      const url = await uploadImageWithProgress(file, path, (percent) => {
+        setUploadProgress(percent);
+      }, 400);
       setImageUrl(url);
     } catch {
       // Revoke the blob URL on failure to prevent memory leak
@@ -125,6 +130,7 @@ export function AddEditExpertModal({
       setImagePreview(expert?.imageUrl || null);
     }
     setUploading(false);
+    setUploadProgress(0);
 
     // Reset file input
     if (fileInputRef.current) {
@@ -239,11 +245,7 @@ export function AddEditExpertModal({
                   <span className="text-xs mt-1">תמונה</span>
                 </div>
               )}
-              {uploading && (
-                <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
-                  <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                </div>
-              )}
+              {uploading && <UploadOverlay progress={uploadProgress} />}
             </div>
             <input
               ref={fileInputRef}

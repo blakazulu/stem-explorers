@@ -116,8 +116,12 @@ export async function createPersonalMedia(
   data: Omit<PersonalMedia, "id" | "createdAt">
 ): Promise<string> {
   try {
+    // Filter out undefined values as Firestore doesn't accept them
+    const cleanData = Object.fromEntries(
+      Object.entries(data).filter(([, value]) => value !== undefined)
+    );
     const docRef = await addDoc(collection(db, MEDIA_COLLECTION), {
-      ...data,
+      ...cleanData,
       createdAt: serverTimestamp(),
     });
     return docRef.id;
@@ -132,8 +136,12 @@ export async function updatePersonalMedia(
   data: Partial<Omit<PersonalMedia, "id" | "createdAt">>
 ): Promise<void> {
   try {
+    // Filter out undefined values as Firestore doesn't accept them
+    const cleanData = Object.fromEntries(
+      Object.entries(data).filter(([, value]) => value !== undefined)
+    );
     const docRef = doc(db, MEDIA_COLLECTION, id);
-    await updateDoc(docRef, data);
+    await updateDoc(docRef, cleanData);
   } catch (error) {
     handleFirebaseError(error, "updatePersonalMedia");
     throw error;

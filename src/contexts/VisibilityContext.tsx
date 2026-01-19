@@ -37,7 +37,10 @@ export function VisibilityProvider({ children }: { children: ReactNode }) {
 
   const getPageElements = useCallback(
     <K extends keyof PageElementsConfig>(role: ConfigurableRole, page: K): PageElementsConfig[K] => {
-      return config.pageElements[role]?.[page] || DEFAULT_VISIBILITY_CONFIG.pageElements[role][page];
+      const defaults = DEFAULT_VISIBILITY_CONFIG.pageElements[role][page];
+      const stored = config.pageElements[role]?.[page];
+      // Merge stored config with defaults to handle new fields added after initial config was saved
+      return stored ? { ...defaults, ...stored } : defaults;
     },
     [config]
   );

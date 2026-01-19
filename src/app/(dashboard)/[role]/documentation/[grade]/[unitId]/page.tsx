@@ -6,9 +6,10 @@ import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUnit, useCreateDocumentation } from "@/lib/queries";
 import { DocumentationGallery } from "@/components/documentation/DocumentationGallery";
-import { uploadImage } from "@/lib/utils/imageUpload";
+import { uploadImageWithProgress } from "@/lib/utils/imageUpload";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { UploadOverlay } from "@/components/ui/UploadOverlay";
 import { useToastActions } from "@/components/ui/Toast";
 import {
   Camera,
@@ -38,6 +39,7 @@ export default function DocumentationGalleryPage() {
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
   const toast = useToastActions();
 
@@ -74,13 +76,20 @@ export default function DocumentationGalleryPage() {
     }
 
     setUploading(true);
+    setUploadProgress(0);
 
     try {
-      // Upload images
+      // Upload images with progress tracking
       const imageUrls: string[] = [];
-      for (const image of images) {
+      const totalImages = images.length;
+      for (let i = 0; i < images.length; i++) {
+        const image = images[i];
         const path = `documentation/${grade}/${unitId}/${Date.now()}-${image.name}`;
-        const url = await uploadImage(image, path);
+        const url = await uploadImageWithProgress(image, path, (percent) => {
+          // Calculate overall progress across all images
+          const overallProgress = ((i * 100) + percent) / totalImages;
+          setUploadProgress(overallProgress);
+        });
         imageUrls.push(url);
       }
 
@@ -103,6 +112,7 @@ export default function DocumentationGalleryPage() {
     }
 
     setUploading(false);
+    setUploadProgress(0);
   }
 
   // Show nothing while loading
@@ -163,7 +173,8 @@ export default function DocumentationGalleryPage() {
                   accept="image/*"
                   multiple
                   onChange={(e) => setImages(Array.from(e.target.files || []))}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  disabled={uploading}
                 />
                 <div className="flex items-center gap-3 p-4 border-2 border-dashed border-surface-3 rounded-xl hover:border-secondary hover:bg-secondary/5 transition-all duration-200">
                   <div className="p-2 bg-secondary/10 rounded-lg">
@@ -178,6 +189,7 @@ export default function DocumentationGalleryPage() {
                     <p className="text-xs text-gray-500">ניתן לבחור מספר תמונות</p>
                   </div>
                 </div>
+                {uploading && <UploadOverlay progress={uploadProgress} message="מעלה תמונות..." />}
               </div>
             </div>
 
