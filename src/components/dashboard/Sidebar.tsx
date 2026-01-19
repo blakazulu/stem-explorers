@@ -46,6 +46,7 @@ const navItems: NavItem[] = [
   { label: "משאבי הוראה", href: "/teaching-resources", roles: ["admin", "teacher"], icon: FileText },
   { label: "תיעודים", href: "/documentation", roles: ["admin", "teacher", "parent", "student"], icon: Image },
   { label: "יומן חוקר", href: "/journal", roles: ["student"], icon: PenTool },
+  { label: "אישי", href: "/personal", roles: ["admin", "student"], icon: Heart },
   { label: "דוחות", href: "/reports", roles: ["admin", "teacher", "parent"], icon: BarChart2 },
   { label: "תגובות תלמידים", href: "/responses", roles: ["admin", "teacher"], icon: ClipboardCheck },
   { label: "במה אישית", href: "/forum", roles: ["admin", "teacher"], icon: MessageSquare },

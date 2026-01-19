@@ -95,3 +95,15 @@ export {
 
 // Bookings
 export * from "./bookings";
+
+// Personal Page
+export {
+  usePersonalPageConfig,
+  useSavePersonalPageConfig,
+  useAllPersonalMedia,
+  usePersonalMediaByGrade,
+  useCreatePersonalMedia,
+  useUpdatePersonalMedia,
+  useDeletePersonalMedia,
+  useReorderPersonalMedia,
+} from "./personal";

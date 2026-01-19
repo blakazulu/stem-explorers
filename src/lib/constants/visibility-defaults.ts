@@ -6,6 +6,7 @@ export const ALL_DASHBOARD_CARDS = {
   "teaching-resources": { label: "משאבי הוראה", description: "תוכניות לימודים וקישורים" },
   documentation: { label: "תיעודים", description: "צפה בתיעודי פעילויות" },
   journal: { label: "יומן חוקר", description: "המשך לכתוב ביומן החקר שלך" },
+  personal: { label: "אישי", description: "תוכן אישי מיוחד עבורך" },
   reports: { label: "דוחות", description: "צפה בדוחות AI" },
   responses: { label: "תגובות תלמידים", description: "צפה בתגובות התלמידים ליומן" },
   forum: { label: "במה אישית", description: "שתפו רעיונות והתייעצו" },
@@ -22,6 +23,7 @@ export const ALL_SIDEBAR_LINKS = {
   "teaching-resources": { defaultLabel: "משאבי הוראה", href: "/teaching-resources" },
   documentation: { defaultLabel: "תיעודים", href: "/documentation" },
   journal: { defaultLabel: "יומן חוקר", href: "/journal" },
+  personal: { defaultLabel: "אישי", href: "/personal" },
   reports: { defaultLabel: "דוחות", href: "/reports" },
   responses: { defaultLabel: "תגובות תלמידים", href: "/responses" },
   forum: { defaultLabel: "במה אישית", href: "/forum" },
@@ -84,9 +86,10 @@ const DEFAULT_STUDENT_DASHBOARD: DashboardConfig = {
   cards: [
     { id: "pedagogical", visible: true, order: 0 },
     { id: "journal", visible: true, order: 1 },
-    { id: "documentation", visible: true, order: 2 },
-    { id: "experts", visible: true, order: 3 },
-    { id: "globe-monitor", visible: true, order: 4 },
+    { id: "personal", visible: true, order: 2 },
+    { id: "documentation", visible: true, order: 3 },
+    { id: "experts", visible: true, order: 4 },
+    { id: "globe-monitor", visible: true, order: 5 },
   ],
 };
 
@@ -118,6 +121,7 @@ const DEFAULT_STUDENT_SIDEBAR: SidebarConfig = {
   links: [
     { id: "pedagogical", label: "מודל פדגוגי ומו\"פ", visible: true },
     { id: "journal", label: "יומן חוקר", visible: true },
+    { id: "personal", label: "אישי", visible: true },
     { id: "documentation", label: "תיעודים", visible: true },
     { id: "experts", label: "שאל את המומחה", visible: true },
     { id: "globe-monitor", label: "גלוב-ניטור", visible: true },

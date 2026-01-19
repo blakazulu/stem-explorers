@@ -42,6 +42,19 @@ service firebase.storage {
       allow write: if request.resource.size < 10 * 1024 * 1024; // 10MB limit
     }
 
+    // Personal page media (images, videos, thumbnails)
+    match /personal/media/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.resource.size < 50 * 1024 * 1024; // 50MB limit for compressed videos
+    }
+
+    // Intro banners (personal, dashboard, pedagogical)
+    match /intros/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.resource.size < 5 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+
     // Default: allow read, deny write for other paths
     match /{allPaths=**} {
       allow read: if true;

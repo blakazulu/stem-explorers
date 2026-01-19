@@ -229,6 +229,8 @@ export interface VisibilityConfig {
 
 export interface DashboardConfig {
   intro: string;
+  introHtml?: string;   // Rich text (Lexical) - takes precedence over intro
+  bannerUrl?: string;   // Optional header banner
   cards: DashboardCardConfig[];
 }
 
@@ -273,3 +275,34 @@ export type {
   GlobeMonitorSubmission,
 } from "./globeMonitor";
 export { DEFAULT_GLOBE_MONITOR_QUESTIONS } from "./globeMonitor";
+
+// Personal Page
+export type PersonalMediaType = "image" | "video" | "youtube";
+
+export interface PersonalPageConfig {
+  id: string;
+  introHtml: string;
+  bannerUrl?: string;
+  updatedAt: Date;
+  updatedBy: string;
+}
+
+export interface PersonalMedia {
+  id: string;
+  type: PersonalMediaType;
+  url: string;
+  thumbnailUrl?: string;
+  title: string;
+  description?: string;
+  grades: Grade[] | "all";
+  createdAt: Date;
+  createdBy: string;
+  order: number;
+}
+
+// Pedagogical Intro (extended for rich text)
+export interface PedagogicalIntro {
+  text: string;         // Plain text (backwards compat)
+  introHtml?: string;   // Rich text (Lexical) - takes precedence
+  bannerUrl?: string;   // Optional header banner
+}

@@ -66,4 +66,9 @@ export const queryKeys = {
     byExpert: (expertId: string) => ["bookings", "expert", expertId] as const,
     single: (id: string) => ["bookings", id] as const,
   },
+  personal: {
+    config: ["personal", "config"] as const,
+    media: (grade?: Grade) => ["personal", "media", grade] as const,
+    allMedia: ["personal", "media", "all"] as const,
+  },
 };

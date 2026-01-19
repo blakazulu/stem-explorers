@@ -52,6 +52,8 @@ import {
   UserCircle,
   GraduationCap,
   School,
+  // Personal
+  Heart,
 } from "lucide-react";
 
 // Icon name to component mapping
@@ -108,6 +110,8 @@ const iconMap = {
   "user-circle": UserCircle,
   "graduation-cap": GraduationCap,
   school: School,
+  // Personal
+  heart: Heart,
 } as const;
 
 export type IconName = keyof typeof iconMap;
@@ -188,6 +192,7 @@ export {
   UserCircle,
   GraduationCap,
   School,
+  Heart,
 };
 
 // Export icon type for external use

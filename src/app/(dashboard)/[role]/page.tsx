@@ -19,6 +19,7 @@ import {
   Settings,
   ArrowLeft,
   Users,
+  Heart,
 } from "lucide-react";
 import type { UserRole, ConfigurableRole } from "@/types";
 import type { LucideIcon } from "lucide-react";
@@ -32,6 +33,7 @@ const CARD_METADATA: Record<string, { icon: LucideIcon; color: string; href: str
   forum: { icon: MessageSquare, color: "bg-secondary", href: "/forum" },
   documentation: { icon: Image, color: "bg-secondary", href: "/documentation" },
   journal: { icon: PenTool, color: "bg-role-student", href: "/journal" },
+  personal: { icon: Heart, color: "bg-role-student", href: "/personal" },
   questions: { icon: HelpCircle, color: "bg-role-admin", href: "/questions" },
   passwords: { icon: Key, color: "bg-primary", href: "/passwords" },
   settings: { icon: Settings, color: "bg-secondary", href: "/settings" },

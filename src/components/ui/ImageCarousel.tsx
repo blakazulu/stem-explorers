@@ -10,6 +10,7 @@ interface ImageCarouselProps {
   showCounter?: boolean;
   showDots?: boolean;
   className?: string;
+  initialIndex?: number;
 }
 
 export function ImageCarousel({
@@ -19,17 +20,18 @@ export function ImageCarousel({
   showCounter = true,
   showDots = true,
   className = "",
+  initialIndex = 0,
 }: ImageCarouselProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set());
 
   const hasMultipleImages = images.length > 1;
 
   // Reset when images change
   useEffect(() => {
-    setCurrentIndex(0);
+    setCurrentIndex(initialIndex);
     setLoadedImages(new Set());
-  }, [images]);
+  }, [images, initialIndex]);
 
   const handleImageLoad = useCallback((index: number) => {
     setLoadedImages((prev) => {
