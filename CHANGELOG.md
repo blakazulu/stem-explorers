@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Admin Settings save buttons**: Disabled save buttons in Email Settings and Report Settings when no changes have been made
+
 ## [0.9.15] - 2026-01-19
 
 ### Added

@@ -132,6 +132,27 @@ export default function SettingsPage() {
     }
   }, [fetchedReportConfig]);
 
+  // Check if email config has changes
+  const emailHasChanges = (() => {
+    if (!fetchedEmailConfig) return false;
+    if (emailConfig.frequency !== fetchedEmailConfig.frequency) return true;
+    if (emailConfig.includeContent !== fetchedEmailConfig.includeContent) return true;
+    if (emailConfig.adminEmails.length !== fetchedEmailConfig.adminEmails.length) return true;
+    return !emailConfig.adminEmails.every((e) => fetchedEmailConfig.adminEmails.includes(e));
+  })();
+
+  // Check if report config has changes
+  const reportHasChanges = (() => {
+    if (!fetchedReportConfig) return false;
+    if (reportConfig.aiPromptInstructions !== fetchedReportConfig.aiPromptInstructions) return true;
+    return reportConfig.elements.some((elem) => {
+      const original = fetchedReportConfig.elements.find((e) => e.id === elem.id);
+      if (!original) return true;
+      return elem.enabledForTeacher !== original.enabledForTeacher ||
+             elem.enabledForParent !== original.enabledForParent;
+    });
+  })();
+
   function handleSaveEmail() {
     saveEmailMutation.mutate(emailConfig);
   }
@@ -361,7 +382,7 @@ export default function SettingsPage() {
 
           <Button
             onClick={handleSaveEmail}
-            disabled={saving}
+            disabled={saving || !emailHasChanges}
             loading={saving}
             loadingText="שומר..."
             rightIcon={Save}
@@ -521,7 +542,7 @@ export default function SettingsPage() {
 
           <Button
             onClick={handleSaveReport}
-            disabled={saving}
+            disabled={saving || !reportHasChanges}
             loading={saving}
             loadingText="שומר..."
             rightIcon={Save}
