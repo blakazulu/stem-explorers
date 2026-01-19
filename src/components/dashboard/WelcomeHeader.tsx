@@ -126,21 +126,6 @@ export function WelcomeHeader({ role }: WelcomeHeaderProps) {
             </div>
           )}
         </div>
-
-        {/* Student streak counter (playful gamification) */}
-        {config.showStreak && (
-          <div
-            className={`
-              hidden md:flex flex-col items-center p-3
-              rounded-theme ${roleStyles.bgLight}
-              transition-all duration-theme
-            `}
-          >
-            <Sparkles className={`w-5 h-5 ${roleStyles.text} mb-1`} />
-            <span className={`text-2xl font-bold ${roleStyles.text}`}>7</span>
-            <span className="text-xs text-gray-500">ימי חקירה</span>
-          </div>
-        )}
       </div>
 
       {/* Student-specific encouragement card */}

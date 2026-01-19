@@ -101,7 +101,9 @@ export interface Report {
   generatedAt: Date;
 }
 
-// Forum post
+// Forum types
+export type ForumType = "teacher" | "student";
+
 export interface ForumPost {
   id: string;
   authorName: string;

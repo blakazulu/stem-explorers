@@ -7,6 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.13] - 2026-01-19
+
+### Added
+
+- **Student Forum**: New forum for students to share research observations and data collection
+  - Separate Firestore collection `student-forum` (distinct from teacher `forum`)
+  - New service `src/lib/services/studentForum.ts` with full CRUD operations
+  - New React Query hooks in `src/lib/queries/studentForum.ts`
+  - Students access via `/student/forum` with student-themed UI
+
+- **Student Journal Landing Page**: `/student/journal` now shows two card buttons:
+  - "תיעוד איסוף הנתונים" - navigates to student forum (`/student/forum`)
+  - "רפלקציה אישית" - navigates to questionnaire wizard (`/student/journal/questionnaire`)
+
+- **Questionnaire Page**: Moved questionnaire wizard to `/student/journal/questionnaire`
+  - Same functionality as before, relocated from `/student/journal`
+  - Header updated to "רפלקציה אישית"
+  - Added "חזרה לדף הראשי" button after submission
+
+### Changed
+
+- **Admin Forum Page**: Now shows tabbed interface for managing both forums
+  - "מורים" tab - teacher forum (existing)
+  - "תלמידים" tab - student forum (new)
+  - Admin can post, edit, delete, and pin posts in both forums
+
+- **Sidebar Navigation**:
+  - Admin forum link renamed from "במה אישית - מורים" to "פורומים"
+  - Teacher forum link shows "במה אישית" (unchanged functionality)
+
+- **Forum Components**: `NewPostForm` and `PostCard` now accept `forumType` prop to support both teacher and student forums
+
+- **Forum Page Role Checking**: Now uses session role consistently instead of URL params for security
+
+### Fixed
+
+- **Student Forum Error Handling**: Added missing error re-throw in `addStudentReply` and `deleteStudentPost` functions so mutations properly report failures
+
+- **Forum Page Redundant Refetch**: Removed redundant `loadPosts()` calls after mutations since React Query invalidation handles refetching automatically
+
+- **Forum Type Duplication**: Extracted `ForumType` to shared types file (`src/types/index.ts`) instead of duplicating in 3 files
+
+- **Session Null Safety**: Added early return in forum page when session is null to prevent potential runtime errors
+
 ## [0.9.12] - 2026-01-19
 
 ### Changed

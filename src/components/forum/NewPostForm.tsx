@@ -2,23 +2,28 @@
 
 import { useState } from "react";
 import { createPost } from "@/lib/services/forum";
+import { createStudentPost } from "@/lib/services/studentForum";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import { useToastActions } from "@/components/ui/Toast";
 import { PenLine, Send, X, Info } from "lucide-react";
+import type { ForumType } from "@/types";
 
 interface NewPostFormProps {
   authorName: string;
   onCreated: () => void;
   onCancel: () => void;
+  forumType?: ForumType;
 }
 
-export function NewPostForm({ authorName, onCreated, onCancel }: NewPostFormProps) {
+export function NewPostForm({ authorName, onCreated, onCancel, forumType = "teacher" }: NewPostFormProps) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const toast = useToastActions();
+
+  const createPostFn = forumType === "student" ? createStudentPost : createPost;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -26,7 +31,7 @@ export function NewPostForm({ authorName, onCreated, onCancel }: NewPostFormProp
 
     setSubmitting(true);
     try {
-      await createPost({
+      await createPostFn({
         authorName,
         title,
         content,

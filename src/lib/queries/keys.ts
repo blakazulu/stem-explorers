@@ -45,6 +45,9 @@ export const queryKeys = {
   forum: {
     posts: ["forum", "posts"] as const,
   },
+  studentForum: {
+    posts: ["studentForum", "posts"] as const,
+  },
   users: {
     all: ["users", "all"] as const,
   },

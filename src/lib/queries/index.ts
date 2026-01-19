@@ -71,8 +71,18 @@ export {
   useReorderStaff,
 } from "./staff";
 
-// Forum
+// Forum (Teacher)
 export { usePosts, useCreatePost, useAddReply, useDeletePost, useUpdatePost, usePinPost } from "./forum";
+
+// Forum (Student)
+export {
+  useStudentPosts,
+  useCreateStudentPost,
+  useAddStudentReply,
+  useDeleteStudentPost,
+  useUpdateStudentPost,
+  usePinStudentPost,
+} from "./studentForum";
 
 // Users
 export { useAllUsers, useUpdateUserPassword } from "./users";

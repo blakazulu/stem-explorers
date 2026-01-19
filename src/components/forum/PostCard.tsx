@@ -2,13 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { addReply } from "@/lib/services/forum";
+import { addStudentReply } from "@/lib/services/studentForum";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { useToastActions } from "@/components/ui/Toast";
 import { Trash2, MessageCircle, Calendar, Send, Pin, PinOff, Pencil, X, Check } from "lucide-react";
 import { LinkifiedText } from "./LinkifiedText";
 import { LinkPreview, extractUrls } from "./LinkPreview";
-import type { ForumPost } from "@/types";
+import type { ForumPost, ForumType } from "@/types";
 
 interface PostCardProps {
   post: ForumPost;
@@ -19,6 +20,7 @@ interface PostCardProps {
   onPin?: (id: string, pinned: boolean) => void;
   onReplyAdded: () => void;
   index?: number;
+  forumType?: ForumType;
 }
 
 // Generate a consistent color based on name
@@ -48,6 +50,7 @@ export function PostCard({
   onPin,
   onReplyAdded,
   index = 0,
+  forumType = "teacher",
 }: PostCardProps) {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyContent, setReplyContent] = useState("");
@@ -59,6 +62,7 @@ export function PostCard({
   const toast = useToastActions();
 
   const canDelete = isAdmin || post.authorName === currentUserName;
+  const addReplyFn = forumType === "student" ? addStudentReply : addReply;
 
   // Sync edit fields when post data changes externally (e.g., another admin edited)
   useEffect(() => {
@@ -72,7 +76,7 @@ export function PostCard({
     if (!replyContent.trim()) return;
     setSubmitting(true);
     try {
-      await addReply(post.id, {
+      await addReplyFn(post.id, {
         authorName: currentUserName,
         content: replyContent,
       });

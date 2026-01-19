@@ -2,33 +2,80 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { usePosts, useDeletePost, useUpdatePost, usePinPost } from "@/lib/queries";
+import {
+  usePosts,
+  useDeletePost,
+  useUpdatePost,
+  usePinPost,
+  useStudentPosts,
+  useDeleteStudentPost,
+  useUpdateStudentPost,
+  usePinStudentPost,
+} from "@/lib/queries";
 import { PostCard } from "@/components/forum/PostCard";
 import { NewPostForm } from "@/components/forum/NewPostForm";
 import { Button } from "@/components/ui/Button";
 import { SkeletonList } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useToastActions } from "@/components/ui/Toast";
-import { MessageSquare, Plus, ChevronRight, ChevronLeft } from "lucide-react";
+import { MessageSquare, Plus, ChevronRight, ChevronLeft, Users, GraduationCap } from "lucide-react";
+import type { ForumType } from "@/types";
 
 const POSTS_PER_PAGE = 10;
 
 export default function ForumPage() {
   const { session } = useAuth();
 
+  // Use session role consistently for security
+  const userRole = session?.user.role;
+  const isAdmin = userRole === "admin";
+  const isStudent = userRole === "student";
+
+  // Determine which forum to show by default
+  const defaultForumType: ForumType = isStudent ? "student" : "teacher";
+  const [activeForumType, setActiveForumType] = useState<ForumType>(defaultForumType);
+
+  // Update activeForumType if role changes (e.g., navigating)
+  useEffect(() => {
+    if (!isAdmin) {
+      setActiveForumType(isStudent ? "student" : "teacher");
+    }
+  }, [isAdmin, isStudent]);
+
+  // Teacher forum hooks
   const {
-    data: posts = [],
-    isLoading: loading,
-    refetch: loadPosts,
+    data: teacherPosts = [],
+    isLoading: teacherLoading,
   } = usePosts();
+  const deleteTeacherPostMutation = useDeletePost();
+  const updateTeacherPostMutation = useUpdatePost();
+  const pinTeacherPostMutation = usePinPost();
+
+  // Student forum hooks
+  const {
+    data: studentPosts = [],
+    isLoading: studentLoading,
+  } = useStudentPosts();
+  const deleteStudentPostMutation = useDeleteStudentPost();
+  const updateStudentPostMutation = useUpdateStudentPost();
+  const pinStudentPostMutation = usePinStudentPost();
+
+  // Current forum data based on active type
+  const posts = activeForumType === "student" ? studentPosts : teacherPosts;
+  const loading = activeForumType === "student" ? studentLoading : teacherLoading;
+  const deletePostMutation = activeForumType === "student" ? deleteStudentPostMutation : deleteTeacherPostMutation;
+  const updatePostMutation = activeForumType === "student" ? updateStudentPostMutation : updateTeacherPostMutation;
+  const pinPostMutation = activeForumType === "student" ? pinStudentPostMutation : pinTeacherPostMutation;
+
   const [showNewPost, setShowNewPost] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const toast = useToastActions();
-  const deletePostMutation = useDeletePost();
-  const updatePostMutation = useUpdatePost();
-  const pinPostMutation = usePinPost();
 
-  const isAdmin = session?.user.role === "admin";
+  // Reset page when switching forums
+  useEffect(() => {
+    setCurrentPage(1);
+    setShowNewPost(false);
+  }, [activeForumType]);
 
   // Sort posts: pinned first, then by creation date
   const sortedPosts = useMemo(() => {
@@ -80,20 +127,56 @@ export default function ForumPage() {
     }
   }
 
+  // Early return if no session (shouldn't happen in protected routes)
+  if (!session) {
+    return <SkeletonList count={3} />;
+  }
+
+  // Forum header config based on type and role
+  const forumConfig = {
+    teacher: {
+      title: "במה אישית",
+      subtitle: "שיתוף ודיונים עם צוות המורים",
+      icon: MessageSquare,
+      iconBg: "bg-role-teacher/10",
+      iconColor: "text-role-teacher",
+    },
+    student: {
+      title: "תיעוד איסוף הנתונים",
+      subtitle: "שתפו תצפיות וממצאים מהמחקר",
+      icon: MessageSquare,
+      iconBg: "bg-role-student/10",
+      iconColor: "text-role-student",
+    },
+  };
+
+  // Admin sees combined title
+  const currentConfig = isAdmin
+    ? {
+        title: "פורומים",
+        subtitle: "ניהול פורומים של מורים ותלמידים",
+        icon: MessageSquare,
+        iconBg: "bg-role-admin/10",
+        iconColor: "text-role-admin",
+      }
+    : forumConfig[activeForumType];
+
+  const HeaderIcon = currentConfig.icon;
+
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-role-teacher/10 rounded-xl">
-            <MessageSquare size={24} className="text-role-teacher" />
+          <div className={`p-3 ${currentConfig.iconBg} rounded-xl`}>
+            <HeaderIcon size={24} className={currentConfig.iconColor} />
           </div>
           <div>
             <h1 className="text-xl md:text-2xl font-rubik font-bold text-foreground">
-              במה אישית
+              {currentConfig.title}
             </h1>
             <p className="text-sm text-gray-500">
-              שיתוף ודיונים עם צוות המורים
+              {currentConfig.subtitle}
             </p>
           </div>
         </div>
@@ -104,14 +187,40 @@ export default function ForumPage() {
         )}
       </div>
 
+      {/* Admin Forum Tabs */}
+      {isAdmin && (
+        <div className="flex gap-2 border-b border-surface-2 pb-1">
+          <button
+            onClick={() => setActiveForumType("teacher")}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-t-lg font-medium transition-all cursor-pointer ${
+              activeForumType === "teacher"
+                ? "bg-role-teacher/10 text-role-teacher border-b-2 border-role-teacher"
+                : "text-gray-500 hover:text-gray-700 hover:bg-surface-1"
+            }`}
+          >
+            <GraduationCap size={18} />
+            מורים
+          </button>
+          <button
+            onClick={() => setActiveForumType("student")}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-t-lg font-medium transition-all cursor-pointer ${
+              activeForumType === "student"
+                ? "bg-role-student/10 text-role-student border-b-2 border-role-student"
+                : "text-gray-500 hover:text-gray-700 hover:bg-surface-1"
+            }`}
+          >
+            <Users size={18} />
+            תלמידים
+          </button>
+        </div>
+      )}
+
       {/* New Post Form */}
       {showNewPost && (
         <NewPostForm
-          authorName={session?.user.name || ""}
-          onCreated={() => {
-            setShowNewPost(false);
-            loadPosts();
-          }}
+          authorName={session.user.name}
+          forumType={activeForumType}
+          onCreated={() => setShowNewPost(false)}
           onCancel={() => setShowNewPost(false)}
         />
       )}
@@ -123,7 +232,11 @@ export default function ForumPage() {
         <EmptyState
           icon="message-square"
           title="אין פוסטים עדיין"
-          description="היה הראשון לשתף משהו עם הקהילה"
+          description={
+            activeForumType === "student"
+              ? "היו הראשונים לשתף תצפיות וממצאים מהמחקר"
+              : "היה הראשון לשתף משהו עם הקהילה"
+          }
           action={
             <Button onClick={() => setShowNewPost(true)} rightIcon={Plus}>
               פוסט חדש
@@ -137,13 +250,14 @@ export default function ForumPage() {
               <PostCard
                 key={post.id}
                 post={post}
-                currentUserName={session?.user.name || ""}
+                currentUserName={session.user.name}
                 isAdmin={isAdmin}
                 onDelete={handleDelete}
                 onEdit={handleEdit}
                 onPin={handlePin}
-                onReplyAdded={loadPosts}
+                onReplyAdded={() => {}}
                 index={index}
+                forumType={activeForumType}
               />
             ))}
           </div>
