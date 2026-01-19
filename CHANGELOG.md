@@ -14,27 +14,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - "קול קורא" button opens full-screen modal displaying `/voice.png` image
   - "הירשמו כאן" button links to Google registration form
   - Responsive layout with centered action buttons
-- **Parent Content types**: Added TypeScript types for parent content pages feature
-  - `ParentContentPageId` - Type for page identifiers ("community-activities" | "stem-family")
-  - `ParentContentEvent` - Event interface with title, description, date, image, and link
-  - `ParentContentDocument` - Document structure with intro text and events array
-  - `ParentContentDocumentFirestore` - Firestore variant with Timestamp fields
-- **Parent Content React Query hooks** (`src/lib/queries/parentContent.ts`): Caching hooks for parent content CRUD operations
-  - `useParentContent(pageId)` - Fetch content for a page
-  - `useUpdateParentContentIntro()` - Update intro text with cache invalidation
-  - `useUpdateParentContentEvents()` - Update events array with cache invalidation
-  - `useDeleteParentContentImage()` - Delete image from storage
-- **Parent Content event form modal** (`src/components/parent-content/EventForm.tsx`): Modal component for creating/editing events
-  - Fields: title (required, 100 char limit), description (required, 1000 char limit), date (optional), image (optional with upload), link URL (optional)
-  - Image upload to Firebase Storage with preview and removal
-  - URL validation for link field
-  - Character counters for text fields
-- **Parent Content admin page** (`src/app/(dashboard)/admin/parent-content/page.tsx`): Admin management page for parent content
-  - Tabbed interface for "פעילויות קהילתיות" and "STEM במשפחה" pages
-  - Intro text editing section with 500 character limit
-  - Events management with EventList (drag-and-drop reordering) and EventForm (add/edit)
-  - Delete confirmation dialog for events with image cleanup
-- **Parent Content sidebar link**: Added "תוכן הורים" link to admin sidebar below forums
+- **Parent Content Admin ("תוכן הורים")**: Complete feature for managing parent-facing pages
+  - Admin management page (`/admin/parent-content`) with tabbed interface for "פעילויות קהילתיות" and "STEM במשפחה"
+  - Intro text editing per page (500 char limit)
+  - Events management with drag-and-drop reordering
+  - Event form modal with title, description, date, image upload, and URL fields
+  - Timeline display on parent-facing pages (`/parent/community-activities`, `/parent/stem-family`)
+  - Firestore service and React Query hooks for data management
+  - "תוכן הורים" sidebar link for admin
 
 ### Changed
 
