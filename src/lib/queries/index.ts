@@ -24,7 +24,8 @@ export {
 
 // Journals
 export {
-  useJournalsByUnit,
+  useJournalsByGrade,
+  useJournalsByQuestionnaire,
   useSubmitJournal,
   useDeleteJournal,
 } from "./journals";

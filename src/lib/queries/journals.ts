@@ -1,20 +1,28 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "./keys";
 import {
-  getJournalsByUnit,
+  getJournalsByGrade,
+  getJournalsByQuestionnaire,
   submitJournal,
   deleteJournal,
 } from "@/lib/services/journals";
 import type { Grade, JournalAnswer } from "@/types";
 
-export function useJournalsByUnit(
-  unitId: string | null | undefined,
-  gradeId: Grade | null | undefined
+export function useJournalsByGrade(gradeId: Grade | null | undefined) {
+  return useQuery({
+    queryKey: queryKeys.journals.byGrade(gradeId!),
+    queryFn: () => getJournalsByGrade(gradeId!),
+    enabled: !!gradeId,
+  });
+}
+
+export function useJournalsByQuestionnaire(
+  questionnaireId: string | null | undefined
 ) {
   return useQuery({
-    queryKey: queryKeys.journals.byUnit(unitId!, gradeId!),
-    queryFn: () => getJournalsByUnit(unitId!, gradeId!),
-    enabled: !!unitId && !!gradeId,
+    queryKey: queryKeys.journals.byQuestionnaire(questionnaireId!),
+    queryFn: () => getJournalsByQuestionnaire(questionnaireId!),
+    enabled: !!questionnaireId,
   });
 }
 
@@ -22,14 +30,17 @@ export function useSubmitJournal() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: {
-      unitId: string;
       gradeId: Grade;
       studentName: string;
+      questionnaireId: string;
       answers: JournalAnswer[];
     }) => submitJournal(data),
-    onSuccess: (_, { unitId, gradeId }) => {
+    onSuccess: (_, { gradeId, questionnaireId }) => {
       queryClient.invalidateQueries({
-        queryKey: queryKeys.journals.byUnit(unitId, gradeId),
+        queryKey: queryKeys.journals.byGrade(gradeId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.journals.byQuestionnaire(questionnaireId),
       });
     },
   });
@@ -40,17 +51,22 @@ export function useDeleteJournal() {
   return useMutation({
     mutationFn: ({
       id,
-      unitId,
       gradeId,
+      questionnaireId,
     }: {
       id: string;
-      unitId: string;
       gradeId: Grade;
+      questionnaireId?: string;
     }) => deleteJournal(id),
-    onSuccess: (_, { unitId, gradeId }) => {
+    onSuccess: (_, { gradeId, questionnaireId }) => {
       queryClient.invalidateQueries({
-        queryKey: queryKeys.journals.byUnit(unitId, gradeId),
+        queryKey: queryKeys.journals.byGrade(gradeId),
       });
+      if (questionnaireId) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.journals.byQuestionnaire(questionnaireId),
+        });
+      }
     },
   });
 }

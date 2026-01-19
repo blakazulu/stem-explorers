@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { useQuestionnaire, useUnitsByGrade, useUpdateQuestionnaire, useActivateQuestionnaire, useDeactivateQuestionnaire } from "@/lib/queries";
+import { useQuestionnaire, useUpdateQuestionnaire, useActivateQuestionnaire, useDeactivateQuestionnaire } from "@/lib/queries";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
@@ -24,7 +24,6 @@ import {
   CircleDot,
   CheckSquare,
   PenLine,
-  BookOpen,
   Save,
   Heart,
   ThumbsUp,
@@ -74,19 +73,10 @@ export default function EditQuestionnairePage() {
   const questionnaireId = params.id as string;
 
   // React Query hooks
-  const { data: questionnaire, isLoading: questionnaireLoading } = useQuestionnaire(questionnaireId);
-  const { data: units, isLoading: unitsLoading } = useUnitsByGrade(grade);
+  const { data: questionnaire, isLoading: loading } = useQuestionnaire(questionnaireId);
   const updateQuestionnaireMutation = useUpdateQuestionnaire();
   const activateQuestionnaireMutation = useActivateQuestionnaire();
   const deactivateQuestionnaireMutation = useDeactivateQuestionnaire();
-
-  // Derive unit from units list
-  const unit = useMemo(() => {
-    if (!units || !questionnaire) return null;
-    return units.find((u) => u.id === questionnaire.unitId) || null;
-  }, [units, questionnaire]);
-
-  const loading = questionnaireLoading || unitsLoading;
   const saving = updateQuestionnaireMutation.isPending || activateQuestionnaireMutation.isPending || deactivateQuestionnaireMutation.isPending;
 
   // Question form state
@@ -268,7 +258,6 @@ export default function EditQuestionnairePage() {
         {
           id: questionnaire.id,
           gradeId: questionnaire.gradeId,
-          unitId: questionnaire.unitId,
         },
         {
           onSuccess: () => {
@@ -329,10 +318,7 @@ export default function EditQuestionnairePage() {
             <h1 className="text-xl md:text-2xl font-rubik font-bold text-foreground">
               {questionnaire.name}
             </h1>
-            <p className="text-sm text-gray-500 flex items-center gap-2">
-              <BookOpen size={14} />
-              {unit?.name || "יחידה לא ידועה"} • כיתה {grade}
-            </p>
+            <p className="text-sm text-gray-500">כיתה {grade}</p>
           </div>
         </div>
 

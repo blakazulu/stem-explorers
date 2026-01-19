@@ -1,42 +1,114 @@
 "use client";
 
-import { useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUnitsByGrade } from "@/lib/queries";
+import {
+  useQuestionnairesByGrade,
+  useJournalsByQuestionnaire,
+  useDeleteJournal,
+} from "@/lib/queries";
 import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 import { SkeletonGrid } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { ClipboardCheck, ChevronRight, BookOpen, ArrowRight } from "lucide-react";
-import { Icon, getStemIconForId } from "@/components/ui/Icon";
-import type { Grade, Unit, UserRole } from "@/types";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { useToastActions } from "@/components/ui/Toast";
+import {
+  ClipboardCheck,
+  ArrowRight,
+  User,
+  Calendar,
+  ChevronDown,
+  ChevronUp,
+  Trash2,
+  MessageSquare,
+  Filter,
+} from "lucide-react";
+import type { Grade, UserRole, Questionnaire } from "@/types";
 
 const VALID_GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
 
-export default function ResponsesUnitSelectorPage() {
+function formatDate(date: Date): string {
+  return new Intl.DateTimeFormat("he-IL", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
+function formatAnswer(answer: string | number | string[]): string {
+  if (Array.isArray(answer)) {
+    return answer.join(", ");
+  }
+  if (typeof answer === "number") {
+    return `${"⭐".repeat(answer)} (${answer})`;
+  }
+  return answer;
+}
+
+export default function ResponsesListPage() {
   const { session } = useAuth();
   const params = useParams();
   const router = useRouter();
+  const toast = useToastActions();
 
   const role = params.role as UserRole;
   const grade = decodeURIComponent(params.grade as string) as Grade;
 
+  const [selectedQuestionnaireId, setSelectedQuestionnaireId] = useState<string | null>(null);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
   const isAdmin = session?.user.role === "admin";
   const isTeacher = session?.user.role === "teacher";
-  // Only show back button for admins (teachers are restricted to their grade)
   const showBackButton = isAdmin;
-
+  const backUrl = `/${role}/responses`;
   const isValidGrade = VALID_GRADES.includes(grade);
+  const canAccess = isTeacher || isAdmin;
 
-  const { data: units = [], isLoading: loading } = useUnitsByGrade(isValidGrade ? grade : null);
+  // Load questionnaires for this grade
+  const {
+    data: questionnaires = [],
+    isLoading: questionnairesLoading,
+  } = useQuestionnairesByGrade(canAccess && isValidGrade ? grade : null);
+
+  // Auto-select active questionnaire or first one
+  useEffect(() => {
+    if (questionnaires.length > 0 && !selectedQuestionnaireId) {
+      const active = questionnaires.find((q) => q.isActive);
+      setSelectedQuestionnaireId(active?.id || questionnaires[0].id);
+    }
+  }, [questionnaires, selectedQuestionnaireId]);
+
+  // Load journals for selected questionnaire
+  const {
+    data: journals = [],
+    isLoading: journalsLoading,
+  } = useJournalsByQuestionnaire(selectedQuestionnaireId);
+
+  const deleteJournalMutation = useDeleteJournal();
+
+  // Sort journals by date, newest first
+  const sortedJournals = useMemo(() => {
+    return [...journals].sort(
+      (a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0)
+    );
+  }, [journals]);
+
+  const selectedQuestionnaire = questionnaires.find(
+    (q) => q.id === selectedQuestionnaireId
+  );
 
   // Only teachers and admins can access this page
   useEffect(() => {
-    if (!isTeacher && !isAdmin) {
+    if (!canAccess) {
       router.replace(`/${role}`);
     }
-  }, [isTeacher, isAdmin, role, router]);
+  }, [canAccess, role, router]);
 
   // Validate grade
   useEffect(() => {
@@ -45,13 +117,40 @@ export default function ResponsesUnitSelectorPage() {
     }
   }, [isValidGrade, role, router]);
 
-  function handleUnitSelect(unit: Unit) {
-    router.push(`/${role}/responses/${grade}/${unit.id}`);
+  function toggleExpanded(id: string) {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
   }
 
-  if (!isValidGrade || (!isTeacher && !isAdmin)) {
+  async function handleDelete() {
+    if (!deleteId) return;
+
+    deleteJournalMutation.mutate(
+      { id: deleteId, gradeId: grade, questionnaireId: selectedQuestionnaireId || undefined },
+      {
+        onSuccess: () => {
+          toast.success("תגובות", "התגובה נמחקה בהצלחה");
+          setDeleteId(null);
+        },
+        onError: () => {
+          toast.error("שגיאה", "לא הצלחנו למחוק את התגובה");
+        },
+      }
+    );
+  }
+
+  if (!isValidGrade || !canAccess) {
     return null;
   }
+
+  const loading = questionnairesLoading || journalsLoading;
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
@@ -59,7 +158,7 @@ export default function ResponsesUnitSelectorPage() {
       <div className="flex items-center gap-3">
         {showBackButton && (
           <Link
-            href={`/${role}/responses`}
+            href={backUrl}
             className="p-2 hover:bg-surface-2 rounded-lg transition-colors cursor-pointer"
             title="חזרה לבחירת כיתה"
           >
@@ -73,58 +172,145 @@ export default function ResponsesUnitSelectorPage() {
           <h1 className="text-xl md:text-2xl font-rubik font-bold text-foreground">
             תגובות תלמידים - כיתה {grade}
           </h1>
-          <p className="text-sm text-gray-500">בחר יחידה לצפייה בתגובות</p>
+          <p className="text-sm text-gray-500">
+            {selectedQuestionnaire?.name || "בחר שאלון"}
+          </p>
         </div>
       </div>
 
-      {/* Unit Selection */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <BookOpen size={18} className="text-primary" />
-          <h2 className="text-lg font-rubik font-semibold text-foreground">
-            בחר יחידה
-          </h2>
-        </div>
+      {/* Questionnaire Filter */}
+      {questionnaires.length > 0 && (
+        <Card className="p-4">
+          <div className="flex items-center gap-3">
+            <Filter size={18} className="text-primary" />
+            <label htmlFor="questionnaire-select" className="text-sm font-medium text-foreground">
+              סנן לפי שאלון:
+            </label>
+            <select
+              id="questionnaire-select"
+              value={selectedQuestionnaireId || ""}
+              onChange={(e) => setSelectedQuestionnaireId(e.target.value)}
+              className="flex-1 max-w-xs px-3 py-2 bg-surface-1 border border-surface-3 rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+            >
+              {questionnaires.map((q) => (
+                <option key={q.id} value={q.id}>
+                  {q.name} {q.isActive ? "(פעיל)" : ""}
+                </option>
+              ))}
+            </select>
+          </div>
+        </Card>
+      )}
 
-        {loading ? (
-          <SkeletonGrid count={6} columns={3} />
-        ) : units.length === 0 ? (
-          <EmptyState
-            icon="book-open"
-            title="אין יחידות"
-            description={`לא נמצאו יחידות לכיתה ${grade}`}
-          />
-        ) : (
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            {units.map((unit, index) => {
-              const stemIcon = getStemIconForId(unit.id);
-              return (
+      {/* Responses List */}
+      {loading ? (
+        <SkeletonGrid count={4} columns={2} />
+      ) : questionnaires.length === 0 ? (
+        <EmptyState
+          icon="clipboard-list"
+          title="אין שאלונים"
+          description="לא נמצאו שאלונים לכיתה זו"
+        />
+      ) : sortedJournals.length === 0 ? (
+        <EmptyState
+          icon="help-circle"
+          title="אין תגובות"
+          description="עדיין לא הוגשו תגובות לשאלון זה"
+        />
+      ) : (
+        <div className="space-y-4">
+          <p className="text-sm text-gray-500">{sortedJournals.length} תגובות</p>
+
+          {sortedJournals.map((journal, index) => {
+            const isExpanded = expandedIds.has(journal.id);
+            return (
+              <Card
+                key={journal.id}
+                className={`overflow-hidden animate-slide-up stagger-${Math.min(index + 1, 6)}`}
+              >
+                {/* Header - Always visible */}
                 <button
-                  key={unit.id}
-                  onClick={() => handleUnitSelect(unit)}
-                  className={`group text-right p-4 bg-surface-0 rounded-xl border-2 border-surface-2 hover:border-primary hover:shadow-lg transition-all duration-200 cursor-pointer animate-slide-up stagger-${Math.min(index + 1, 6)}`}
+                  onClick={() => toggleExpanded(journal.id)}
+                  className="w-full flex items-center justify-between p-4 text-right cursor-pointer hover:bg-surface-1 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-200">
-                      <Icon name={stemIcon} size="md" className="text-primary" />
+                    <div className="p-2 bg-primary/10 rounded-full">
+                      <User size={18} className="text-primary" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-rubik font-semibold text-foreground group-hover:text-primary transition-colors">
-                        {unit.name}
+                    <div>
+                      <h3 className="font-rubik font-semibold text-foreground">
+                        {journal.studentName}
                       </h3>
-                      <p className="text-xs text-gray-500 mt-1">לחץ לצפייה בתגובות</p>
+                      <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
+                        <span className="flex items-center gap-1">
+                          <Calendar size={12} />
+                          {journal.createdAt
+                            ? formatDate(journal.createdAt)
+                            : "לא ידוע"}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <MessageSquare size={12} />
+                          {journal.answers.length} תשובות
+                        </span>
+                      </div>
                     </div>
-                    <ChevronRight
-                      size={18}
-                      className="text-gray-300 group-hover:text-primary group-hover:-translate-x-1 transition-all duration-200"
-                    />
                   </div>
+                  {isExpanded ? (
+                    <ChevronUp size={20} className="text-gray-400" />
+                  ) : (
+                    <ChevronDown size={20} className="text-gray-400" />
+                  )}
                 </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
+
+                {/* Expanded Content */}
+                {isExpanded && (
+                  <div className="border-t border-surface-2 animate-slide-up">
+                    <div className="p-4 space-y-4">
+                      {journal.answers.map((answer, i) => (
+                        <div
+                          key={answer.questionId}
+                          className="p-3 bg-surface-1 rounded-lg"
+                        >
+                          <p className="text-sm font-medium text-gray-500 mb-1">
+                            ש: {answer.questionText || `שאלה ${i + 1}`}
+                          </p>
+                          <p className="text-foreground">
+                            ת: {formatAnswer(answer.answer)}
+                          </p>
+                        </div>
+                      ))}
+
+                      {/* Delete button - Admin only */}
+                      {isAdmin && (
+                        <div className="pt-2 border-t border-surface-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setDeleteId(journal.id)}
+                            rightIcon={Trash2}
+                            className="text-error hover:bg-error/10"
+                          >
+                            מחק תגובה
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
+      <ConfirmDialog
+        isOpen={deleteId !== null}
+        title="מחיקת תגובה"
+        message="האם אתה בטוח שברצונך למחוק תגובה זו? פעולה זו אינה ניתנת לביטול."
+        confirmLabel="מחק"
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteId(null)}
+      />
     </div>
   );
 }

@@ -46,8 +46,8 @@ const navItems: NavItem[] = [
   { label: "משאבי הוראה", href: "/teaching-resources", roles: ["admin", "teacher"], icon: FileText },
   { label: "תיעודים", href: "/documentation", roles: ["admin", "teacher", "parent", "student"], icon: Image },
   { label: "יומן חוקר", href: "/journal", roles: ["student"], icon: PenTool },
-  { label: "במה אישית תלמידים", href: "/personal", roles: ["admin", "student"], icon: Heart },
-  { label: "במה אישית למורים", href: "/forum", roles: ["admin", "teacher"], icon: MessageSquare },
+  { label: "במה אישית - תלמידים", href: "/personal", roles: ["admin", "student"], icon: Heart },
+  { label: "במה אישית - מורים", href: "/forum", roles: ["admin", "teacher"], icon: MessageSquare },
   { label: "דוחות", href: "/reports", roles: ["admin", "teacher", "parent"], icon: BarChart2 },
   { label: "תגובות תלמידים", href: "/responses", roles: ["admin", "teacher"], icon: ClipboardCheck },
   { label: "שאל את המומחה", href: "/experts", roles: ["admin", "teacher", "parent", "student"], icon: GraduationCap },
@@ -354,8 +354,8 @@ export function Sidebar({ onClose }: SidebarProps) {
                   onClick={onClose}
                   aria-current={isActive ? "page" : undefined}
                   className={`flex items-center gap-3 px-4 py-2.5 rounded-theme transition-all duration-theme cursor-pointer relative group ${isActive
-                      ? `${theme.navItemActive} ${theme.navItemActiveText}`
-                      : `${theme.navItemDefault} ${theme.navItemHover}`
+                    ? `${theme.navItemActive} ${theme.navItemActiveText}`
+                    : `${theme.navItemDefault} ${theme.navItemHover}`
                     }`}
                 >
                   {/* Active indicator bar */}
@@ -398,8 +398,8 @@ export function Sidebar({ onClose }: SidebarProps) {
                       onClick={onClose}
                       aria-current={isActive ? "page" : undefined}
                       className={`flex items-center gap-3 px-4 py-2.5 rounded-theme transition-all duration-theme cursor-pointer relative group ${isActive
-                          ? `${theme.navItemActive} ${theme.navItemActiveText}`
-                          : `${theme.navItemDefault} ${theme.navItemHover}`
+                        ? `${theme.navItemActive} ${theme.navItemActiveText}`
+                        : `${theme.navItemDefault} ${theme.navItemHover}`
                         }`}
                     >
                       {isActive && (

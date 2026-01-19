@@ -34,32 +34,64 @@ function sanitizeAnswers(answers: JournalAnswer[]): JournalAnswer[] {
   }));
 }
 
-export async function getJournalsByUnit(
-  unitId: string,
+export async function getJournalsByGrade(
   gradeId: Grade
 ): Promise<ResearchJournal[]> {
   try {
     const q = query(
       collection(db, COLLECTION),
-      where("unitId", "==", unitId),
       where("gradeId", "==", gradeId)
     );
 
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-      createdAt: doc.data().createdAt?.toDate(),
+    const results = snapshot.docs.map((d) => ({
+      id: d.id,
+      ...d.data(),
+      createdAt: d.data().createdAt?.toDate(),
     })) as ResearchJournal[];
+
+    // Sort by createdAt descending (newest first)
+    return results.sort((a, b) => {
+      const aTime = a.createdAt?.getTime() || 0;
+      const bTime = b.createdAt?.getTime() || 0;
+      return bTime - aTime;
+    });
   } catch (error) {
-    handleFirebaseError(error, "getJournalsByUnit");
+    handleFirebaseError(error, "getJournalsByGrade");
+  }
+}
+
+export async function getJournalsByQuestionnaire(
+  questionnaireId: string
+): Promise<ResearchJournal[]> {
+  try {
+    const q = query(
+      collection(db, COLLECTION),
+      where("questionnaireId", "==", questionnaireId)
+    );
+
+    const snapshot = await getDocs(q);
+    const results = snapshot.docs.map((d) => ({
+      id: d.id,
+      ...d.data(),
+      createdAt: d.data().createdAt?.toDate(),
+    })) as ResearchJournal[];
+
+    // Sort by createdAt descending (newest first)
+    return results.sort((a, b) => {
+      const aTime = a.createdAt?.getTime() || 0;
+      const bTime = b.createdAt?.getTime() || 0;
+      return bTime - aTime;
+    });
+  } catch (error) {
+    handleFirebaseError(error, "getJournalsByQuestionnaire");
   }
 }
 
 export async function submitJournal(data: {
-  unitId: string;
   gradeId: Grade;
   studentName: string;
+  questionnaireId: string;
   answers: JournalAnswer[];
 }): Promise<string> {
   try {

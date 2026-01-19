@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.12] - 2026-01-19
+
+### Changed
+
+- **Questionnaires now belong to grades only** (not units): Simplified questionnaire model
+  - Removed `unitId` from `Questionnaire` type - questionnaires are now tied only to a grade
+  - Removed `unitId` from `ResearchJournal` type - journal submissions link to questionnaire via `questionnaireId`
+  - One active questionnaire per grade (instead of per grade+unit)
+  - Students can submit multiple journal entries (no unit selection needed)
+
+- **Simplified student journal flow**: Students click "יומן חוקר" and fill the active questionnaire for their grade directly (no unit selection step)
+
+- **Responses page redesign**: `/responses/[grade]` now shows all journal submissions with questionnaire dropdown filter (removed unit-based navigation)
+
+- **Admin questionnaire pages simplified**: Removed unit selection from questionnaire creation and unit display from questionnaire editing
+
+### Added
+
+- `getJournalsByGrade(gradeId)` service function for fetching all journals by grade
+- `getJournalsByQuestionnaire(questionnaireId)` service function for filtering journals by questionnaire
+- `useJournalsByGrade` and `useJournalsByQuestionnaire` React Query hooks
+- Migration script `scripts/migrate-questionnaires-remove-unitId.ts` for cleaning up existing Firestore data
+
+### Removed
+
+- `/[role]/journal/[unitId]` page (unit selection) - merged into `/[role]/journal`
+- `/[role]/responses/[grade]/[unitId]` page - merged into `/[role]/responses/[grade]`
+- `getJournalsByUnit` service function and `useJournalsByUnit` hook
+- Unit column from questionnaire list and edit pages
+
 ## [0.9.1] - 2026-01-19
 
 ### Added

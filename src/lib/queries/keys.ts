@@ -10,13 +10,13 @@ export const queryKeys = {
   questionnaires: {
     all: ["questionnaires"] as const,
     byGrade: (grade: Grade) => ["questionnaires", "byGrade", grade] as const,
-    active: (gradeId: Grade, unitId: string) =>
-      ["questionnaires", "active", gradeId, unitId] as const,
+    active: (gradeId: Grade) => ["questionnaires", "active", gradeId] as const,
     single: (id: string) => ["questionnaires", id] as const,
   },
   journals: {
-    byUnit: (unitId: string, gradeId: Grade) =>
-      ["journals", unitId, gradeId] as const,
+    byGrade: (gradeId: Grade) => ["journals", "byGrade", gradeId] as const,
+    byQuestionnaire: (questionnaireId: string) =>
+      ["journals", "byQuestionnaire", questionnaireId] as const,
   },
   reports: {
     single: (unitId: string, gradeId: Grade) =>

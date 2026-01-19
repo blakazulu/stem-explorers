@@ -20,14 +20,11 @@ export function useQuestionnairesByGrade(grade: Grade | null | undefined) {
   });
 }
 
-export function useActiveQuestionnaire(
-  gradeId: Grade | null | undefined,
-  unitId: string | null | undefined
-) {
+export function useActiveQuestionnaire(gradeId: Grade | null | undefined) {
   return useQuery({
-    queryKey: queryKeys.questionnaires.active(gradeId!, unitId!),
-    queryFn: () => getActiveQuestionnaire(gradeId!, unitId!),
-    enabled: !!gradeId && !!unitId,
+    queryKey: queryKeys.questionnaires.active(gradeId!),
+    queryFn: () => getActiveQuestionnaire(gradeId!),
+    enabled: !!gradeId,
   });
 }
 
@@ -78,19 +75,12 @@ export function useDeleteQuestionnaire() {
 export function useActivateQuestionnaire() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      id,
-      gradeId,
-      unitId,
-    }: {
-      id: string;
-      gradeId: Grade;
-      unitId: string;
-    }) => activateQuestionnaire(id, gradeId, unitId),
-    onSuccess: (_, { gradeId, unitId }) => {
+    mutationFn: ({ id, gradeId }: { id: string; gradeId: Grade }) =>
+      activateQuestionnaire(id, gradeId),
+    onSuccess: (_, { gradeId }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.questionnaires.all });
       queryClient.invalidateQueries({
-        queryKey: queryKeys.questionnaires.active(gradeId, unitId),
+        queryKey: queryKeys.questionnaires.active(gradeId),
       });
     },
   });

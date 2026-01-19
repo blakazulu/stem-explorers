@@ -5,7 +5,6 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  useUnitsByGrade,
   useQuestionnairesByGrade,
   useDeleteQuestionnaire,
   useActivateQuestionnaire,
@@ -26,7 +25,6 @@ import {
   CheckCircle,
   Circle,
   HelpCircle,
-  BookOpen,
 } from "lucide-react";
 import type { Questionnaire, Grade, UserRole } from "@/types";
 
@@ -50,22 +48,14 @@ export default function QuestionnairesListPage() {
   // React Query hooks for data fetching
   const {
     data: questionnaires = [],
-    isLoading: questionnairesLoading,
-    isError: questionnairesError,
+    isLoading: loading,
+    isError,
   } = useQuestionnairesByGrade(isAdmin && isValidGrade ? grade : null);
-
-  const {
-    data: units = [],
-    isLoading: unitsLoading,
-    isError: unitsError,
-  } = useUnitsByGrade(isAdmin && isValidGrade ? grade : null);
 
   // React Query mutation hooks
   const deleteMutation = useDeleteQuestionnaire();
   const activateMutation = useActivateQuestionnaire();
   const deactivateMutation = useDeactivateQuestionnaire();
-
-  const loading = questionnairesLoading || unitsLoading;
 
   useEffect(() => {
     if (!isAdmin) {
@@ -79,10 +69,10 @@ export default function QuestionnairesListPage() {
 
   // Show error toast when data loading fails
   useEffect(() => {
-    if (questionnairesError || unitsError) {
+    if (isError) {
       toast.error("שגיאה", "שגיאה בטעינת הנתונים");
     }
-  }, [questionnairesError, unitsError, toast]);
+  }, [isError, toast]);
 
   function handleDelete() {
     if (!deleteId) return;
@@ -110,7 +100,7 @@ export default function QuestionnairesListPage() {
       });
     } else {
       activateMutation.mutate(
-        { id: q.id, gradeId: q.gradeId, unitId: q.unitId },
+        { id: q.id, gradeId: q.gradeId },
         {
           onSuccess: () => {
             toast.success("שאלונים", "השאלון הופעל");
@@ -121,11 +111,6 @@ export default function QuestionnairesListPage() {
         }
       );
     }
-  }
-
-  function getUnitName(unitId: string): string {
-    const unit = units.find((u) => u.id === unitId);
-    return unit?.name || "יחידה לא ידועה";
   }
 
   if (!isAdmin || !isValidGrade) {
@@ -195,12 +180,6 @@ export default function QuestionnairesListPage() {
                 <h3 className="font-rubik font-semibold text-lg text-foreground pl-16">
                   {q.name}
                 </h3>
-
-                {/* Unit */}
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <BookOpen size={14} />
-                  <span>{getUnitName(q.unitId)}</span>
-                </div>
 
                 {/* Question Count */}
                 <div className="flex items-center gap-2 text-sm text-gray-500">

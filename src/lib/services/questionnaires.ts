@@ -46,14 +46,12 @@ export async function getQuestionnairesByGrade(
 }
 
 export async function getActiveQuestionnaire(
-  gradeId: Grade,
-  unitId: string
+  gradeId: Grade
 ): Promise<Questionnaire | null> {
   try {
     const q = query(
       collection(db, COLLECTION),
       where("gradeId", "==", gradeId),
-      where("unitId", "==", unitId),
       where("isActive", "==", true)
     );
 
@@ -131,17 +129,15 @@ export async function deleteQuestionnaire(id: string): Promise<void> {
 
 export async function activateQuestionnaire(
   id: string,
-  gradeId: Grade,
-  unitId: string
+  gradeId: Grade
 ): Promise<void> {
   try {
     const batch = writeBatch(db);
 
-    // Find and deactivate all other active questionnaires for same grade+unit
+    // Find and deactivate all other active questionnaires for same grade
     const q = query(
       collection(db, COLLECTION),
       where("gradeId", "==", gradeId),
-      where("unitId", "==", unitId),
       where("isActive", "==", true)
     );
     const existing = await getDocs(q);
