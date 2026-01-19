@@ -207,7 +207,7 @@ export default function ResponsesListPage() {
         <SkeletonGrid count={4} columns={2} />
       ) : questionnaires.length === 0 ? (
         <EmptyState
-          icon="clipboard-list"
+          icon="file-text"
           title="אין שאלונים"
           description="לא נמצאו שאלונים לכיתה זו"
         />

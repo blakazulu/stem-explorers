@@ -171,7 +171,7 @@ export default function JournalPage() {
           </div>
         </Card>
         <EmptyState
-          icon="clipboard-list"
+          icon="file-text"
           title="אין שאלון פעיל"
           description="עדיין לא הוגדר שאלון פעיל לכיתה שלך"
         />
