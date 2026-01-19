@@ -24,6 +24,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Image upload to Firebase Storage with preview and removal
   - URL validation for link field
   - Character counters for text fields
+- **Parent Content admin page** (`src/app/(dashboard)/admin/parent-content/page.tsx`): Admin management page for parent content
+  - Tabbed interface for "פעילויות קהילתיות" and "STEM במשפחה" pages
+  - Intro text editing section with 500 character limit
+  - Events management with EventList (drag-and-drop reordering) and EventForm (add/edit)
+  - Delete confirmation dialog for events with image cleanup
 
 ### Changed
 
