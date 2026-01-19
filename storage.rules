@@ -48,6 +48,13 @@ service firebase.storage {
       allow write: if request.resource.size < 50 * 1024 * 1024; // 50MB limit for compressed videos
     }
 
+    // Parent content event images
+    match /parent-content/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.resource.size < 5 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+
     // Intro banners (personal, dashboard, pedagogical)
     match /intros/{allPaths=**} {
       allow read: if true;

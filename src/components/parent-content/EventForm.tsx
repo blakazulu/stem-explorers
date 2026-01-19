@@ -100,6 +100,7 @@ export function EventForm({
             <button
               onClick={onCancel}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="סגור"
             >
               <X size={20} />
             </button>
