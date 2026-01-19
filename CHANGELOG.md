@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Timeline display on parent-facing pages (`/parent/community-activities`, `/parent/stem-family`)
   - Firestore service and React Query hooks for data management
   - "תוכן הורים" sidebar link for admin
+  - Firebase Storage rules for `parent-content/` path (5MB image limit)
 
 ### Changed
 

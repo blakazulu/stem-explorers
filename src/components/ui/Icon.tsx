@@ -23,6 +23,7 @@ import {
   Users,
   BarChart2,
   HelpCircle,
+  Calendar,
   // Action icons
   Plus,
   X,
@@ -81,6 +82,7 @@ const iconMap = {
   users: Users,
   "bar-chart": BarChart2,
   "help-circle": HelpCircle,
+  calendar: Calendar,
   // Actions
   plus: Plus,
   x: X,
@@ -166,6 +168,7 @@ export {
   Users,
   BarChart2,
   HelpCircle,
+  Calendar,
   Plus,
   X,
   Check,

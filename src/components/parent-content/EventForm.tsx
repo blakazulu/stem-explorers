@@ -5,7 +5,7 @@ import { useState, useRef } from "react";
 import { Loader2, X, Upload, Link as LinkIcon, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useToastActions } from "@/components/ui/Toast";
-import { processAndUploadImage } from "@/lib/utils/imageUpload";
+import { uploadImage } from "@/lib/utils/imageUpload";
 import type { ParentContentEvent, ParentContentPageId } from "@/types";
 
 interface EventFormProps {
@@ -44,7 +44,7 @@ export function EventForm({
     try {
       const eventId = event?.id || `temp-${Date.now()}`;
       const path = `parent-content/${pageId}/${eventId}`;
-      const url = await processAndUploadImage(file, path);
+      const url = await uploadImage(file, path);
       setImageUrl(url);
       toast.success("התמונה הועלתה בהצלחה");
     } catch (error) {
