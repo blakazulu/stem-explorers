@@ -306,3 +306,10 @@ export interface PedagogicalIntro {
   introHtml?: string;   // Rich text HTML - takes precedence
   bannerUrl?: string;   // Optional header banner
 }
+
+// Parent Content
+export type {
+  ParentContentPageId,
+  ParentContentEvent,
+  ParentContentDocument,
+} from "./parentContent";

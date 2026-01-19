@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Parent Content types**: Added TypeScript types for parent content pages feature
+  - `ParentContentPageId` - Type for page identifiers ("community-activities" | "stem-family")
+  - `ParentContentEvent` - Event interface with title, description, date, image, and link
+  - `ParentContentDocument` - Document structure with intro text and events array
+  - `ParentContentDocumentFirestore` - Firestore variant with Timestamp fields
+
 ### Changed
 
 - **Collapsible Forum Posts**: Posts now show collapsed by default with title, author, date, and comment count. Click to expand and see full content, replies, and reply form. Chevron indicator shows expand/collapse state.
