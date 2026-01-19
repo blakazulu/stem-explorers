@@ -149,7 +149,7 @@ export default function QuestionnairesListPage() {
           </div>
           <div>
             <h1 className="text-xl md:text-2xl font-rubik font-bold text-foreground">
-              שאלונים - כיתה {grade}
+              רפלקציה אישית - כיתה {grade}
             </h1>
             <p className="text-sm text-gray-500">
               ניהול שאלוני יומן החוקר

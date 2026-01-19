@@ -46,7 +46,7 @@ export async function getPersonalPageConfig(): Promise<PersonalPageConfig | null
     const data = snapshot.data();
     return {
       id: snapshot.id,
-      introHtml: data.introHtml || "",
+      introText: data.introText || "",
       bannerUrl: data.bannerUrl,
       updatedAt: data.updatedAt?.toDate(),
       updatedBy: data.updatedBy || "",

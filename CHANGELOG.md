@@ -7,16 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-01-19
+
 ### Added
 
 - **Personal Page types**: Added TypeScript types for Personal Page feature
-  - `PersonalPageConfig` - Config for intro HTML and banner
+  - `PersonalPageConfig` - Config for intro text and banner
   - `PersonalMedia` - Media items (image/video/youtube) with grade targeting
   - `PersonalMediaType` - Union type for media types
-  - `PedagogicalIntro` - Extended interface for rich text intros
-  - Extended `DashboardConfig` with `introHtml` and `bannerUrl` for backwards-compatible rich text support
 - **Personal Page React Query keys**: Added query keys for `personal.config`, `personal.media`, `personal.allMedia`
-- **Personal Page dependencies**: Added Lexical (rich text editor), ffmpeg.wasm (video compression), react-masonry-css (gallery layout)
+- **Personal Page dependencies**: Added ffmpeg.wasm (video compression), react-masonry-css (gallery layout)
 - **Personal Page Firestore services** (`src/lib/services/personal.ts`): CRUD operations for config and media
 - **Personal Page React Query hooks** (`src/lib/queries/personal.ts`): Caching hooks for all service operations
 - **Video compression utility** (`src/lib/utils/videoCompression.ts`): Client-side video processing with ffmpeg.wasm
@@ -27,13 +27,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Thumbnail generation from video frames
   - Browser support detection (SharedArrayBuffer + WebAssembly)
   - Utility functions: `formatFileSize`, `formatDuration`
-- **Reusable Intro Editor Component** (`src/components/personal/PersonalIntroEditor.tsx`): Lexical rich text editor with banner upload
-  - RTL support with Hebrew interface
-  - Toolbar: Bold, Italic, Underline, Links, Bullet/Numbered lists, H2/H3 headings
-  - Banner image upload with preview and removal
-  - HTML generation from editor state and initialization from existing HTML
-  - Reusable via `storagePath` prop for different contexts (Personal, Dashboard, Pedagogical)
-  - Extended types (`DashboardConfig`, `PedagogicalIntro`) support both plain text and rich HTML intros for backwards compatibility
 - **Personal Page media gallery components**:
   - `PersonalMediaGallery.tsx`: Masonry layout with drag-and-drop reordering (admin)
   - `PersonalMediaCard.tsx`: Media item card with thumbnail, play overlay for videos, admin actions
@@ -41,14 +34,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `VideoPlayerModal.tsx`: Full-screen modal for video/YouTube playback
   - `YouTubeEmbed.tsx`: YouTube iframe wrapper with URL parsing and thumbnail extraction
 - **Personal Page admin management** (`/admin/personal`): Full admin page for managing personal page content
-  - Intro section with Lexical rich text editor and banner upload
+  - Intro section with inline editable plain text (500 char limit)
   - Media gallery with add/edit/delete functionality
   - Drag-and-drop reordering for media items
   - Role-based access control (admin-only)
   - Grade targeting for media (single/multiple/all grades)
   - Error handling with Hebrew toast messages
 - **Personal Page student view** (`/[role]/personal`): Student-facing page displaying personal content
-  - Displays banner and intro HTML from config
+  - Displays intro text from config
   - Shows media gallery filtered by student's grade (admins see all media)
   - View-only mode - no edit/delete/reorder capabilities
   - Proper role validation with redirect if URL role doesn't match session
@@ -56,8 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Student sidebar link with visibility configuration support
   - Admin sidebar link (navigates to admin management page)
   - Dashboard card for student role with Heart icon
-- **DOMPurify HTML sanitization**: Added DOMPurify for secure HTML rendering in Personal page
-- **Firebase Storage rules for Personal page**: Added rules for `personal/media/` (50MB for videos) and `intros/` (5MB for banner images)
+- **Firebase Storage rules for Personal page**: Added rules for `personal/media/` (50MB for videos)
 - **Heart icon**: Added `heart` to Icon component presets for Personal page empty state
 
 - **Globe Monitor submission feature**: Users with `canSubmitGlobeMonitor` flag can now submit monitoring data
@@ -86,16 +78,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **Personal Page security and cleanup fixes**:
-  - Added DOMPurify HTML sanitization to prevent XSS attacks
+- **Personal Page cleanup fixes**:
   - Fixed Firebase Storage deletion to extract storage path from download URLs
   - Added role validation to block unauthorized roles (parent/teacher) from accessing /personal
   - Fixed VideoPlayerModal event listener memory leak using ref pattern
   - Added cleanup for file preview URLs on component unmount and early return
-
-- **Personal Page Toast import fix**: Changed incorrect `@/contexts/ToastContext` import to use project's existing `useToastActions` from `@/components/ui/Toast`
-  - Fixed in `PersonalMediaUploader.tsx`, `PersonalIntroEditor.tsx`, and `admin/personal/page.tsx`
-  - Updated all `showToast("type", "message")` calls to `toast.type("message")` pattern
 
 - **Documentation modal slow image switching**: Replaced single-image display with sliding carousel
   - All images rendered in a horizontal track for instant switching
@@ -917,7 +904,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Safe markdown rendering with react-markdown
 - Object URL cleanup to prevent memory leaks
 
-[Unreleased]: https://github.com/blakazulu/stem-explorers/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/blakazulu/stem-explorers/compare/v0.9.1...HEAD
+[0.9.1]: https://github.com/blakazulu/stem-explorers/compare/v0.9.0...v0.9.1
+[0.9.0]: https://github.com/blakazulu/stem-explorers/compare/v0.8.1...v0.9.0
+[0.8.1]: https://github.com/blakazulu/stem-explorers/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/blakazulu/stem-explorers/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/blakazulu/stem-explorers/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/blakazulu/stem-explorers/compare/v0.5.0...v0.6.0

@@ -229,7 +229,7 @@ export interface VisibilityConfig {
 
 export interface DashboardConfig {
   intro: string;
-  introHtml?: string;   // Rich text (Lexical) - takes precedence over intro
+  introHtml?: string;   // Rich text HTML - takes precedence over intro
   bannerUrl?: string;   // Optional header banner
   cards: DashboardCardConfig[];
 }
@@ -281,7 +281,7 @@ export type PersonalMediaType = "image" | "video" | "youtube";
 
 export interface PersonalPageConfig {
   id: string;
-  introHtml: string;
+  introText: string;
   bannerUrl?: string;
   updatedAt: Date;
   updatedBy: string;
@@ -303,6 +303,6 @@ export interface PersonalMedia {
 // Pedagogical Intro (extended for rich text)
 export interface PedagogicalIntro {
   text: string;         // Plain text (backwards compat)
-  introHtml?: string;   // Rich text (Lexical) - takes precedence
+  introHtml?: string;   // Rich text HTML - takes precedence
   bannerUrl?: string;   // Optional header banner
 }

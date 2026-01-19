@@ -2,7 +2,6 @@
 
 import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
-import DOMPurify from "dompurify";
 import { Heart } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePersonalPageConfig, usePersonalMediaByGrade, useAllPersonalMedia } from "@/lib/queries";
@@ -10,7 +9,7 @@ import PersonalMediaGallery from "@/components/personal/PersonalMediaGallery";
 import { Card } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
-import type { UserRole, Grade } from "@/types";
+import type { UserRole } from "@/types";
 
 export default function PersonalPage() {
   const router = useRouter();
@@ -63,12 +62,12 @@ export default function PersonalPage() {
     );
   }
 
-  const hasIntro = config?.introHtml || config?.bannerUrl;
+  const hasIntro = config?.introText || config?.bannerUrl;
   const hasMedia = mediaItems.length > 0;
   const isEmpty = !hasIntro && !hasMedia && !configLoading && !mediaLoading;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 max-w-5xl mx-auto">
       {/* Page Header */}
       <div className="flex items-center gap-3">
         <div className="p-3 bg-role-student/10 rounded-xl">
@@ -114,13 +113,13 @@ export default function PersonalPage() {
                 </div>
               )}
 
-              {/* Intro HTML */}
-              {config?.introHtml && (
-                <div
-                  className="p-6 prose prose-sm max-w-none text-right"
-                  dir="rtl"
-                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(config.introHtml) }}
-                />
+              {/* Intro Text */}
+              {config?.introText && (
+                <div className="p-6">
+                  <p className="text-foreground leading-relaxed text-right">
+                    {config.introText}
+                  </p>
+                </div>
               )}
             </>
           )}
@@ -130,7 +129,7 @@ export default function PersonalPage() {
       {/* Media Gallery Section */}
       {(mediaLoading || hasMedia) && (
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">גלריית מדיה</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">גלריית מדיה</h2>
           {mediaLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {[...Array(4)].map((_, i) => (

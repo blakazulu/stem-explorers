@@ -46,17 +46,17 @@ const navItems: NavItem[] = [
   { label: "משאבי הוראה", href: "/teaching-resources", roles: ["admin", "teacher"], icon: FileText },
   { label: "תיעודים", href: "/documentation", roles: ["admin", "teacher", "parent", "student"], icon: Image },
   { label: "יומן חוקר", href: "/journal", roles: ["student"], icon: PenTool },
-  { label: "אישי", href: "/personal", roles: ["admin", "student"], icon: Heart },
+  { label: "במה אישית תלמידים", href: "/personal", roles: ["admin", "student"], icon: Heart },
+  { label: "במה אישית למורים", href: "/forum", roles: ["admin", "teacher"], icon: MessageSquare },
   { label: "דוחות", href: "/reports", roles: ["admin", "teacher", "parent"], icon: BarChart2 },
   { label: "תגובות תלמידים", href: "/responses", roles: ["admin", "teacher"], icon: ClipboardCheck },
-  { label: "במה אישית", href: "/forum", roles: ["admin", "teacher"], icon: MessageSquare },
   { label: "שאל את המומחה", href: "/experts", roles: ["admin", "teacher", "parent", "student"], icon: GraduationCap },
   { label: "פגישות מומחים", href: "/expert-meetings", roles: ["admin"], icon: Calendar },
   { label: "גלוב-ניטור", href: "/globe-monitor", roles: ["admin", "student"], icon: Globe },
   { label: "פעילויות קהילתיות", href: "/community-activities", roles: ["parent"], icon: Users },
   { label: "STEM במשפחה", href: "/stem-family", roles: ["parent"], icon: Home },
   { label: "שותפים לדרך", href: "/partners", roles: ["parent"], icon: Handshake },
-  { label: "שאלות", href: "/questions", roles: ["admin"], icon: HelpCircle },
+  { label: "יומן חוקר", href: "/questions", roles: ["admin"], icon: HelpCircle },
   { label: "סיסמאות", href: "/passwords", roles: ["admin"], icon: Key },
   { label: "הגדרות", href: "/settings", roles: ["admin"], icon: Settings },
   { label: "תצוגה", href: "/display", roles: ["admin"], icon: Eye },
@@ -353,11 +353,10 @@ export function Sidebar({ onClose }: SidebarProps) {
                   href={fullHref}
                   onClick={onClose}
                   aria-current={isActive ? "page" : undefined}
-                  className={`flex items-center gap-3 px-4 py-2.5 rounded-theme transition-all duration-theme cursor-pointer relative group ${
-                    isActive
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-theme transition-all duration-theme cursor-pointer relative group ${isActive
                       ? `${theme.navItemActive} ${theme.navItemActiveText}`
                       : `${theme.navItemDefault} ${theme.navItemHover}`
-                  }`}
+                    }`}
                 >
                   {/* Active indicator bar */}
                   {isActive && (
@@ -369,9 +368,8 @@ export function Sidebar({ onClose }: SidebarProps) {
                   <ItemIcon
                     aria-hidden="true"
                     size={20}
-                    className={`shrink-0 transition-transform duration-theme ${
-                      isActive ? "" : "group-hover:scale-110"
-                    }`}
+                    className={`shrink-0 transition-transform duration-theme ${isActive ? "" : "group-hover:scale-110"
+                      }`}
                   />
                   <span>{getCustomLabel(item)}</span>
                 </Link>
@@ -399,11 +397,10 @@ export function Sidebar({ onClose }: SidebarProps) {
                       href={fullHref}
                       onClick={onClose}
                       aria-current={isActive ? "page" : undefined}
-                      className={`flex items-center gap-3 px-4 py-2.5 rounded-theme transition-all duration-theme cursor-pointer relative group ${
-                        isActive
+                      className={`flex items-center gap-3 px-4 py-2.5 rounded-theme transition-all duration-theme cursor-pointer relative group ${isActive
                           ? `${theme.navItemActive} ${theme.navItemActiveText}`
                           : `${theme.navItemDefault} ${theme.navItemHover}`
-                      }`}
+                        }`}
                     >
                       {isActive && (
                         <span
@@ -414,9 +411,8 @@ export function Sidebar({ onClose }: SidebarProps) {
                       <ItemIcon
                         aria-hidden="true"
                         size={20}
-                        className={`shrink-0 transition-transform duration-theme ${
-                          isActive ? "" : "group-hover:scale-110"
-                        }`}
+                        className={`shrink-0 transition-transform duration-theme ${isActive ? "" : "group-hover:scale-110"
+                          }`}
                       />
                       <span>{getCustomLabel(item)}</span>
                     </Link>

@@ -2,12 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus, Pencil, Check, X, Loader2, Heart } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
-import PersonalIntroEditor from "@/components/personal/PersonalIntroEditor";
 import PersonalMediaGallery from "@/components/personal/PersonalMediaGallery";
 import PersonalMediaUploader from "@/components/personal/PersonalMediaUploader";
 import {
@@ -24,6 +22,8 @@ import { useToastActions } from "@/components/ui/Toast";
 import type { PersonalMedia, Grade, PersonalMediaType } from "@/types";
 import { getNextMediaOrder } from "@/lib/services/personal";
 
+const DEFAULT_INTRO = "ברוכים הבאים לעמוד האישי. כאן תוכלו למצוא תוכן מיוחד המותאם עבורכם.";
+
 export default function AdminPersonalPage() {
   const router = useRouter();
   const { session } = useAuth();
@@ -31,6 +31,11 @@ export default function AdminPersonalPage() {
   const [showUploader, setShowUploader] = useState(false);
   const [editingMedia, setEditingMedia] = useState<PersonalMedia | null>(null);
   const [deletingMedia, setDeletingMedia] = useState<PersonalMedia | null>(null);
+
+  // Intro editing state
+  const [isEditingIntro, setIsEditingIntro] = useState(false);
+  const [editText, setEditText] = useState("");
+  const [savingIntro, setSavingIntro] = useState(false);
 
   // Redirect non-admins
   useEffect(() => {
@@ -49,6 +54,9 @@ export default function AdminPersonalPage() {
   const { data: mediaItems = [], isLoading: mediaLoading } =
     useAllPersonalMedia();
 
+  // Derived intro text with default fallback
+  const introText = config?.introText || DEFAULT_INTRO;
+
   // Mutations
   const saveConfig = useSavePersonalPageConfig();
   const createMedia = useCreatePersonalMedia();
@@ -56,21 +64,35 @@ export default function AdminPersonalPage() {
   const deleteMedia = useDeletePersonalMedia();
   const reorderMedia = useReorderPersonalMedia();
 
-  const handleSaveIntro = async (data: {
-    html: string;
-    bannerUrl?: string;
-  }) => {
+  const handleStartEditIntro = () => {
+    setEditText(introText);
+    setIsEditingIntro(true);
+  };
+
+  const handleCancelEditIntro = () => {
+    setIsEditingIntro(false);
+    setEditText("");
+  };
+
+  const handleSaveIntro = async () => {
+    if (!editText.trim()) {
+      toast.error("הטקסט לא יכול להיות ריק");
+      return;
+    }
+
+    setSavingIntro(true);
     try {
       await saveConfig.mutateAsync({
-        introHtml: data.html,
-        bannerUrl: data.bannerUrl,
+        introText: editText.trim(),
         updatedBy: session.user.name || "admin",
       });
-      toast.success( "הקדמה נשמרה בהצלחה");
+      setIsEditingIntro(false);
+      toast.success("הקדמה נשמרה בהצלחה");
     } catch (error) {
       console.error("Save intro error:", error);
-      toast.error( error instanceof Error ? error.message : "שגיאה בשמירת ההקדמה");
+      toast.error(error instanceof Error ? error.message : "שגיאה בשמירת ההקדמה");
     }
+    setSavingIntro(false);
   };
 
   const handleUploadMedia = async (data: {
@@ -89,10 +111,10 @@ export default function AdminPersonalPage() {
         createdBy: session.user.name || "admin",
       });
       setShowUploader(false);
-      toast.success( "מדיה נוספה בהצלחה");
+      toast.success("מדיה נוספה בהצלחה");
     } catch (error) {
       console.error("Upload media error:", error);
-      toast.error( error instanceof Error ? error.message : "שגיאה בהוספת מדיה");
+      toast.error(error instanceof Error ? error.message : "שגיאה בהוספת מדיה");
     }
   };
 
@@ -108,10 +130,10 @@ export default function AdminPersonalPage() {
         data,
       });
       setEditingMedia(null);
-      toast.success( "מדיה עודכנה בהצלחה");
+      toast.success("מדיה עודכנה בהצלחה");
     } catch (error) {
       console.error("Update media error:", error);
-      toast.error( error instanceof Error ? error.message : "שגיאה בעדכון מדיה");
+      toast.error(error instanceof Error ? error.message : "שגיאה בעדכון מדיה");
     }
   };
 
@@ -124,10 +146,10 @@ export default function AdminPersonalPage() {
         thumbnailUrl: deletingMedia.thumbnailUrl,
       });
       setDeletingMedia(null);
-      toast.success( "מדיה נמחקה בהצלחה");
+      toast.success("מדיה נמחקה בהצלחה");
     } catch (error) {
       console.error("Delete media error:", error);
-      toast.error( error instanceof Error ? error.message : "שגיאה במחיקת מדיה");
+      toast.error(error instanceof Error ? error.message : "שגיאה במחיקת מדיה");
     }
   };
 
@@ -138,43 +160,91 @@ export default function AdminPersonalPage() {
       );
     } catch (error) {
       console.error("Reorder media error:", error);
-      toast.error( error instanceof Error ? error.message : "שגיאה בסידור מחדש");
+      toast.error(error instanceof Error ? error.message : "שגיאה בסידור מחדש");
     }
   };
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">אישי - ניהול</h1>
-        <p className="text-gray-600 mt-1">
-          עריכת תוכן העמוד האישי המוצג לתלמידים
-        </p>
+    <div className="space-y-6 max-w-5xl mx-auto">
+      {/* Page Header */}
+      <div className="flex items-center gap-3">
+        <div className="p-3 bg-role-admin/10 rounded-xl">
+          <Heart size={24} className="text-role-admin" />
+        </div>
+        <div>
+          <h1 className="text-xl md:text-2xl font-rubik font-bold text-foreground">
+            אישי - ניהול
+          </h1>
+          <p className="text-sm text-gray-500">
+            עריכת תוכן העמוד האישי המוצג לתלמידים
+          </p>
+        </div>
       </div>
 
       {/* Intro Section */}
-      <Card className="p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">הקדמה</h2>
+      <div className="p-6 bg-surface-1 rounded-2xl border border-surface-2">
+        <h2 className="text-lg font-semibold text-foreground mb-4">הקדמה</h2>
         {configLoading ? (
-          <div className="space-y-4">
-            <Skeleton variant="text" className="h-32" />
-            <Skeleton variant="text" className="h-48" />
+          <div className="space-y-2 animate-pulse">
+            <div className="h-4 bg-surface-2 rounded w-full" />
+            <div className="h-4 bg-surface-2 rounded w-5/6" />
+            <div className="h-4 bg-surface-2 rounded w-4/6" />
+          </div>
+        ) : isEditingIntro ? (
+          <div className="space-y-3">
+            <textarea
+              value={editText}
+              onChange={(e) => setEditText(e.target.value.slice(0, 500))}
+              className="w-full p-3 rounded-lg border border-surface-3 bg-surface-0 text-foreground leading-relaxed resize-none focus:outline-none focus:ring-2 focus:ring-primary/50"
+              rows={4}
+              maxLength={500}
+              autoFocus
+            />
+            <div className="flex items-center justify-between">
+              <span className={`text-xs ${editText.length >= 480 ? 'text-amber-500' : 'text-gray-400'}`}>
+                {editText.length}/500
+              </span>
+              <div className="flex gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCancelEditIntro}
+                  disabled={savingIntro}
+                  rightIcon={X}
+                >
+                  ביטול
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleSaveIntro}
+                  loading={savingIntro}
+                  rightIcon={Check}
+                >
+                  שמור
+                </Button>
+              </div>
+            </div>
           </div>
         ) : (
-          <PersonalIntroEditor
-            initialHtml={config?.introHtml || ""}
-            bannerUrl={config?.bannerUrl}
-            storagePath="intros/personal"
-            onSave={handleSaveIntro}
-            saveButtonText="שמור הקדמה"
-          />
+          <div className="flex items-start gap-3">
+            <p className="text-foreground leading-relaxed flex-1">
+              {introText}
+            </p>
+            <button
+              onClick={handleStartEditIntro}
+              className="p-2 hover:bg-surface-2 rounded-lg transition-colors text-gray-400 hover:text-foreground"
+              title="עריכת טקסט"
+            >
+              <Pencil size={16} />
+            </button>
+          </div>
         )}
-      </Card>
+      </div>
 
       {/* Media Gallery Section */}
-      <Card className="p-6">
+      <div className="p-6 bg-surface-1 rounded-2xl border border-surface-2">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">גלריית מדיה</h2>
+          <h2 className="text-lg font-semibold text-foreground">גלריית מדיה</h2>
           <Button
             onClick={() => setShowUploader(true)}
             leftIcon={Plus}
@@ -204,7 +274,7 @@ export default function AdminPersonalPage() {
             onReorder={handleReorderMedia}
           />
         )}
-      </Card>
+      </div>
 
       {/* Upload Modal */}
       {showUploader && (
@@ -267,7 +337,7 @@ function EditMediaModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!allGrades && selectedGrades.length === 0) {
-      toast.error( "יש לבחור לפחות כיתה אחת");
+      toast.error("יש לבחור לפחות כיתה אחת");
       return;
     }
     await onSave({
