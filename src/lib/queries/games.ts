@@ -29,16 +29,16 @@ import type {
 // Game Content Hooks
 // ============================================================
 
-/** Get game content for a specific game type and grade */
+/** Get game content for a specific game type, grade, and difficulty */
 export function useGameContent(
   gameType: GameType | null,
   grade: Grade | null,
-  difficulty?: Difficulty
+  difficulty: Difficulty
 ) {
   return useQuery({
-    queryKey: queryKeys.games.content.byTypeAndGrade(gameType!, grade!),
+    queryKey: queryKeys.games.content.byTypeGradeAndDifficulty(gameType!, grade!, difficulty),
     queryFn: () => getGameContent(gameType!, grade!, difficulty),
-    enabled: !!gameType && !!grade,
+    enabled: !!gameType && !!grade && !!difficulty,
   });
 }
 

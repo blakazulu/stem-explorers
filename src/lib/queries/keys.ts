@@ -1,5 +1,5 @@
 import type { Grade } from "@/types";
-import type { GameType } from "@/types/games";
+import type { GameType, Difficulty } from "@/types/games";
 import type { ResourceType } from "@/lib/services/settings";
 
 export const queryKeys = {
@@ -96,6 +96,8 @@ export const queryKeys = {
       byType: (gameType: GameType) => ["games", "content", gameType] as const,
       byTypeAndGrade: (gameType: GameType, grade: Grade) =>
         ["games", "content", gameType, grade] as const,
+      byTypeGradeAndDifficulty: (gameType: GameType, grade: Grade, difficulty: Difficulty) =>
+        ["games", "content", gameType, grade, difficulty] as const,
     },
     progress: {
       all: ["games", "progress"] as const,
