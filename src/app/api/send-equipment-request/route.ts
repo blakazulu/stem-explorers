@@ -4,7 +4,7 @@ import { getEmailConfig } from "@/lib/services/settings";
 
 interface EquipmentRequestData {
   teacherName: string;
-  program: string;
+  units: string[];
   classes: string;
   ageGroups: string[];
   resources: string[];
@@ -27,12 +27,14 @@ function validateData(data: unknown): data is EquipmentRequestData {
   const d = data as Record<string, unknown>;
 
   if (typeof d.teacherName !== "string" || d.teacherName.length === 0 || d.teacherName.length > 100) return false;
-  if (typeof d.program !== "string" || d.program.length === 0 || d.program.length > 200) return false;
+  // Units can be empty if no units exist for selected grades
+  if (!Array.isArray(d.units) || d.units.length > 50) return false;
   if (typeof d.classes !== "string" || d.classes.length === 0 || d.classes.length > 100) return false;
   if (!Array.isArray(d.ageGroups) || d.ageGroups.length === 0 || d.ageGroups.length > 10) return false;
   if (!Array.isArray(d.resources) || d.resources.length === 0 || d.resources.length > 50) return false;
 
   // Validate array contents are strings
+  if (!d.units.every((u) => typeof u === "string" && u.length <= 200)) return false;
   if (!d.ageGroups.every((g) => typeof g === "string" && g.length <= 50)) return false;
   if (!d.resources.every((r) => typeof r === "string" && r.length <= 100)) return false;
 
@@ -86,7 +88,6 @@ export async function POST(request: NextRequest) {
 
         <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <p style="margin: 10px 0;"><strong>שם המורה:</strong> ${escapeHtml(data.teacherName)}</p>
-          <p style="margin: 10px 0;"><strong>תוכנית / יחידה:</strong> ${escapeHtml(data.program)}</p>
           <p style="margin: 10px 0;"><strong>כיתה/ות:</strong> ${escapeHtml(data.classes)}</p>
         </div>
 
@@ -96,6 +97,15 @@ export async function POST(request: NextRequest) {
             ${data.ageGroups.map((g) => `<li style="margin: 5px 0;">✓ ${escapeHtml(g)}</li>`).join("")}
           </ul>
         </div>
+
+        ${data.units.length > 0 ? `
+        <div style="margin: 20px 0;">
+          <h3 style="color: #374151;">יחידות:</h3>
+          <ul style="list-style: none; padding: 0;">
+            ${data.units.map((u) => `<li style="margin: 5px 0;">✓ ${escapeHtml(u)}</li>`).join("")}
+          </ul>
+        </div>
+        ` : ""}
 
         <div style="margin: 20px 0;">
           <h3 style="color: #374151;">משאבים דרושים:</h3>

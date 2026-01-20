@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Button } from "@/components/ui/Button";
 import { useToastActions } from "@/components/ui/Toast";
 import { X, ClipboardList, Send, Loader2, Leaf } from "lucide-react";
+import { useUnitsByGrade } from "@/lib/queries/units";
+import type { Grade, Unit } from "@/types";
 
 interface EquipmentFormModalProps {
   isOpen: boolean;
@@ -12,9 +14,9 @@ interface EquipmentFormModalProps {
 }
 
 const AGE_GROUPS = [
-  { id: "a-b", label: "א–ב" },
-  { id: "c-d", label: "ג–ד" },
-  { id: "e-f", label: "ה–ו" },
+  { id: "a-b", label: "א–ב", grades: ["א", "ב"] as Grade[] },
+  { id: "c-d", label: "ג–ד", grades: ["ג", "ד"] as Grade[] },
+  { id: "e-f", label: "ה–ו", grades: ["ה", "ו"] as Grade[] },
 ];
 
 const RESOURCES = [
@@ -37,12 +39,58 @@ export function EquipmentFormModal({
   const toast = useToastActions();
 
   const [teacherName, setTeacherName] = useState(initialTeacherName);
-  const [program, setProgram] = useState("");
   const [classes, setClasses] = useState("");
   const [selectedAgeGroups, setSelectedAgeGroups] = useState<string[]>([]);
+  const [selectedUnits, setSelectedUnits] = useState<string[]>([]);
   const [selectedResources, setSelectedResources] = useState<string[]>([]);
   const [other, setOther] = useState("");
   const [sending, setSending] = useState(false);
+
+  // Get all grades from selected age groups
+  const selectedGrades = useMemo(() => {
+    const grades: Grade[] = [];
+    for (const ageGroupId of selectedAgeGroups) {
+      const ageGroup = AGE_GROUPS.find((g) => g.id === ageGroupId);
+      if (ageGroup) {
+        grades.push(...ageGroup.grades);
+      }
+    }
+    return grades;
+  }, [selectedAgeGroups]);
+
+  // Fetch units for each selected grade
+  const unitsGradeA = useUnitsByGrade(selectedGrades.includes("א") ? "א" : null);
+  const unitsGradeB = useUnitsByGrade(selectedGrades.includes("ב") ? "ב" : null);
+  const unitsGradeC = useUnitsByGrade(selectedGrades.includes("ג") ? "ג" : null);
+  const unitsGradeD = useUnitsByGrade(selectedGrades.includes("ד") ? "ד" : null);
+  const unitsGradeE = useUnitsByGrade(selectedGrades.includes("ה") ? "ה" : null);
+  const unitsGradeF = useUnitsByGrade(selectedGrades.includes("ו") ? "ו" : null);
+
+  // Combine units by grade
+  const unitsByGrade = useMemo(() => {
+    const result: { grade: Grade; units: Unit[]; isLoading: boolean }[] = [];
+    const gradeQueries = [
+      { grade: "א" as Grade, query: unitsGradeA },
+      { grade: "ב" as Grade, query: unitsGradeB },
+      { grade: "ג" as Grade, query: unitsGradeC },
+      { grade: "ד" as Grade, query: unitsGradeD },
+      { grade: "ה" as Grade, query: unitsGradeE },
+      { grade: "ו" as Grade, query: unitsGradeF },
+    ];
+    for (const { grade, query } of gradeQueries) {
+      if (selectedGrades.includes(grade)) {
+        result.push({
+          grade,
+          units: query.data || [],
+          isLoading: query.isLoading,
+        });
+      }
+    }
+    return result;
+  }, [selectedGrades, unitsGradeA, unitsGradeB, unitsGradeC, unitsGradeD, unitsGradeE, unitsGradeF]);
+
+  const isLoadingUnits = unitsByGrade.some((g) => g.isLoading);
+  const hasAnyUnits = unitsByGrade.some((g) => g.units.length > 0);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -70,8 +118,41 @@ export function EquipmentFormModal({
   }, [onClose]);
 
   function toggleAgeGroup(id: string) {
+    const isDeselecting = selectedAgeGroups.includes(id);
+
+    // When deselecting, remove units that belong to deselected grades
+    if (isDeselecting) {
+      const removedAgeGroup = AGE_GROUPS.find((g) => g.id === id);
+      if (removedAgeGroup) {
+        const removedGrades = removedAgeGroup.grades;
+        // Get all units for the grades being removed and filter them out
+        const allUnitsData = [
+          unitsGradeA.data,
+          unitsGradeB.data,
+          unitsGradeC.data,
+          unitsGradeD.data,
+          unitsGradeE.data,
+          unitsGradeF.data,
+        ].flat().filter(Boolean) as Unit[];
+
+        const unitIdsToRemove = allUnitsData
+          .filter((u) => removedGrades.includes(u.gradeId))
+          .map((u) => u.id);
+
+        setSelectedUnits((prevUnits) =>
+          prevUnits.filter((unitId) => !unitIdsToRemove.includes(unitId))
+        );
+      }
+    }
+
     setSelectedAgeGroups((prev) =>
       prev.includes(id) ? prev.filter((g) => g !== id) : [...prev, id]
+    );
+  }
+
+  function toggleUnit(unitId: string) {
+    setSelectedUnits((prev) =>
+      prev.includes(unitId) ? prev.filter((u) => u !== unitId) : [...prev, unitId]
     );
   }
 
@@ -86,22 +167,30 @@ export function EquipmentFormModal({
       toast.error("שגיאה", "יש למלא את שם המורה");
       return;
     }
-    if (!program.trim()) {
-      toast.error("שגיאה", "יש למלא את שם התוכנית / יחידה");
+    if (selectedAgeGroups.length === 0) {
+      toast.error("שגיאה", "יש לבחור לפחות שכבת גיל אחת");
+      return;
+    }
+    // Only require unit selection if units exist for selected grades
+    if (hasAnyUnits && selectedUnits.length === 0) {
+      toast.error("שגיאה", "יש לבחור לפחות יחידה אחת");
       return;
     }
     if (!classes.trim()) {
       toast.error("שגיאה", "יש למלא את הכיתה/ות");
       return;
     }
-    if (selectedAgeGroups.length === 0) {
-      toast.error("שגיאה", "יש לבחור לפחות שכבת גיל אחת");
-      return;
-    }
     if (selectedResources.length === 0) {
       toast.error("שגיאה", "יש לבחור לפחות משאב אחד");
       return;
     }
+
+    // Build unit names with grades for the email
+    const allUnits = unitsByGrade.flatMap((g) => g.units);
+    const unitNames = selectedUnits.map((unitId) => {
+      const unit = allUnits.find((u) => u.id === unitId);
+      return unit ? `${unit.name} (${unit.gradeId})` : unitId;
+    });
 
     setSending(true);
     try {
@@ -110,7 +199,7 @@ export function EquipmentFormModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           teacherName: teacherName.trim(),
-          program: program.trim(),
+          units: unitNames,
           classes: classes.trim(),
           ageGroups: selectedAgeGroups.map(
             (id) => AGE_GROUPS.find((g) => g.id === id)?.label || id
@@ -130,9 +219,9 @@ export function EquipmentFormModal({
 
       // Reset form
       setTeacherName(initialTeacherName);
-      setProgram("");
       setClasses("");
       setSelectedAgeGroups([]);
+      setSelectedUnits([]);
       setSelectedResources([]);
       setOther("");
       onClose();
@@ -175,44 +264,18 @@ export function EquipmentFormModal({
 
         {/* Form Content - Scrollable */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {/* Text Inputs */}
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1">
-                שם המורה
-              </label>
-              <input
-                type="text"
-                value={teacherName}
-                onChange={(e) => setTeacherName(e.target.value)}
-                placeholder="הזן את שמך"
-                className="w-full px-3 py-2 border border-surface-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1">
-                תוכנית / יחידה
-              </label>
-              <input
-                type="text"
-                value={program}
-                onChange={(e) => setProgram(e.target.value)}
-                placeholder="שם התוכנית או היחידה"
-                className="w-full px-3 py-2 border border-surface-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1">
-                כיתה/ות
-              </label>
-              <input
-                type="text"
-                value={classes}
-                onChange={(e) => setClasses(e.target.value)}
-                placeholder="לדוגמה: ג'1, ג'2"
-                className="w-full px-3 py-2 border border-surface-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
-              />
-            </div>
+          {/* Teacher Name */}
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">
+              שם המורה
+            </label>
+            <input
+              type="text"
+              value={teacherName}
+              onChange={(e) => setTeacherName(e.target.value)}
+              placeholder="הזן את שמך"
+              className="w-full px-3 py-2 border border-surface-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
           </div>
 
           {/* Age Groups */}
@@ -240,6 +303,73 @@ export function EquipmentFormModal({
                 </label>
               ))}
             </div>
+          </div>
+
+          {/* Units - depends on age group selection */}
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-3">
+              תוכנית / יחידה
+            </label>
+            {selectedAgeGroups.length === 0 ? (
+              <div className="px-4 py-3 bg-surface-1 rounded-lg text-gray-500 text-sm">
+                בחרו שכבת גיל קודם
+              </div>
+            ) : isLoadingUnits ? (
+              <div className="px-4 py-3 bg-surface-1 rounded-lg text-gray-500 text-sm flex items-center gap-2">
+                <Loader2 size={16} className="animate-spin" />
+                טוען יחידות...
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {unitsByGrade.map(({ grade, units }) => (
+                  <div key={grade}>
+                    <div className="text-sm font-medium text-gray-600 mb-2">
+                      כיתה {grade}
+                    </div>
+                    {units.length === 0 ? (
+                      <div className="text-sm text-gray-400 mr-2">
+                        אין יחידות
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {units.map((unit) => (
+                          <label
+                            key={unit.id}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 cursor-pointer transition-all ${
+                              selectedUnits.includes(unit.id)
+                                ? "border-primary bg-primary/10 text-primary"
+                                : "border-surface-2 hover:border-primary/50"
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedUnits.includes(unit.id)}
+                              onChange={() => toggleUnit(unit.id)}
+                              className="sr-only"
+                            />
+                            <span className="font-medium">{unit.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Classes */}
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1">
+              כיתה/ות
+            </label>
+            <input
+              type="text"
+              value={classes}
+              onChange={(e) => setClasses(e.target.value)}
+              placeholder="לדוגמה: ג'1, ג'2"
+              className="w-full px-3 py-2 border border-surface-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
           </div>
 
           {/* Resources */}

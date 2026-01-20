@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.22] - 2026-01-20
+
+### Changed
+
+- **Equipment Request Form**: Improved unit selection in the resource request form
+  - Age group selection now comes first (required before selecting units)
+  - Units are now selected from a dropdown based on the selected age group(s)
+  - Units displayed as selectable boxes grouped by grade
+  - Shows "בחרו שכבת גיל קודם" message when no age group is selected
+  - Shows loading state while fetching units
+  - Shows "אין יחידות" for grades with no units
+  - Email payload updated to include selected units as a list
+
 ### Added
 
 - **אתגר הורים (Parent Challenges)**: New feature for engaging parents with family challenges
@@ -23,6 +36,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added to admin display settings for parent role visibility control
   - New Firestore index for efficient challenge queries
   - Firebase Storage rules for challenge media (images and videos up to 50MB)
+
+- **Trophy icon**: Added Trophy icon to the icon library
 
 ## [0.9.21] - 2026-01-20
 
