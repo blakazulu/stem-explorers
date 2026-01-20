@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Games Hub React Query hooks**: TanStack Query hooks for games data caching
+  - Game content: `useGameContent`, `useAllGameContent`, `useCreateGameContent`, `useUpdateGameContent`, `useDeleteGameContent`
+  - Player progress: `useGameProgress`, `useUpdateGameProgress`
+  - Badges: `usePlayerBadges`, `useAwardBadge`, `useUpdateStreak`
+  - Head-to-head: `useWaitingChallenges` (3s polling), `useCreateHeadToHeadChallenge`, `useJoinChallenge`, `useUpdateChallengeScore`, `useCompleteHeadToHeadChallenge`
+  - Query keys in `src/lib/queries/keys.ts`, hooks in `src/lib/queries/games.ts`
+
 - **Games Hub Firestore services**: Complete service layer for game data operations
   - Game content CRUD (admin): `getGameContent`, `getAllGameContent`, `createGameContent`, `updateGameContent`, `deleteGameContent`
   - Player progress tracking: `getGameProgress`, `updateGameProgress` with stats merging

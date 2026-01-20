@@ -89,4 +89,27 @@ export const queryKeys = {
     all: ["challenges"] as const,
     byGrade: (grade: Grade) => ["challenges", "byGrade", grade] as const,
   },
+  games: {
+    content: {
+      all: ["games", "content"] as const,
+      byType: (gameType: string) => ["games", "content", gameType] as const,
+      byTypeAndGrade: (gameType: string, grade: string) =>
+        ["games", "content", gameType, grade] as const,
+    },
+    progress: {
+      all: ["games", "progress"] as const,
+      byVisitor: (visitorId: string, grade: string) =>
+        ["games", "progress", visitorId, grade] as const,
+    },
+    badges: {
+      byVisitor: (visitorId: string, grade: string) =>
+        ["games", "badges", visitorId, grade] as const,
+    },
+    headToHead: {
+      waiting: (grade: string, gameType: string) =>
+        ["games", "headToHead", "waiting", grade, gameType] as const,
+      single: (challengeId: string) =>
+        ["games", "headToHead", challengeId] as const,
+    },
+  },
 };
