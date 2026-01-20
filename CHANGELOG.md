@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Games Hub TypeScript types**: Infrastructure types for the games system
+  - Game type identifiers for all 12 games (quiz, memory, sort, pattern, coding, tangram, mathRace, numberPattern, wordSearch, hangman, experiment, bridge)
+  - Difficulty levels and game categories
+  - Content types for each game with proper TypeScript discrimination
+  - Player progress and statistics tracking types
+  - Badge and achievement system types
+  - Head-to-head challenge types
+  - Game session state types
+  - Types defined in `src/types/games.ts`
+
 - **Games Hub design document**: Comprehensive design spec for student games feature
   - 12 STEM educational games across 6 categories
   - Badge/achievement system with 18 unlockable badges

@@ -365,3 +365,6 @@ export interface ChallengeComment {
   imageUrl?: string;
   createdAt: Date;
 }
+
+// Games
+export * from "./games";
