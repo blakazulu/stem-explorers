@@ -81,4 +81,8 @@ export const queryKeys = {
   parentContent: {
     page: (pageId: string) => ["parentContent", pageId] as const,
   },
+  announcements: {
+    all: ["announcements"] as const,
+    byGrade: (grade: Grade) => ["announcements", "byGrade", grade] as const,
+  },
 };

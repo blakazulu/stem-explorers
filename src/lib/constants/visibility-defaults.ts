@@ -5,6 +5,7 @@ export const ALL_DASHBOARD_CARDS = {
   pedagogical: { label: "מודל פדגוגי", description: "צפה ביחידות הלימוד" },
   "teaching-resources": { label: "משאבי הוראה", description: "תוכניות לימודים וקישורים" },
   documentation: { label: "תיעודים", description: "צפה בתיעודי פעילויות" },
+  announcements: { label: "יוצאים לדרך", description: "פרסומים והודעות" },
   journal: { label: "יומן חוקר", description: "המשך לכתוב ביומן החקר שלך" },
   personal: { label: "אישי", description: "תוכן אישי מיוחד עבורך" },
   reports: { label: "דוחות", description: "צפה בדוחות AI" },
@@ -22,6 +23,7 @@ export const ALL_SIDEBAR_LINKS = {
   pedagogical: { defaultLabel: "מודל פדגוגי ומו\"פ", href: "/pedagogical" },
   "teaching-resources": { defaultLabel: "משאבי הוראה", href: "/teaching-resources" },
   documentation: { defaultLabel: "תיעודים", href: "/documentation" },
+  announcements: { defaultLabel: "יוצאים לדרך", href: "/announcements" },
   journal: { defaultLabel: "יומן חוקר", href: "/journal" },
   personal: { defaultLabel: "אישי", href: "/personal" },
   reports: { defaultLabel: "דוחות", href: "/reports" },
@@ -87,11 +89,12 @@ const DEFAULT_STUDENT_DASHBOARD: DashboardConfig = {
   intro: "",
   cards: [
     { id: "pedagogical", visible: true, order: 0 },
-    { id: "journal", visible: true, order: 1 },
-    { id: "personal", visible: true, order: 2 },
-    { id: "documentation", visible: true, order: 3 },
-    { id: "experts", visible: true, order: 4 },
-    { id: "globe-monitor", visible: true, order: 5 },
+    { id: "announcements", visible: true, order: 1 },
+    { id: "journal", visible: true, order: 2 },
+    { id: "personal", visible: true, order: 3 },
+    { id: "documentation", visible: true, order: 4 },
+    { id: "experts", visible: true, order: 5 },
+    { id: "globe-monitor", visible: true, order: 6 },
   ],
 };
 
@@ -122,6 +125,7 @@ const DEFAULT_PARENT_SIDEBAR: SidebarConfig = {
 const DEFAULT_STUDENT_SIDEBAR: SidebarConfig = {
   links: [
     { id: "pedagogical", label: "מודל פדגוגי ומו\"פ", visible: true },
+    { id: "announcements", label: "יוצאים לדרך", visible: true },
     { id: "journal", label: "יומן חוקר", visible: true },
     { id: "personal", label: "אישי", visible: true },
     { id: "documentation", label: "תיעודים", visible: true },

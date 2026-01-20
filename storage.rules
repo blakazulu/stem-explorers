@@ -67,6 +67,14 @@ service firebase.storage {
                    && request.resource.contentType.matches('image/.*');
     }
 
+    // Announcements images (יוצאים לדרך)
+    match /announcements/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.resource.size < 10 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+      allow delete: if true;
+    }
+
     // Default: allow read, deny write for other paths
     match /{allPaths=**} {
       allow read: if true;

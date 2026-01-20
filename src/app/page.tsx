@@ -178,7 +178,7 @@ export default function Home() {
           {/* Bottom row - 2 bubbles centered */}
           <div className="flex gap-6 xl:gap-8">
             <GlowingBubble title="גלריה" icon={Images} href="/gallery" color="teal" delay={400} />
-            <GlowingBubble title="פעילויות" icon={CalendarHeart} href="/community" color="pink" delay={500} />
+            <GlowingBubble title="בקהילה" icon={CalendarHeart} href="/community" color="pink" delay={500} />
           </div>
         </div>
 
@@ -228,7 +228,7 @@ export default function Home() {
             {/* Bottom row - 2 bubbles centered */}
             <div className="flex gap-2 sm:gap-3 md:gap-4">
               <GlowingBubble title="גלריה" icon={Images} href="/gallery" color="teal" delay={400} />
-              <GlowingBubble title="פעילויות" icon={CalendarHeart} href="/community" color="pink" delay={500} />
+              <GlowingBubble title="בקהילה" icon={CalendarHeart} href="/community" color="pink" delay={500} />
             </div>
           </div>
 

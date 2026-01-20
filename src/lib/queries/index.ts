@@ -130,3 +130,13 @@ export {
   useUpdateParentContentEvents,
   useDeleteParentContentImage,
 } from "./parentContent";
+
+// Announcements (יוצאים לדרך)
+export {
+  useAllAnnouncements,
+  useAnnouncementsByGrade,
+  useCreateAnnouncement,
+  useAddAnnouncementComment,
+  useDeleteAnnouncement,
+  useDeleteAnnouncementComment,
+} from "./announcements";

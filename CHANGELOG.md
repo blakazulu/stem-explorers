@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.21] - 2026-01-20
+
+### Added
+
+- **יוצאים לדרך (Announcements)**: New page for admin to post announcements to students
+  - Admin can create posts with text and optional image
+  - Posts can target specific grades or all grades
+  - Students see posts for their grade and can comment publicly
+  - Admin can delete posts and comments
+  - Available in sidebar for admin and students
+  - Modal popup for creating new posts
+
 ### Fixed
 
 - Fixed JSON parsing in report generation to properly handle braces inside string values

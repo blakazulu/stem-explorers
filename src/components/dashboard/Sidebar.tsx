@@ -45,6 +45,7 @@ const navItems: NavItem[] = [
   { label: "מודל פדגוגי ומו\"פ", href: "/pedagogical", roles: ["admin", "teacher", "parent", "student"], icon: BookOpen },
   { label: "משאבי הוראה", href: "/teaching-resources", roles: ["admin", "teacher"], icon: FileText },
   { label: "תיעודים", href: "/documentation", roles: ["admin", "teacher", "parent", "student"], icon: Image },
+  { label: "יוצאים לדרך", href: "/announcements", roles: ["admin", "student"], icon: Rocket },
   { label: "יומן חוקר", href: "/journal", roles: ["student"], icon: PenTool },
   { label: "במה אישית - תלמידים", href: "/personal", roles: ["admin", "student"], icon: Heart },
   { label: "פורומים", href: "/forum", roles: ["admin"], icon: MessageSquare },

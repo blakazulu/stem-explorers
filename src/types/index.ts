@@ -321,3 +321,22 @@ export type {
   ParentContentEvent,
   ParentContentDocument,
 } from "./parentContent";
+
+// Announcements (יוצאים לדרך)
+export interface Announcement {
+  id: string;
+  content: string;
+  imageUrl?: string;
+  targetGrade: Grade | "all";
+  comments: AnnouncementComment[];
+  authorName: string;
+  createdAt: Date;
+}
+
+export interface AnnouncementComment {
+  id: string;
+  authorName: string;
+  authorGrade: Grade;
+  content: string;
+  createdAt: Date;
+}
