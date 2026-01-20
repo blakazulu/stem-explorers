@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Game-related icons**: Added 16 new icons to Icon component for Games Hub feature
+  - Gaming icons: `gamepad-2`, `swords`, `crown`, `wand-2`
+  - STEM icons: `construction`, `shapes`, `workflow`, `code`, `git-merge`, `compass`
+  - Utility icons: `hash`, `grid-3x3`, `map`, `flame`, `calculator`, `type`
+
 - **Games Hub React Query hooks**: TanStack Query hooks for games data caching
   - Game content: `useGameContent`, `useAllGameContent`, `useCreateGameContent`, `useUpdateGameContent`, `useDeleteGameContent`
   - Player progress: `useGameProgress`, `useUpdateGameProgress`

@@ -56,6 +56,23 @@ import {
   // Personal
   Heart,
   Trophy,
+  // Games
+  Gamepad2,
+  Construction,
+  Shapes,
+  Hash,
+  Workflow,
+  Code,
+  GitMerge,
+  Grid3X3,
+  Swords,
+  Crown,
+  Wand2,
+  Compass,
+  Map,
+  Flame,
+  Calculator,
+  Type,
 } from "lucide-react";
 
 // Icon name to component mapping
@@ -116,6 +133,23 @@ const iconMap = {
   // Personal
   heart: Heart,
   trophy: Trophy,
+  // Games
+  "gamepad-2": Gamepad2,
+  construction: Construction,
+  shapes: Shapes,
+  hash: Hash,
+  workflow: Workflow,
+  code: Code,
+  "git-merge": GitMerge,
+  "grid-3x3": Grid3X3,
+  swords: Swords,
+  crown: Crown,
+  "wand-2": Wand2,
+  compass: Compass,
+  map: Map,
+  flame: Flame,
+  calculator: Calculator,
+  type: Type,
 } as const;
 
 export type IconName = keyof typeof iconMap;
@@ -199,6 +233,22 @@ export {
   School,
   Heart,
   Trophy,
+  Gamepad2,
+  Construction,
+  Shapes,
+  Hash,
+  Workflow,
+  Code,
+  GitMerge,
+  Grid3X3,
+  Swords,
+  Crown,
+  Wand2,
+  Compass,
+  Map,
+  Flame,
+  Calculator,
+  Type,
 };
 
 // Export icon type for external use
