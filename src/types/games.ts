@@ -240,7 +240,7 @@ export interface GameProgress {
 
 /** Badge award criteria */
 export interface BadgeCriteria {
-  type: "score" | "games_played" | "streak" | "perfect" | "speed" | "category_mastery";
+  type: "score" | "games_played" | "streak" | "perfect" | "speed" | "category_mastery" | "wins" | "game_specific";
   threshold: number;
   gameType?: GameType;
   category?: GameCategory;

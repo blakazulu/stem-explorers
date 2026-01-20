@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Games Hub constants and configuration**: Game categories, metadata, and badge definitions
+  - 6 game categories with Hebrew names, icons, colors, and patterns
+  - Game metadata for all 12 games (names, icons, head-to-head support, timer defaults)
+  - 18 badge definitions across starter, mastery, streak, and head-to-head categories
+  - Hebrew alphabet and final letter mappings for word games
+  - Difficulty level labels in Hebrew
+  - Constants defined in `src/lib/constants/games.ts`
+  - Extended `BadgeCriteria` type to support `wins` and `game_specific` criteria
+
 - **Games Hub TypeScript types**: Infrastructure types for the games system
   - Game type identifiers for all 12 games (quiz, memory, sort, pattern, coding, tangram, mathRace, numberPattern, wordSearch, hangman, experiment, bridge)
   - Difficulty levels and game categories
