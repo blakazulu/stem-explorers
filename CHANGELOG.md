@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Removed `unitId` field
   - Added `questionnaireId`, `questionnaireName`, and `journalCount` fields
   - Reports now identified by `{gradeId}-{questionnaireId}-{YYYY-MM-DD}`
+- **Report query keys updated**: Changed from `single(unitId, gradeId)` to `byGrade(gradeId)` and `single(reportId)` for grade-based model
 
 ## [0.9.19] - 2026-01-20
 

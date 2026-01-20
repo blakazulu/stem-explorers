@@ -20,8 +20,8 @@ export const queryKeys = {
     today: ["journals", "today"] as const,
   },
   reports: {
-    single: (unitId: string, gradeId: Grade) =>
-      ["reports", unitId, gradeId] as const,
+    byGrade: (gradeId: Grade) => ["reports", "byGrade", gradeId] as const,
+    single: (reportId: string) => ["reports", reportId] as const,
   },
   documentation: {
     byUnit: (unitId: string, gradeId: Grade) =>
