@@ -26,6 +26,9 @@ export const queryKeys = {
   documentation: {
     byUnit: (unitId: string, gradeId: Grade) =>
       ["documentation", unitId, gradeId] as const,
+    countsByGrade: ["documentation", "counts", "byGrade"] as const,
+    countsByUnit: (gradeId: Grade) =>
+      ["documentation", "counts", "byUnit", gradeId] as const,
   },
   visibility: ["visibility"] as const,
   settings: {

@@ -92,7 +92,9 @@ function ThumbnailCard({
         )}
         <div className="flex items-center justify-between text-xs text-gray-500">
           <span>{doc.teacherName}</span>
+          {/* Date hidden per admin request - kept for potential future use
           <span>{formatDate(doc.createdAt)}</span>
+          */}
         </div>
       </div>
     </button>

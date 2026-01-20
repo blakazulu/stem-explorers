@@ -4,6 +4,8 @@ import {
   getDocumentationByUnit,
   createDocumentation,
   deleteDocumentation,
+  getDocumentationCountsByGrade,
+  getDocumentationCountsByUnit,
 } from "@/lib/services/documentation";
 import type { Documentation, Grade } from "@/types";
 
@@ -27,6 +29,13 @@ export function useCreateDocumentation() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.documentation.byUnit(unitId, gradeId),
       });
+      // Also invalidate counts
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.documentation.countsByGrade,
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.documentation.countsByUnit(gradeId),
+      });
     },
   });
 }
@@ -49,6 +58,29 @@ export function useDeleteDocumentation() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.documentation.byUnit(unitId, gradeId),
       });
+      // Also invalidate counts
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.documentation.countsByGrade,
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.documentation.countsByUnit(gradeId),
+      });
     },
+  });
+}
+
+// Count hooks for gallery
+export function useDocumentationCountsByGrade() {
+  return useQuery({
+    queryKey: queryKeys.documentation.countsByGrade,
+    queryFn: getDocumentationCountsByGrade,
+  });
+}
+
+export function useDocumentationCountsByUnit(gradeId: Grade | null | undefined) {
+  return useQuery({
+    queryKey: queryKeys.documentation.countsByUnit(gradeId!),
+    queryFn: () => getDocumentationCountsByUnit(gradeId!),
+    enabled: !!gradeId,
   });
 }

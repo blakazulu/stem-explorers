@@ -3,8 +3,8 @@
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { useUnitsByGrade } from "@/lib/queries";
+import { ArrowRight, Images } from "lucide-react";
+import { useUnitsByGrade, useDocumentationCountsByUnit } from "@/lib/queries";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import type { Grade } from "@/types";
@@ -28,6 +28,7 @@ export default function GradeGalleryPage() {
   const { data: units = [], isLoading: loading, error, refetch } = useUnitsByGrade(
     isValidGrade ? grade : null
   );
+  const { data: docCounts = {} } = useDocumentationCountsByUnit(isValidGrade ? grade : null);
 
   if (!isValidGrade) {
     return (
@@ -111,30 +112,34 @@ export default function GradeGalleryPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {units.map((unit, index) => (
-              <Link
-                key={unit.id}
-                href={`/gallery/${grade}/${unit.id}`}
-                className="group bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/50 shadow-lg shadow-black/5 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 animate-fade-in"
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center flex-shrink-0">
-                    <span className="text-2xl font-rubik font-bold text-primary">
-                      {unit.order}
-                    </span>
+            {units.map((unit, index) => {
+              const imageCount = docCounts[unit.id] || 0;
+              return (
+                <Link
+                  key={unit.id}
+                  href={`/gallery/${grade}/${unit.id}`}
+                  className="group bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/50 shadow-lg shadow-black/5 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 animate-fade-in"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center flex-shrink-0">
+                      <span className="text-2xl font-rubik font-bold text-primary">
+                        {unit.order}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-rubik font-semibold text-gray-800 group-hover:text-primary transition-colors line-clamp-2">
+                        {unit.name}
+                      </h3>
+                      <p className="text-sm text-gray-500 mt-1 flex items-center gap-1">
+                        <Images size={14} />
+                        {imageCount > 0 ? `${imageCount} תמונות` : "אין תמונות עדיין"}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-rubik font-semibold text-gray-800 group-hover:text-primary transition-colors line-clamp-2">
-                      {unit.name}
-                    </h3>
-                    <p className="text-sm text-gray-500 mt-1">
-                      לחץ לצפייה בתיעודים
-                    </p>
-                  </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         )}
       </main>

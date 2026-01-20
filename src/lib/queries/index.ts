@@ -40,6 +40,8 @@ export {
   useDocumentationByUnit,
   useCreateDocumentation,
   useDeleteDocumentation,
+  useDocumentationCountsByGrade,
+  useDocumentationCountsByUnit,
 } from "./documentation";
 
 // Visibility

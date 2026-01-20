@@ -280,8 +280,8 @@ export default function ResponsesListPage() {
                         </div>
                       ))}
 
-                      {/* Delete button - Admin only */}
-                      {isAdmin && (
+                      {/* Delete button - Admin and Teacher */}
+                      {(isAdmin || isTeacher) && (
                         <div className="pt-2 border-t border-surface-2">
                           <Button
                             variant="ghost"

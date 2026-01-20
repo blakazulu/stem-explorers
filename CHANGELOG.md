@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.19] - 2026-01-20
+
+### Added
+
+- **Public community page** (`/community`): New public page for viewing community activities without login
+  - Pink-themed styling matching the home page bubble
+  - Displays community events with expandable images (click to enlarge, Escape to close)
+  - Same background styling as home page
+- **Community activities bubble**: Added 5th "פעילויות" (Activities) bubble to public home page with pink theme and CalendarHeart icon
+- **Gallery image count badges**: Public gallery now shows image counts
+  - Grade selector: Badge with total image count per grade in top-right corner
+  - Unit cards: Shows "X תמונות" or "אין תמונות עדיין" below each unit name
+- **Documentation count hooks**: New React Query hooks for efficient image counting
+  - `useDocumentationCountsByGrade()` - counts per grade using Firestore `getCountFromServer`
+  - `useDocumentationCountsByUnit(grade)` - counts per unit within a grade
+
+### Changed
+
+- **Home page layout redesign**: 3x2 grid layout for bubbles
+  - Desktop: Vertical layout with title, logo above, 3x2 bubble grid below
+  - Mobile: Full-height (no scrolling), top half for logo, bottom half for bubbles
+- **Teachers can delete responses**: Teachers can now delete student questionnaire responses (previously admin-only)
+
+### Removed
+
+- **Community activities from parent sidebar**: Moved to public `/community` page accessible without login
+
+### Fixed
+
+- **Gallery image card dates**: Commented out date display per admin request (code preserved for future use)
+- **Gallery count cache invalidation**: Creating documentation now invalidates count caches so gallery badges update immediately
+- **Gallery count query performance**: Parallelized grade count queries for faster loading
+
 ## [0.9.18] - 2026-01-20
 
 ### Added

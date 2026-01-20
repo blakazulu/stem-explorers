@@ -55,7 +55,7 @@ const navItems: NavItem[] = [
   { label: "שאל את המומחה", href: "/experts", roles: ["admin", "teacher", "parent", "student"], icon: GraduationCap },
   { label: "פגישות מומחים", href: "/expert-meetings", roles: ["admin"], icon: Calendar },
   { label: "גלוב-ניטור", href: "/globe-monitor", roles: ["admin", "student"], icon: Globe },
-  { label: "פעילויות קהילתיות", href: "/community-activities", roles: ["parent"], icon: Users },
+  // Community activities removed from sidebar - now accessible via public /community page
   { label: "STEM במשפחה", href: "/stem-family", roles: ["parent"], icon: Home },
   { label: "שותפים לדרך", href: "/partners", roles: ["parent"], icon: Handshake },
   { label: "יומן חוקר", href: "/questions", roles: ["admin"], icon: HelpCircle },
