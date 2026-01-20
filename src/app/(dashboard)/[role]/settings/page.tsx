@@ -220,7 +220,12 @@ export default function SettingsPage() {
     const totalGroups = journalsByGroup.size;
     let currentIndex = 0;
 
-    setGenerationProgress((prev) => ({ ...prev, total: totalGroups }));
+    setGenerationProgress((prev) => prev ? { ...prev, total: totalGroups } : {
+      current: 0,
+      total: totalGroups,
+      completedGrades: [],
+      skippedGrades: [],
+    });
 
     for (const [, group] of journalsByGroup) {
       currentIndex++;

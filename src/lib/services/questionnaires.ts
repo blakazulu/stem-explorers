@@ -42,6 +42,7 @@ export async function getQuestionnairesByGrade(
     });
   } catch (error) {
     handleFirebaseError(error, "getQuestionnairesByGrade");
+    return [];
   }
 }
 
