@@ -14,6 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - AI prompt now references questionnaire responses instead of research journals
   - Handler accepts `questionnaireName` and `journalCount` in request body
   - Added error details to 500 response for better debugging
+- **Netlify scheduled reports function refactored**: Updated to group journals by grade+questionnaire instead of just grade
+  - Journals now grouped by `{gradeId}|{questionnaireId}` key
+  - Report ID format changed to `{gradeId}-{questionnaireId}-{YYYY-MM-DD}`
+  - Reports now include `questionnaireId`, `questionnaireName`, and `journalCount` fields
+  - Added `Questionnaire` type and `getQuestionnaire()` helper to fetch questionnaire names
+  - Removed `ALL_GRADES` constant - now only processes grades with actual submissions
+  - Summary now includes `totalGroups` count and error details with questionnaire IDs
 - **Report type refactored**: Updated `Report` interface to be grade+questionnaire+date based instead of unit-based
   - Removed `unitId` field
   - Added `questionnaireId`, `questionnaireName`, and `journalCount` fields

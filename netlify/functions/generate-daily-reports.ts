@@ -15,7 +15,6 @@ import { generateReportContent } from "./generate-report";
 
 // Types
 type Grade = "א" | "ב" | "ג" | "ד" | "ה" | "ו";
-const ALL_GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
 
 interface ResearchJournal {
   id: string;
@@ -30,6 +29,12 @@ interface ResearchJournal {
   createdAt: Date;
 }
 
+interface Questionnaire {
+  id: string;
+  name: string;
+  gradeId: Grade;
+}
+
 // Initialize Firebase (singleton pattern for serverless)
 function getFirebaseDb() {
   const firebaseConfig = {
@@ -41,8 +46,8 @@ function getFirebaseDb() {
     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
   };
 
-  // Only initialize if no app exists
-  const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+  const app =
+    getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
   return getFirestore(app);
 }
 
@@ -52,7 +57,9 @@ function formatDate(date: Date): string {
 }
 
 // Get today's journals from Firestore
-async function getTodaysJournals(db: ReturnType<typeof getFirestore>): Promise<ResearchJournal[]> {
+async function getTodaysJournals(
+  db: ReturnType<typeof getFirestore>
+): Promise<ResearchJournal[]> {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -69,14 +76,30 @@ async function getTodaysJournals(db: ReturnType<typeof getFirestore>): Promise<R
   })) as ResearchJournal[];
 }
 
-// Check if daily report already exists
-async function checkDailyReportExists(
+// Get questionnaire by ID
+async function getQuestionnaire(
+  db: ReturnType<typeof getFirestore>,
+  questionnaireId: string
+): Promise<Questionnaire | null> {
+  try {
+    const docRef = doc(db, "questionnaires", questionnaireId);
+    const snapshot = await getDoc(docRef);
+    if (!snapshot.exists()) return null;
+    return { id: snapshot.id, ...snapshot.data() } as Questionnaire;
+  } catch {
+    return null;
+  }
+}
+
+// Check if report already exists
+async function checkReportExists(
   db: ReturnType<typeof getFirestore>,
   gradeId: Grade,
+  questionnaireId: string,
   date: Date
 ): Promise<boolean> {
   const dateStr = formatDate(date);
-  const reportId = `${gradeId}-daily-${dateStr}`;
+  const reportId = `${gradeId}-${questionnaireId}-${dateStr}`;
   const docRef = doc(db, "reports", reportId);
   const snapshot = await getDoc(docRef);
   return snapshot.exists();
@@ -86,17 +109,21 @@ async function checkDailyReportExists(
 async function saveReport(
   db: ReturnType<typeof getFirestore>,
   gradeId: Grade,
+  questionnaireId: string,
+  questionnaireName: string,
+  journalCount: number,
   teacherContent: string,
   parentContent: string,
   date: Date
 ): Promise<void> {
   const dateStr = formatDate(date);
-  const reportId = `${gradeId}-daily-${dateStr}`;
-  const unitId = `daily-${dateStr}`;
+  const reportId = `${gradeId}-${questionnaireId}-${dateStr}`;
 
   await setDoc(doc(db, "reports", reportId), {
-    unitId,
     gradeId,
+    questionnaireId,
+    questionnaireName,
+    journalCount,
     teacherContent,
     parentContent,
     generatedAt: Timestamp.now(),
@@ -104,7 +131,9 @@ async function saveReport(
 }
 
 // Get report config for AI instructions
-async function getReportConfig(db: ReturnType<typeof getFirestore>): Promise<string> {
+async function getReportConfig(
+  db: ReturnType<typeof getFirestore>
+): Promise<string> {
   try {
     const docRef = doc(db, "settings", "reportConfig");
     const snapshot = await getDoc(docRef);
@@ -117,9 +146,14 @@ async function getReportConfig(db: ReturnType<typeof getFirestore>): Promise<str
   return "";
 }
 
+// Group key for grade+questionnaire
+function groupKey(gradeId: Grade, questionnaireId: string): string {
+  return `${gradeId}|${questionnaireId}`;
+}
+
 /**
  * Scheduled function that runs daily at 23:00 Israel time (UTC+2/+3)
- * Generates AI reports for all research journals submitted that day
+ * Generates AI reports for each grade+questionnaire combo that has submissions
  *
  * Cron: "0 21 * * *" = 21:00 UTC = ~23:00-00:00 Israel time
  */
@@ -140,58 +174,91 @@ export const handler = schedule("0 21 * * *", async () => {
       return { statusCode: 200, body: "No journals to process" };
     }
 
-    // Group journals by grade
-    const journalsByGrade: Record<Grade, ResearchJournal[]> = {} as Record<Grade, ResearchJournal[]>;
+    // Group journals by grade AND questionnaire
+    const journalsByGroup: Map<string, ResearchJournal[]> = new Map();
     for (const journal of journals) {
-      const grade = journal.gradeId;
-      if (!journalsByGrade[grade]) {
-        journalsByGrade[grade] = [];
+      const key = groupKey(journal.gradeId, journal.questionnaireId);
+      if (!journalsByGroup.has(key)) {
+        journalsByGroup.set(key, []);
       }
-      journalsByGrade[grade].push(journal);
+      journalsByGroup.get(key)!.push(journal);
     }
 
     // Get AI prompt instructions from settings
     const aiPromptInstructions = await getReportConfig(db);
 
-    // Generate reports for each grade that has journals
-    const results: { grade: Grade; status: "generated" | "skipped" | "error"; error?: string }[] = [];
+    // Generate reports for each grade+questionnaire combo
+    const results: {
+      grade: Grade;
+      questionnaire: string;
+      status: "generated" | "skipped" | "error";
+      error?: string;
+    }[] = [];
 
-    for (const grade of ALL_GRADES) {
-      const gradeJournals = journalsByGrade[grade];
-
-      if (!gradeJournals || gradeJournals.length === 0) {
-        continue; // No journals for this grade
-      }
+    for (const [key, groupJournals] of journalsByGroup) {
+      const [gradeId, questionnaireId] = key.split("|") as [Grade, string];
 
       try {
         // Check if report already exists
-        const exists = await checkDailyReportExists(db, grade, today);
+        const exists = await checkReportExists(db, gradeId, questionnaireId, today);
         if (exists) {
-          console.log(`Report for grade ${grade} already exists. Skipping.`);
-          results.push({ grade, status: "skipped" });
+          console.log(
+            `Report for grade ${gradeId}, questionnaire ${questionnaireId} already exists. Skipping.`
+          );
+          results.push({
+            grade: gradeId,
+            questionnaire: questionnaireId,
+            status: "skipped",
+          });
           continue;
         }
 
+        // Get questionnaire name
+        const questionnaire = await getQuestionnaire(db, questionnaireId);
+        const questionnaireName = questionnaire?.name || "שאלון";
+
         // Generate report using Gemini AI
-        console.log(`Generating report for grade ${grade} (${gradeJournals.length} journals)...`);
-        const unitName = `סיכום יומי - ${dateStr}`;
+        console.log(
+          `Generating report for grade ${gradeId}, questionnaire "${questionnaireName}" (${groupJournals.length} journals)...`
+        );
+
         const { teacherContent, parentContent } = await generateReportContent(
-          gradeJournals,
-          unitName,
+          groupJournals,
+          questionnaireName,
+          groupJournals.length,
           aiPromptInstructions
         );
 
         // Save to Firestore
-        await saveReport(db, grade, teacherContent, parentContent, today);
-        console.log(`Report for grade ${grade} saved successfully.`);
-        results.push({ grade, status: "generated" });
+        await saveReport(
+          db,
+          gradeId,
+          questionnaireId,
+          questionnaireName,
+          groupJournals.length,
+          teacherContent,
+          parentContent,
+          today
+        );
 
-      } catch (error) {
-        console.error(`Failed to generate report for grade ${grade}:`, error);
+        console.log(
+          `Report for grade ${gradeId}, questionnaire "${questionnaireName}" saved successfully.`
+        );
         results.push({
-          grade,
+          grade: gradeId,
+          questionnaire: questionnaireId,
+          status: "generated",
+        });
+      } catch (error) {
+        console.error(
+          `Failed to generate report for grade ${gradeId}, questionnaire ${questionnaireId}:`,
+          error
+        );
+        results.push({
+          grade: gradeId,
+          questionnaire: questionnaireId,
           status: "error",
-          error: error instanceof Error ? error.message : "Unknown error"
+          error: error instanceof Error ? error.message : "Unknown error",
         });
       }
     }
@@ -199,25 +266,34 @@ export const handler = schedule("0 21 * * *", async () => {
     const summary = {
       date: dateStr,
       totalJournals: journals.length,
-      generated: results.filter(r => r.status === "generated").map(r => r.grade),
-      skipped: results.filter(r => r.status === "skipped").map(r => r.grade),
-      errors: results.filter(r => r.status === "error").map(r => ({ grade: r.grade, error: r.error })),
+      totalGroups: journalsByGroup.size,
+      generated: results.filter((r) => r.status === "generated").length,
+      skipped: results.filter((r) => r.status === "skipped").length,
+      errors: results
+        .filter((r) => r.status === "error")
+        .map((r) => ({
+          grade: r.grade,
+          questionnaire: r.questionnaire,
+          error: r.error,
+        })),
     };
 
-    console.log("Daily report generation complete:", JSON.stringify(summary, null, 2));
+    console.log(
+      "Daily report generation complete:",
+      JSON.stringify(summary, null, 2)
+    );
 
     return {
       statusCode: 200,
       body: JSON.stringify(summary),
     };
-
   } catch (error) {
     console.error("Daily report generation failed:", error);
     return {
       statusCode: 500,
       body: JSON.stringify({
         error: "Failed to generate daily reports",
-        details: error instanceof Error ? error.message : "Unknown error"
+        details: error instanceof Error ? error.message : "Unknown error",
       }),
     };
   }
