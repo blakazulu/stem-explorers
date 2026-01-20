@@ -55,6 +55,7 @@ import {
   School,
   // Personal
   Heart,
+  Trophy,
 } from "lucide-react";
 
 // Icon name to component mapping
@@ -114,6 +115,7 @@ const iconMap = {
   school: School,
   // Personal
   heart: Heart,
+  trophy: Trophy,
 } as const;
 
 export type IconName = keyof typeof iconMap;
@@ -196,6 +198,7 @@ export {
   GraduationCap,
   School,
   Heart,
+  Trophy,
 };
 
 // Export icon type for external use
