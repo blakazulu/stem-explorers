@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Games sidebar navigation**: Added games to sidebar navigation and visibility configuration
+  - Added "משחקים" (Games) nav item for admin and student roles
+  - Added "ניהול משחקים" (Game Admin) nav item for admin role only
+  - Added games to `ALL_DASHBOARD_CARDS` and `ALL_SIDEBAR_LINKS` visibility config
+  - Added games to default student dashboard (order 4, visible by default)
+  - Added games to default student sidebar links
+
 - **Game-related icons**: Added 16 new icons to Icon component for Games Hub feature
   - Gaming icons: `gamepad-2`, `swords`, `crown`, `wand-2`
   - STEM icons: `construction`, `shapes`, `workflow`, `code`, `git-merge`, `compass`

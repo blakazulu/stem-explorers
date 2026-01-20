@@ -17,6 +17,7 @@ export const ALL_DASHBOARD_CARDS = {
   challenges: { label: "אתגר הורים", description: "אתגרים מהנים לכל המשפחה" },
   partners: { label: "שותפים לדרך", description: "שותפים לדרך" },
   "globe-monitor": { label: "גלוב-ניטור", description: "צפייה בנתוני ניטור סביבתי" },
+  games: { label: "משחקים", description: "משחקי STEM חינוכיים" },
 } as const;
 
 // All possible sidebar links with their metadata
@@ -36,6 +37,7 @@ export const ALL_SIDEBAR_LINKS = {
   challenges: { defaultLabel: "אתגר הורים", href: "/challenges" },
   partners: { defaultLabel: "שותפים לדרך", href: "/partners" },
   "globe-monitor": { defaultLabel: "גלוב-ניטור", href: "/globe-monitor" },
+  games: { defaultLabel: "משחקים", href: "/games" },
 } as const;
 
 // Page element labels for admin UI
@@ -95,9 +97,10 @@ const DEFAULT_STUDENT_DASHBOARD: DashboardConfig = {
     { id: "announcements", visible: true, order: 1 },
     { id: "journal", visible: true, order: 2 },
     { id: "personal", visible: true, order: 3 },
-    { id: "documentation", visible: true, order: 4 },
-    { id: "experts", visible: true, order: 5 },
-    { id: "globe-monitor", visible: true, order: 6 },
+    { id: "games", visible: true, order: 4, description: "משחקי STEM חינוכיים" },
+    { id: "documentation", visible: true, order: 5 },
+    { id: "experts", visible: true, order: 6 },
+    { id: "globe-monitor", visible: true, order: 7 },
   ],
 };
 
@@ -130,6 +133,7 @@ const DEFAULT_STUDENT_SIDEBAR: SidebarConfig = {
   links: [
     { id: "pedagogical", label: "מודל פדגוגי ומו\"פ", visible: true },
     { id: "announcements", label: "יוצאים לדרך", visible: true },
+    { id: "games", label: "משחקים", visible: true },
     { id: "journal", label: "יומן חוקר", visible: true },
     { id: "personal", label: "אישי", visible: true },
     { id: "documentation", label: "תיעודים", visible: true },
