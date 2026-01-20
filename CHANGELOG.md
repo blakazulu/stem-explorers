@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Hangman game content**: 180 STEM-related Hebrew words for all grades (א-ו) and difficulties
+  - Grade-appropriate vocabulary: simple words for younger grades, advanced scientific terms for older grades
+  - Categories: טבע, מדע, חלל, חיות, צמחים, טכנולוגיה, גוף האדם, פיזיקה, כימיה, ביולוגיה
+  - Seed script: `scripts/seed-hangman-content.ts` for populating Firestore
+
 - **Hangman game (איש תלוי)**: Complete implementation of the Hangman word-guessing game
   - `HangmanFigure` component: SVG hangman that progressively reveals body parts (0-6 wrong guesses) with smooth CSS animations and facial expressions (neutral while playing, sad on game over)
   - `HangmanKeyboard` component: Hebrew letter keyboard with all 22 letters plus 5 final letters (sofiot) in a separate row with label; visual feedback for correct (green), wrong (red), and unguessed letters; disabled state prevents re-guessing

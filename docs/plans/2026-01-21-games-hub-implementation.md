@@ -2983,10 +2983,27 @@ Before proceeding to Phase 2 (building games), wait for user to:
 ## Phase 2: Games (Easiest to Hardest)
 
 Each game follows this pattern:
-1. Build the game component
-2. Run code-reviewer
-3. **Wait for user testing and approval**
-4. Proceed to next game
+1. **Create game content** - Populate Firestore with content for all grades (א-ו) and difficulties (easy/medium/hard)
+2. Build the game component
+3. Run code-reviewer
+4. **Wait for user testing and approval**
+
+### Content Requirements Per Game
+
+| Game | Content per grade/difficulty |
+|------|------------------------------|
+| Hangman | 10+ words with hints and categories |
+| Word Search | 5+ word sets with STEM vocabulary |
+| Memory Cards | 5+ sets of matching pairs |
+| STEM Quiz | 15+ questions with explanations |
+| Sort It Out | 5+ sorting exercises with buckets |
+| Number Patterns | 10+ sequences with rules |
+| Math Race | 20+ problems |
+| Pattern Recognition | 10+ visual patterns |
+| Coding Puzzles | 5+ grid puzzles |
+| Tangram | 5+ target shapes |
+| Virtual Lab | 3+ experiments with steps |
+| Build a Bridge | 3+ bridge challenges |
 
 ---
 
