@@ -33,7 +33,7 @@ export {
 } from "./journals";
 
 // Reports
-export { useReport, useGenerateReport } from "./reports";
+export { useReportsByGrade, useReport } from "./reports";
 
 // Documentation
 export {

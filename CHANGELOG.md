@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `checkReportExists(gradeId, questionnaireId, date)` - Check if report exists
   - `generateReport(gradeId, questionnaireId, questionnaireName, journals, date)` - Generate and save report
   - `getReportId(gradeId, questionnaireId, date)` - Generate report ID
+- **Report query hooks updated**: Replaced unit-based hooks with grade-based hooks
+  - Added `useReportsByGrade(gradeId)` hook for fetching all reports by grade
+  - Updated `useReport(reportId)` to fetch single report by ID
+  - Removed `useGenerateReport` mutation hook (will be re-added in later phase)
 
 ## [0.9.19] - 2026-01-20
 

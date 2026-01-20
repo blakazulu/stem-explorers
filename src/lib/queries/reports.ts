@@ -1,37 +1,20 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "./keys";
-import { getReport, generateReport } from "@/lib/services/reports";
-import type { Grade, ResearchJournal } from "@/types";
+import { getReportsByGrade, getReportById } from "@/lib/services/reports";
+import type { Grade } from "@/types";
 
-export function useReport(
-  unitId: string | null | undefined,
-  gradeId: Grade | null | undefined
-) {
+export function useReportsByGrade(gradeId: Grade | null | undefined) {
   return useQuery({
-    queryKey: queryKeys.reports.single(unitId!, gradeId!),
-    queryFn: () => getReport(unitId!, gradeId!),
-    enabled: !!unitId && !!gradeId,
+    queryKey: queryKeys.reports.byGrade(gradeId!),
+    queryFn: () => getReportsByGrade(gradeId!),
+    enabled: !!gradeId,
   });
 }
 
-export function useGenerateReport() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({
-      unitId,
-      unitName,
-      gradeId,
-      journals,
-    }: {
-      unitId: string;
-      unitName: string;
-      gradeId: Grade;
-      journals: ResearchJournal[];
-    }) => generateReport(unitId, unitName, gradeId, journals),
-    onSuccess: (_, { unitId, gradeId }) => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.reports.single(unitId, gradeId),
-      });
-    },
+export function useReport(reportId: string | null | undefined) {
+  return useQuery({
+    queryKey: queryKeys.reports.single(reportId!),
+    queryFn: () => getReportById(reportId!),
+    enabled: !!reportId,
   });
 }
