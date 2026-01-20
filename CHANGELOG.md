@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Added missing return statement in `getQuestionnairesByGrade` service
+- Added missing return statements in questionnaires service functions
 - Improved type safety in admin settings report generation
 - Improved error handling in Netlify AI report generation
 
