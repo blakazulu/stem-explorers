@@ -68,6 +68,7 @@ export async function getActiveQuestionnaire(
     } as Questionnaire;
   } catch (error) {
     handleFirebaseError(error, "getActiveQuestionnaire");
+    return null;
   }
 }
 
@@ -88,6 +89,7 @@ export async function getQuestionnaire(
     } as Questionnaire;
   } catch (error) {
     handleFirebaseError(error, "getQuestionnaire");
+    return null;
   }
 }
 
@@ -103,6 +105,7 @@ export async function createQuestionnaire(
     return docRef.id;
   } catch (error) {
     handleFirebaseError(error, "createQuestionnaire");
+    throw error;
   }
 }
 
@@ -207,5 +210,6 @@ export async function copyQuestionnaireToGrades(
     return count;
   } catch (error) {
     handleFirebaseError(error, "copyQuestionnaireToGrades");
+    return 0;
   }
 }
