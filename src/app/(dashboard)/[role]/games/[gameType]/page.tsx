@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useParams, useRouter, notFound } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { GameLayout } from "@/components/games/GameLayout";
+import { HangmanGame } from "@/components/games/hangman";
 import { Icon, IconName } from "@/components/ui/Icon";
 import { GAME_INFO, DIFFICULTY_LABELS } from "@/lib/constants/games";
 import { Skeleton } from "@/components/ui/Skeleton";
+import type { Grade } from "@/types";
 import type { GameType, Difficulty, GameSession } from "@/types/games";
 
 export default function GamePage() {
@@ -26,8 +28,8 @@ export default function GamePage() {
     gameInfo?.defaultTimer ?? false
   );
 
-  // Initialize game session
-  const [gameSession] = useState<GameSession>(() => ({
+  // Initialize game session with mutable score
+  const [gameSession, setGameSession] = useState<GameSession>(() => ({
     gameType: gameType as GameType,
     difficulty: "easy",
     currentQuestion: 0,
@@ -37,6 +39,13 @@ export default function GamePage() {
     timerEnabled: gameInfo?.defaultTimer ?? false,
     isHeadToHead: false,
   }));
+
+  // Track if game is complete for showing results
+  const [gameComplete, setGameComplete] = useState(false);
+  const [gameWon, setGameWon] = useState(false);
+
+  // Get user's grade (students have assigned grade, admins use default)
+  const userGrade: Grade = authSession?.user?.grade || "א";
 
   // Validate role - only admin and student can access
   const allowedRoles = ["admin", "student"];
@@ -60,7 +69,15 @@ export default function GamePage() {
 
   const handleDifficultyChange = (newDifficulty: Difficulty) => {
     setDifficulty(newDifficulty);
-    // In the future, this would reload game content for the new difficulty
+    // Reset game state when difficulty changes
+    setGameComplete(false);
+    setGameWon(false);
+    setGameSession((prev) => ({
+      ...prev,
+      difficulty: newDifficulty,
+      score: 0,
+      startTime: new Date(),
+    }));
   };
 
   const handleTimerToggle = () => {
@@ -69,6 +86,59 @@ export default function GamePage() {
 
   const handleHeadToHead = () => {
     // TODO: Implement head-to-head mode
+  };
+
+  // Handle score updates from games
+  const handleScoreUpdate = useCallback((newScore: number) => {
+    setGameSession((prev) => ({
+      ...prev,
+      score: newScore,
+    }));
+  }, []);
+
+  // Handle game completion
+  const handleGameComplete = useCallback((won: boolean) => {
+    setGameComplete(true);
+    setGameWon(won);
+  }, []);
+
+  // Render game content based on game type
+  const renderGameContent = () => {
+    switch (gameType) {
+      case "hangman":
+        return (
+          <HangmanGame
+            grade={userGrade}
+            difficulty={difficulty}
+            onScoreUpdate={handleScoreUpdate}
+            onGameComplete={handleGameComplete}
+          />
+        );
+      default:
+        // Placeholder for games not yet implemented
+        return (
+          <div className="flex flex-col items-center justify-center text-center space-y-6">
+            <div className="p-6 bg-white/60 rounded-2xl shadow-lg">
+              <Icon
+                name={gameInfo.icon as IconName}
+                size={80}
+                className="text-emerald-500 mx-auto mb-4"
+              />
+              <h2 className="text-2xl font-rubik font-bold text-gray-800 mb-2">
+                {gameInfo.nameHe}
+              </h2>
+              <p className="text-lg text-gray-600 mb-4">
+                המשחק בבנייה - בקרוב!
+              </p>
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg">
+                <span className="text-sm font-medium">
+                  רמת קושי: {DIFFICULTY_LABELS[difficulty]}
+                </span>
+              </div>
+            </div>
+          </div>
+        );
+    }
   };
 
   return (
@@ -81,27 +151,7 @@ export default function GamePage() {
       onTimerToggle={handleTimerToggle}
       onHeadToHead={gameInfo.hasHeadToHead ? handleHeadToHead : undefined}
     >
-      {/* Placeholder content */}
-      <div className="flex flex-col items-center justify-center text-center space-y-6">
-        <div className="p-6 bg-white/60 rounded-2xl shadow-lg">
-          <Icon
-            name={gameInfo.icon as IconName}
-            size={80}
-            className="text-emerald-500 mx-auto mb-4"
-          />
-          <h2 className="text-2xl font-rubik font-bold text-gray-800 mb-2">
-            {gameInfo.nameHe}
-          </h2>
-          <p className="text-lg text-gray-600 mb-4">
-            המשחק בבנייה - בקרוב!
-          </p>
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg">
-            <span className="text-sm font-medium">
-              רמת קושי: {DIFFICULTY_LABELS[difficulty]}
-            </span>
-          </div>
-        </div>
-      </div>
+      {renderGameContent()}
     </GameLayout>
   );
 }

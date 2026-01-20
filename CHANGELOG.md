@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Hangman game (איש תלוי)**: Complete implementation of the Hangman word-guessing game
+  - `HangmanFigure` component: SVG hangman that progressively reveals body parts (0-6 wrong guesses) with smooth CSS animations and facial expressions (neutral while playing, sad on game over)
+  - `HangmanKeyboard` component: Hebrew letter keyboard with all 22 letters plus 5 final letters (sofiot) in a separate row with label; visual feedback for correct (green), wrong (red), and unguessed letters; disabled state prevents re-guessing
+  - `HangmanGame` component: Main game logic with React Query integration for fetching content, state management for guessed letters/score/game status, proper handling of Hebrew final letters (both regular and final forms accepted as correct), word display with blanks, hint and category display, score system (+10 per correct guess, +50 bonus for completing word), win celebration animation, "next word" flow for multiple words, and restart functionality
+  - Game page integration: HangmanGame rendered when gameType is "hangman", score updates flow to GameLayout header, difficulty changes reset game state
+  - Responsive design: Works on mobile and desktop with appropriate sizing for keyboard buttons and SVG figure
+
 ### Fixed
 
 - **Games Hub code review fixes**:
