@@ -12,7 +12,7 @@ export async function generateReportContent(
   journalCount: number,
   aiPromptInstructions?: string
 ): Promise<{ teacherContent: string; parentContent: string }> {
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
   const journalSummary = journals
     .map((j, i: number) => `תלמיד ${i + 1}: ${JSON.stringify(j.answers)}`)
