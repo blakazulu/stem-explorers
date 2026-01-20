@@ -14,6 +14,7 @@ export const ALL_DASHBOARD_CARDS = {
   experts: { label: "שאל את המומחה", description: "צור קשר עם מומחים בתחומי STEM" },
   "community-activities": { label: "פעילויות קהילתיות", description: "פעילויות קהילתיות להורים" },
   "stem-family": { label: "STEM במשפחה", description: "פעילויות STEM במשפחה" },
+  challenges: { label: "אתגר הורים", description: "אתגרים מהנים לכל המשפחה" },
   partners: { label: "שותפים לדרך", description: "שותפים לדרך" },
   "globe-monitor": { label: "גלוב-ניטור", description: "צפייה בנתוני ניטור סביבתי" },
 } as const;
@@ -32,6 +33,7 @@ export const ALL_SIDEBAR_LINKS = {
   experts: { defaultLabel: "שאל את המומחה", href: "/experts" },
   "community-activities": { defaultLabel: "פעילויות קהילתיות", href: "/community-activities" },
   "stem-family": { defaultLabel: "STEM במשפחה", href: "/stem-family" },
+  challenges: { defaultLabel: "אתגר הורים", href: "/challenges" },
   partners: { defaultLabel: "שותפים לדרך", href: "/partners" },
   "globe-monitor": { defaultLabel: "גלוב-ניטור", href: "/globe-monitor" },
 } as const;
@@ -79,9 +81,10 @@ const DEFAULT_PARENT_DASHBOARD: DashboardConfig = {
     { id: "documentation", visible: true, order: 1 },
     { id: "reports", visible: true, order: 2 },
     { id: "experts", visible: true, order: 3 },
-    { id: "community-activities", visible: false, order: 4 },
-    { id: "stem-family", visible: false, order: 5 },
-    { id: "partners", visible: false, order: 6 },
+    { id: "challenges", visible: true, order: 4 },
+    { id: "community-activities", visible: false, order: 5 },
+    { id: "stem-family", visible: false, order: 6 },
+    { id: "partners", visible: false, order: 7 },
   ],
 };
 
@@ -116,6 +119,7 @@ const DEFAULT_PARENT_SIDEBAR: SidebarConfig = {
     { id: "documentation", label: "תיעודים", visible: true },
     { id: "reports", label: "דוחות", visible: true },
     { id: "experts", label: "שאל את המומחה", visible: true },
+    { id: "challenges", label: "אתגר הורים", visible: true },
     { id: "community-activities", label: "פעילויות קהילתיות", visible: true },
     { id: "stem-family", label: "STEM במשפחה", visible: true },
     { id: "partners", label: "שותפים לדרך", visible: true },

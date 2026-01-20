@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **אתגר הורים (Parent Challenges)**: New feature for engaging parents with family challenges
+  - Admin can create challenges with title, description, image, and video (YouTube/Vimeo URL or direct upload)
+  - Challenges can target specific grades or all grades (multi-select)
+  - Only one challenge can be active at a time - admin marks which challenge is active
+  - Active challenge displays prominently at top with full details
+  - Past challenges shown collapsed below, expandable on click
+  - Parents can comment on the active challenge with text and optional image
+  - Comments are public - all parents can see each other's comments
+  - Comments on inactive challenges are read-only (preserved history)
+  - Admin can edit/delete challenges and delete comments
+  - Available in sidebar for both parents and admin
+  - Added to admin display settings for parent role visibility control
+  - New Firestore index for efficient challenge queries
+  - Firebase Storage rules for challenge media (images and videos up to 50MB)
+
 ## [0.9.21] - 2026-01-20
 
 ### Added

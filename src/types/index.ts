@@ -340,3 +340,28 @@ export interface AnnouncementComment {
   content: string;
   createdAt: Date;
 }
+
+// Parent Challenges (אתגר הורים)
+export interface Challenge {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl?: string;
+  videoUrl?: string;        // YouTube/Vimeo embed URL
+  videoStorageUrl?: string; // Direct upload URL from Firebase Storage
+  targetGrades: Grade[] | "all";
+  isActive: boolean;
+  comments: ChallengeComment[];
+  authorName: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ChallengeComment {
+  id: string;
+  authorName: string;
+  authorGrade: Grade;
+  content: string;
+  imageUrl?: string;
+  createdAt: Date;
+}

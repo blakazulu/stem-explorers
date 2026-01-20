@@ -85,4 +85,8 @@ export const queryKeys = {
     all: ["announcements"] as const,
     byGrade: (grade: Grade) => ["announcements", "byGrade", grade] as const,
   },
+  challenges: {
+    all: ["challenges"] as const,
+    byGrade: (grade: Grade) => ["challenges", "byGrade", grade] as const,
+  },
 };

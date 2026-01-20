@@ -140,3 +140,15 @@ export {
   useDeleteAnnouncement,
   useDeleteAnnouncementComment,
 } from "./announcements";
+
+// Challenges (אתגר הורים)
+export {
+  useChallenges,
+  useChallengesByGrade,
+  useCreateChallenge,
+  useUpdateChallenge,
+  useDeleteChallenge,
+  useSetActiveChallenge,
+  useAddChallengeComment,
+  useDeleteChallengeComment,
+} from "./challenges";

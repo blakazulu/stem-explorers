@@ -75,6 +75,15 @@ service firebase.storage {
       allow delete: if true;
     }
 
+    // Parent challenges media (אתגר הורים) - images and videos
+    match /challenges/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.resource.size < 50 * 1024 * 1024
+                   && (request.resource.contentType.matches('image/.*')
+                       || request.resource.contentType.matches('video/.*'));
+      allow delete: if true;
+    }
+
     // Default: allow read, deny write for other paths
     match /{allPaths=**} {
       allow read: if true;

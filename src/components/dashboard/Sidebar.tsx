@@ -29,6 +29,7 @@ import {
   Handshake,
   Globe,
   Calendar,
+  Trophy,
 } from "lucide-react";
 import type { UserRole } from "@/types";
 import type { LucideIcon } from "lucide-react";
@@ -58,6 +59,7 @@ const navItems: NavItem[] = [
   { label: "גלוב-ניטור", href: "/globe-monitor", roles: ["admin", "student"], icon: Globe },
   // Community activities removed from sidebar - now accessible via public /community page
   { label: "STEM במשפחה", href: "/stem-family", roles: ["parent"], icon: Home },
+  { label: "אתגר הורים", href: "/challenges", roles: ["parent", "admin"], icon: Trophy },
   { label: "שותפים לדרך", href: "/partners", roles: ["parent"], icon: Handshake },
   { label: "יומן חוקר", href: "/questions", roles: ["admin"], icon: HelpCircle },
   { label: "סיסמאות", href: "/passwords", roles: ["admin"], icon: Key },
