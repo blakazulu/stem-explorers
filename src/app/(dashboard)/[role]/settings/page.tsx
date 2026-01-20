@@ -229,16 +229,16 @@ export default function SettingsPage() {
 
     for (const [, group] of journalsByGroup) {
       currentIndex++;
-      setGenerationProgress((prev) => ({ ...prev, current: currentIndex }));
+      setGenerationProgress((prev) => prev ? { ...prev, current: currentIndex } : null);
 
       try {
         // Check if report already exists
         const exists = await checkReportExists(group.gradeId, group.questionnaireId, today);
         if (exists) {
-          setGenerationProgress((prev) => ({
+          setGenerationProgress((prev) => prev ? {
             ...prev,
             skippedGrades: [...prev.skippedGrades, group.gradeId],
-          }));
+          } : null);
           continue;
         }
 
@@ -256,10 +256,10 @@ export default function SettingsPage() {
           today
         );
 
-        setGenerationProgress((prev) => ({
+        setGenerationProgress((prev) => prev ? {
           ...prev,
           completedGrades: [...prev.completedGrades, group.gradeId],
-        }));
+        } : null);
       } catch (error) {
         console.error(`Failed to generate report for ${group.gradeId}|${group.questionnaireId}:`, error);
         setGenerationError(`שגיאה ביצירת דוח עבור ${group.gradeId}`);
