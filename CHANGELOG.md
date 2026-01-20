@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Teachers see teacherContent, parents see parentContent
   - Removed unit-based navigation
 
+### Removed
+
+- **Unit-based report viewer page**: Deleted `/[role]/reports/[grade]/[unitId]` route - reports are now viewed inline on the grade page
+
 ### Fixed
 
 - **Netlify report generation type safety**: Made `journals` parameter type more flexible with index signature to allow additional properties
