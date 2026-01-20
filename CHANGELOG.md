@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Admin panel for content management
   - Grade-adaptive difficulty system
   - Design doc at `docs/plans/2026-01-21-games-hub-design.md`
+  - Implementation plan at `docs/plans/2026-01-21-games-hub-implementation.md`
 
 ## [0.9.22] - 2026-01-20
 
