@@ -63,6 +63,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Design doc at `docs/plans/2026-01-21-games-hub-design.md`
   - Implementation plan at `docs/plans/2026-01-21-games-hub-implementation.md`
 
+- **Games Hub page with category cards and badge shelf**: Main games landing page for students
+  - `CategoryCard` component: Beautiful cards for 6 game categories with gradient backgrounds, icons, game counts, and hover effects
+  - `CategoryModal` component: Dialog showing games within a category with badges for head-to-head and timer features
+  - `BadgeShelf` component: Shows earned badges as colored circles with icons, locked badges as gray, with modal to view all 18 badges
+  - Main page at `/[role]/games` accessible by admin and student roles
+  - Responsive 2x3 grid layout (2 cols mobile, 3 cols desktop)
+  - Role validation redirects unauthorized users
+  - Loading skeleton while fetching badge data
+
 ## [0.9.22] - 2026-01-20
 
 ### Changed
