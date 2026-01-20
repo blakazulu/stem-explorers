@@ -40,16 +40,37 @@ ${aiPromptInstructions || ""}
   const result = await model.generateContent(prompt);
   const text = result.response.text();
 
-  // Find JSON by matching balanced braces
+  // Find JSON by matching balanced braces, accounting for strings
   let depth = 0;
   let startIdx = -1;
   let endIdx = -1;
+  let inString = false;
+  let escapeNext = false;
 
   for (let i = 0; i < text.length; i++) {
-    if (text[i] === '{') {
+    const char = text[i];
+
+    if (escapeNext) {
+      escapeNext = false;
+      continue;
+    }
+
+    if (char === '\\' && inString) {
+      escapeNext = true;
+      continue;
+    }
+
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
+
+    if (inString) continue;
+
+    if (char === '{') {
       if (depth === 0) startIdx = i;
       depth++;
-    } else if (text[i] === '}') {
+    } else if (char === '}') {
       depth--;
       if (depth === 0 && startIdx !== -1) {
         endIdx = i + 1;

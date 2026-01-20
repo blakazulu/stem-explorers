@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed JSON parsing in report generation that failed when AI response contained braces in markdown content
+- Fixed JSON parsing in report generation to properly handle braces inside string values
 - Updated Gemini model from deprecated gemini-1.5-flash to gemini-2.0-flash
 
 ## [0.9.20] - 2026-01-20
