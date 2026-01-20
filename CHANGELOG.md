@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Netlify generate-report function refactored**: Updated to use `questionnaireName` instead of `unitName`
+  - Function signature changed: `generateReportContent(journals, questionnaireName, journalCount, aiPromptInstructions)`
+  - AI prompt now references questionnaire responses instead of research journals
+  - Handler accepts `questionnaireName` and `journalCount` in request body
+  - Added error details to 500 response for better debugging
 - **Report type refactored**: Updated `Report` interface to be grade+questionnaire+date based instead of unit-based
   - Removed `unitId` field
   - Added `questionnaireId`, `questionnaireName`, and `journalCount` fields

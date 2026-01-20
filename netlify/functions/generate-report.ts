@@ -8,7 +8,8 @@ const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY || "");
  */
 export async function generateReportContent(
   journals: Array<{ answers: unknown }>,
-  unitName: string,
+  questionnaireName: string,
+  journalCount: number,
   aiPromptInstructions?: string
 ): Promise<{ teacherContent: string; parentContent: string }> {
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -18,9 +19,9 @@ export async function generateReportContent(
     .join("\n");
 
   const prompt = `
-אתה מנתח נתונים חינוכיים. יש לך ${journals.length} יומני חוקר מיחידה "${unitName}".
+אתה מנתח נתונים חינוכיים. יש לך ${journalCount} תגובות לשאלון "${questionnaireName}".
 
-נתוני היומנים:
+נתוני התגובות:
 ${journalSummary}
 
 ${aiPromptInstructions || ""}
@@ -50,7 +51,7 @@ ${aiPromptInstructions || ""}
 
 /**
  * On-demand report generation endpoint
- * Used by the admin settings page for manual daily report generation
+ * Used by the admin settings page for manual report generation
  */
 export const handler: Handler = async (event) => {
   if (event.httpMethod !== "POST") {
@@ -64,7 +65,9 @@ export const handler: Handler = async (event) => {
   }
 
   try {
-    const { journals, unitName, reportConfig } = JSON.parse(event.body || "{}");
+    const { journals, questionnaireName, journalCount, reportConfig } = JSON.parse(
+      event.body || "{}"
+    );
 
     if (!journals || journals.length === 0) {
       return {
@@ -75,7 +78,8 @@ export const handler: Handler = async (event) => {
 
     const { teacherContent, parentContent } = await generateReportContent(
       journals,
-      unitName,
+      questionnaireName || "שאלון",
+      journalCount || journals.length,
       reportConfig?.aiPromptInstructions
     );
 
@@ -87,7 +91,10 @@ export const handler: Handler = async (event) => {
     console.error("Report generation error:", error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Failed to generate report" }),
+      body: JSON.stringify({
+        error: "Failed to generate report",
+        details: error instanceof Error ? error.message : "Unknown error",
+      }),
     };
   }
 };
