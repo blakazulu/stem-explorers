@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Games Hub Firestore services**: Complete service layer for game data operations
+  - Game content CRUD (admin): `getGameContent`, `getAllGameContent`, `createGameContent`, `updateGameContent`, `deleteGameContent`
+  - Player progress tracking: `getGameProgress`, `updateGameProgress` with stats merging
+  - Badge system: `getPlayerBadges`, `awardBadge` (idempotent), `updateStreak` with consecutive day logic
+  - Head-to-head challenges: `createChallenge`, `getWaitingChallenges`, `joinChallenge`, `updateChallengeScore`, `completeChallenge`, `subscribeToChallenge` (real-time)
+  - Services defined in `src/lib/services/games.ts`
+
 - **Games Hub constants and configuration**: Game categories, metadata, and badge definitions
   - 6 game categories with Hebrew names, icons, colors, and patterns
   - Game metadata for all 12 games (names, icons, head-to-head support, timer defaults)
