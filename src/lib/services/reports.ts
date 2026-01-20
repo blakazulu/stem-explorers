@@ -6,6 +6,7 @@ import {
   doc,
   setDoc,
   getDoc,
+  orderBy,
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -19,36 +20,80 @@ function formatDate(date: Date): string {
   return date.toISOString().split("T")[0];
 }
 
-export async function getReport(
-  unitId: string,
-  gradeId: Grade
-): Promise<Report | null> {
+// Generate report ID: {gradeId}-{questionnaireId}-{YYYY-MM-DD}
+export function getReportId(
+  gradeId: Grade,
+  questionnaireId: string,
+  date: Date
+): string {
+  const dateStr = formatDate(date);
+  return `${gradeId}-${questionnaireId}-${dateStr}`;
+}
+
+// Get all reports for a grade, sorted by date (newest first)
+export async function getReportsByGrade(gradeId: Grade): Promise<Report[]> {
   try {
     const q = query(
       collection(db, COLLECTION),
-      where("unitId", "==", unitId),
-      where("gradeId", "==", gradeId)
+      where("gradeId", "==", gradeId),
+      orderBy("generatedAt", "desc")
     );
 
     const snapshot = await getDocs(q);
-    if (snapshot.empty) return null;
-
-    const doc = snapshot.docs[0];
-    return {
-      id: doc.id,
-      ...doc.data(),
-      generatedAt: doc.data().generatedAt?.toDate(),
-    } as Report;
+    return snapshot.docs.map((d) => ({
+      id: d.id,
+      ...d.data(),
+      generatedAt: d.data().generatedAt?.toDate(),
+    })) as Report[];
   } catch (error) {
-    handleFirebaseError(error, "getReport");
+    handleFirebaseError(error, "getReportsByGrade");
+    return [];
   }
 }
 
-export async function generateReport(
-  unitId: string,
-  unitName: string,
+// Get a single report by ID
+export async function getReportById(reportId: string): Promise<Report | null> {
+  try {
+    const docRef = doc(db, COLLECTION, reportId);
+    const snapshot = await getDoc(docRef);
+
+    if (!snapshot.exists()) return null;
+
+    return {
+      id: snapshot.id,
+      ...snapshot.data(),
+      generatedAt: snapshot.data().generatedAt?.toDate(),
+    } as Report;
+  } catch (error) {
+    handleFirebaseError(error, "getReportById");
+    return null;
+  }
+}
+
+// Check if report exists for a specific grade+questionnaire+date
+export async function checkReportExists(
   gradeId: Grade,
-  journals: ResearchJournal[]
+  questionnaireId: string,
+  date: Date
+): Promise<boolean> {
+  try {
+    const reportId = getReportId(gradeId, questionnaireId, date);
+    const docRef = doc(db, COLLECTION, reportId);
+    const snapshot = await getDoc(docRef);
+    return snapshot.exists();
+  } catch (error) {
+    handleFirebaseError(error, "checkReportExists");
+    return false;
+  }
+}
+
+// Generate and save a report for a specific grade+questionnaire
+export async function generateReport(
+  gradeId: Grade,
+  questionnaireId: string,
+  questionnaireName: string,
+  journals: ResearchJournal[],
+  date: Date = new Date()
 ): Promise<Report> {
   try {
     const headers: HeadersInit = { "Content-Type": "application/json" };
@@ -62,7 +107,11 @@ export async function generateReport(
     const response = await fetch("/.netlify/functions/generate-report", {
       method: "POST",
       headers,
-      body: JSON.stringify({ journals, unitName }),
+      body: JSON.stringify({
+        journals,
+        questionnaireName,
+        journalCount: journals.length,
+      }),
     });
 
     if (!response.ok) {
@@ -71,10 +120,12 @@ export async function generateReport(
 
     const { teacherContent, parentContent } = await response.json();
 
-    const reportId = `${gradeId}-${unitId}`;
+    const reportId = getReportId(gradeId, questionnaireId, date);
     const report: Omit<Report, "id"> = {
-      unitId,
       gradeId,
+      questionnaireId,
+      questionnaireName,
+      journalCount: journals.length,
       teacherContent,
       parentContent,
       generatedAt: new Date(),
@@ -88,75 +139,6 @@ export async function generateReport(
     return { id: reportId, ...report };
   } catch (error) {
     handleFirebaseError(error, "generateReport");
-  }
-}
-
-export function getDailyReportId(gradeId: Grade, date: Date): string {
-  const dateStr = formatDate(date);
-  return `${gradeId}-daily-${dateStr}`;
-}
-
-export async function checkDailyReportExists(
-  gradeId: Grade,
-  date: Date
-): Promise<boolean> {
-  try {
-    const reportId = getDailyReportId(gradeId, date);
-    const docRef = doc(db, COLLECTION, reportId);
-    const snapshot = await getDoc(docRef);
-    return snapshot.exists();
-  } catch (error) {
-    handleFirebaseError(error, "checkDailyReportExists");
-    return false;
-  }
-}
-
-export async function generateDailyReport(
-  gradeId: Grade,
-  journals: ResearchJournal[],
-  date: Date = new Date()
-): Promise<Report> {
-  try {
-    const headers: HeadersInit = { "Content-Type": "application/json" };
-
-    // Add API secret if configured
-    const apiSecret = process.env.NEXT_PUBLIC_REPORT_API_SECRET;
-    if (apiSecret) {
-      headers["x-api-secret"] = apiSecret;
-    }
-
-    const dateStr = formatDate(date);
-    const unitName = `סיכום יומי - ${dateStr}`;
-    const unitId = `daily-${dateStr}`;
-
-    const response = await fetch("/.netlify/functions/generate-report", {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ journals, unitName }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to generate daily report");
-    }
-
-    const { teacherContent, parentContent } = await response.json();
-
-    const reportId = getDailyReportId(gradeId, date);
-    const report: Omit<Report, "id"> = {
-      unitId,
-      gradeId,
-      teacherContent,
-      parentContent,
-      generatedAt: new Date(),
-    };
-
-    await setDoc(doc(db, COLLECTION, reportId), {
-      ...report,
-      generatedAt: serverTimestamp(),
-    });
-
-    return { id: reportId, ...report };
-  } catch (error) {
-    handleFirebaseError(error, "generateDailyReport");
+    throw error;
   }
 }

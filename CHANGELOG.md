@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added `questionnaireId`, `questionnaireName`, and `journalCount` fields
   - Reports now identified by `{gradeId}-{questionnaireId}-{YYYY-MM-DD}`
 - **Report query keys updated**: Changed from `single(unitId, gradeId)` to `byGrade(gradeId)` and `single(reportId)` for grade-based model
+- **Reports service rewritten**: Complete rewrite for grade+questionnaire+date model
+  - `getReportsByGrade(gradeId)` - Get all reports for a grade, sorted by date
+  - `getReportById(reportId)` - Get a single report by ID
+  - `checkReportExists(gradeId, questionnaireId, date)` - Check if report exists
+  - `generateReport(gradeId, questionnaireId, questionnaireName, journals, date)` - Generate and save report
+  - `getReportId(gradeId, questionnaireId, date)` - Generate report ID
 
 ## [0.9.19] - 2026-01-20
 
