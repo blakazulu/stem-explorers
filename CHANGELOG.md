@@ -9,54 +9,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Reports grade page rewritten as list view**: Reports page now shows expandable list of reports per grade instead of unit selector
-  - Each report card shows: questionnaire name, date, and response count
-  - Click to expand and view report content (markdown rendered)
-  - Teachers see teacherContent, parents see parentContent
-  - Removed unit-based navigation
-- **Admin settings report generation updated**: Report generation now groups journals by grade AND questionnaire
-  - Uses new `generateReport` and `checkReportExists` functions
-  - Fetches questionnaire name for each group before generating report
+- Reports are now generated per grade+questionnaire+date instead of per unit
+- Reports page shows a list of reports sorted by date (newest first)
+- Each report card displays questionnaire name, date, and response count
+- Reports expand inline to show markdown-rendered content
+- Teachers see teacherContent, parents see parentContent
+- Admin settings "generate reports" now groups journals by questionnaire
+- Report ID format changed to `{gradeId}-{questionnaireId}-{YYYY-MM-DD}`
 
 ### Removed
 
-- **Unit-based report viewer page**: Deleted `/[role]/reports/[grade]/[unitId]` route - reports are now viewed inline on the grade page
+- Removed `unitId` from Report type (legacy field)
+- Removed unit-based report viewer page (`/[role]/reports/[grade]/[unitId]`)
+- Removed unit selector from reports navigation
 
 ### Fixed
 
-- **Netlify report generation type safety**: Made `journals` parameter type more flexible with index signature to allow additional properties
-- **Netlify daily reports validation**: Added validation to skip journals missing `gradeId` or `questionnaireId` during grouping
-- **Netlify AI response parsing**: Improved JSON parsing with non-greedy regex, better error messages, and validation of required fields
-
-### Changed
-
-- **Netlify generate-report function refactored**: Updated to use `questionnaireName` instead of `unitName`
-  - Function signature changed: `generateReportContent(journals, questionnaireName, journalCount, aiPromptInstructions)`
-  - AI prompt now references questionnaire responses instead of research journals
-  - Handler accepts `questionnaireName` and `journalCount` in request body
-  - Added error details to 500 response for better debugging
-- **Netlify scheduled reports function refactored**: Updated to group journals by grade+questionnaire instead of just grade
-  - Journals now grouped by `{gradeId}|{questionnaireId}` key
-  - Report ID format changed to `{gradeId}-{questionnaireId}-{YYYY-MM-DD}`
-  - Reports now include `questionnaireId`, `questionnaireName`, and `journalCount` fields
-  - Added `Questionnaire` type and `getQuestionnaire()` helper to fetch questionnaire names
-  - Removed `ALL_GRADES` constant - now only processes grades with actual submissions
-  - Summary now includes `totalGroups` count and error details with questionnaire IDs
-- **Report type refactored**: Updated `Report` interface to be grade+questionnaire+date based instead of unit-based
-  - Removed `unitId` field
-  - Added `questionnaireId`, `questionnaireName`, and `journalCount` fields
-  - Reports now identified by `{gradeId}-{questionnaireId}-{YYYY-MM-DD}`
-- **Report query keys updated**: Changed from `single(unitId, gradeId)` to `byGrade(gradeId)` and `single(reportId)` for grade-based model
-- **Reports service rewritten**: Complete rewrite for grade+questionnaire+date model
-  - `getReportsByGrade(gradeId)` - Get all reports for a grade, sorted by date
-  - `getReportById(reportId)` - Get a single report by ID
-  - `checkReportExists(gradeId, questionnaireId, date)` - Check if report exists
-  - `generateReport(gradeId, questionnaireId, questionnaireName, journals, date)` - Generate and save report
-  - `getReportId(gradeId, questionnaireId, date)` - Generate report ID
-- **Report query hooks updated**: Replaced unit-based hooks with grade-based hooks
-  - Added `useReportsByGrade(gradeId)` hook for fetching all reports by grade
-  - Updated `useReport(reportId)` to fetch single report by ID
-  - Removed `useGenerateReport` mutation hook (will be re-added in later phase)
+- Added missing return statement in `getQuestionnairesByGrade` service
+- Improved type safety in admin settings report generation
+- Improved error handling in Netlify AI report generation
 
 ## [0.9.19] - 2026-01-20
 
