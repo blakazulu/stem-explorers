@@ -36,6 +36,18 @@ for (const [regular, final] of Object.entries(FINAL_LETTERS)) {
 }
 
 /**
+ * Shuffle array using Fisher-Yates algorithm
+ */
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+/**
  * Main Hangman game component.
  * Fetches content, manages game state, and orchestrates the game flow.
  */
@@ -52,6 +64,12 @@ export function HangmanGame({
     difficulty
   );
 
+  // Shuffle content once when loaded
+  const shuffledContent = useMemo(() => {
+    if (contentList.length === 0) return [];
+    return shuffleArray(contentList);
+  }, [contentList]);
+
   // Game state
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [guessedLetters, setGuessedLetters] = useState<Set<string>>(new Set());
@@ -59,11 +77,11 @@ export function HangmanGame({
   const [gameStatus, setGameStatus] = useState<GameStatus>("playing");
   const [showCelebration, setShowCelebration] = useState(false);
 
-  // Get current word content
+  // Get current word content from shuffled list
   const currentContent = useMemo(() => {
-    if (contentList.length === 0) return null;
-    return contentList[currentWordIndex] as HangmanContent;
-  }, [contentList, currentWordIndex]);
+    if (shuffledContent.length === 0) return null;
+    return shuffledContent[currentWordIndex] as HangmanContent;
+  }, [shuffledContent, currentWordIndex]);
 
   // Get the word letters (normalized)
   const wordLetters = useMemo(() => {
@@ -188,13 +206,13 @@ export function HangmanGame({
   // Handle next word
   const handleNextWord = useCallback(() => {
     const nextIndex = currentWordIndex + 1;
-    if (nextIndex < contentList.length) {
+    if (nextIndex < shuffledContent.length) {
       setCurrentWordIndex(nextIndex);
       setGuessedLetters(new Set());
       setGameStatus("playing");
       setShowCelebration(false);
     }
-  }, [currentWordIndex, contentList.length]);
+  }, [currentWordIndex, shuffledContent.length]);
 
   // Handle restart game
   const handleRestart = useCallback(() => {
@@ -320,7 +338,7 @@ export function HangmanGame({
   };
 
   // Has more words to play
-  const hasMoreWords = currentWordIndex < contentList.length - 1;
+  const hasMoreWords = currentWordIndex < shuffledContent.length - 1;
 
   return (
     <div className="w-full max-w-3xl mx-auto p-4" dir="rtl">
@@ -407,7 +425,7 @@ export function HangmanGame({
         {/* Action buttons when game is over */}
         {gameStatus !== "playing" && (
           <div className="flex flex-wrap justify-center gap-3 mt-6">
-            {hasMoreWords && gameStatus === "won" && (
+            {hasMoreWords ? (
               <Button
                 onClick={handleNextWord}
                 variant="primary"
@@ -416,20 +434,22 @@ export function HangmanGame({
               >
                 מילה הבאה
               </Button>
+            ) : (
+              <Button
+                onClick={handleRestart}
+                variant="primary"
+                leftIcon={RotateCcw}
+                className="bg-emerald-600 hover:bg-emerald-700"
+              >
+                שחק שוב
+              </Button>
             )}
-            <Button
-              onClick={handleRestart}
-              variant="outline"
-              leftIcon={RotateCcw}
-            >
-              התחל מחדש
-            </Button>
           </div>
         )}
 
         {/* Progress indicator */}
         <div className="mt-6 text-center text-sm text-gray-500">
-          מילה {currentWordIndex + 1} מתוך {contentList.length}
+          מילה {currentWordIndex + 1} מתוך {shuffledContent.length}
         </div>
       </div>
     </div>
