@@ -7,7 +7,7 @@ const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY || "");
  * Core report generation logic - used by both on-demand handler and scheduled function
  */
 export async function generateReportContent(
-  journals: Array<{ answers: unknown; [key: string]: unknown }>,
+  journals: Array<{ answers: unknown }>,
   questionnaireName: string,
   journalCount: number,
   aiPromptInstructions?: string
