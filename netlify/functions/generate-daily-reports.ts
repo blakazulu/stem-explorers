@@ -177,6 +177,11 @@ export const handler = schedule("0 21 * * *", async () => {
     // Group journals by grade AND questionnaire
     const journalsByGroup: Map<string, ResearchJournal[]> = new Map();
     for (const journal of journals) {
+      // Skip journals without proper questionnaire ID
+      if (!journal.questionnaireId || !journal.gradeId) {
+        console.warn(`Skipping journal ${journal.id} - missing gradeId or questionnaireId`);
+        continue;
+      }
       const key = groupKey(journal.gradeId, journal.questionnaireId);
       if (!journalsByGroup.has(key)) {
         journalsByGroup.set(key, []);

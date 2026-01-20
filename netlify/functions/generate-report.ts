@@ -7,7 +7,7 @@ const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY || "");
  * Core report generation logic - used by both on-demand handler and scheduled function
  */
 export async function generateReportContent(
-  journals: Array<{ answers: unknown }>,
+  journals: Array<{ answers: unknown; [key: string]: unknown }>,
   questionnaireName: string,
   journalCount: number,
   aiPromptInstructions?: string
@@ -40,13 +40,30 @@ ${aiPromptInstructions || ""}
   const result = await model.generateContent(prompt);
   const text = result.response.text();
 
-  // Extract JSON from response
-  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  // Use non-greedy match to get first complete JSON object
+  const jsonMatch = text.match(/\{[\s\S]*?\}/);
   if (!jsonMatch) {
-    throw new Error("Failed to parse AI response");
+    console.error("AI response did not contain JSON:", text);
+    throw new Error("Failed to parse AI response - no JSON found");
   }
 
-  return JSON.parse(jsonMatch[0]);
+  let parsed;
+  try {
+    parsed = JSON.parse(jsonMatch[0]);
+  } catch (e) {
+    console.error("Invalid JSON in AI response:", jsonMatch[0]);
+    throw new Error("Failed to parse AI response - invalid JSON");
+  }
+
+  if (!parsed.teacherContent || !parsed.parentContent) {
+    console.error("Missing required fields in AI response:", parsed);
+    throw new Error("AI response missing required fields");
+  }
+
+  return {
+    teacherContent: parsed.teacherContent,
+    parentContent: parsed.parentContent,
+  };
 }
 
 /**
