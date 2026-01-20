@@ -95,7 +95,7 @@ export default function ReportsListPage() {
 
       {/* Reports List */}
       {isLoading ? (
-        <SkeletonGrid count={4} columns={1} />
+        <SkeletonGrid count={4} columns={2} />
       ) : reports.length === 0 ? (
         <EmptyState
           icon="file-text"
