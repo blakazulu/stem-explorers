@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed JSON parsing in report generation that failed when AI response contained braces in markdown content
+
 ## [0.9.20] - 2026-01-20
 
 ### Changed

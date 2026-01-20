@@ -40,18 +40,35 @@ ${aiPromptInstructions || ""}
   const result = await model.generateContent(prompt);
   const text = result.response.text();
 
-  // Use non-greedy match to get first complete JSON object
-  const jsonMatch = text.match(/\{[\s\S]*?\}/);
-  if (!jsonMatch) {
+  // Find JSON by matching balanced braces
+  let depth = 0;
+  let startIdx = -1;
+  let endIdx = -1;
+
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] === '{') {
+      if (depth === 0) startIdx = i;
+      depth++;
+    } else if (text[i] === '}') {
+      depth--;
+      if (depth === 0 && startIdx !== -1) {
+        endIdx = i + 1;
+        break;
+      }
+    }
+  }
+
+  if (startIdx === -1 || endIdx === -1) {
     console.error("AI response did not contain JSON:", text);
     throw new Error("Failed to parse AI response - no JSON found");
   }
 
+  const jsonStr = text.slice(startIdx, endIdx);
   let parsed;
   try {
-    parsed = JSON.parse(jsonMatch[0]);
+    parsed = JSON.parse(jsonStr);
   } catch (e) {
-    console.error("Invalid JSON in AI response:", jsonMatch[0]);
+    console.error("Invalid JSON in AI response:", jsonStr);
     throw new Error("Failed to parse AI response - invalid JSON");
   }
 
