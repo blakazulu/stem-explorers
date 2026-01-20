@@ -98,8 +98,10 @@ export interface Questionnaire {
 // AI-generated report
 export interface Report {
   id: string;
-  unitId: string;
   gradeId: Grade;
+  questionnaireId: string;
+  questionnaireName: string;
+  journalCount: number;
   teacherContent: string;
   parentContent: string;
   generatedAt: Date;

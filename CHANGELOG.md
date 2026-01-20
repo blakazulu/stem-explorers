@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Report type refactored**: Updated `Report` interface to be grade+questionnaire+date based instead of unit-based
+  - Removed `unitId` field
+  - Added `questionnaireId`, `questionnaireName`, and `journalCount` fields
+  - Reports now identified by `{gradeId}-{questionnaireId}-{YYYY-MM-DD}`
+
 ## [0.9.19] - 2026-01-20
 
 ### Added
