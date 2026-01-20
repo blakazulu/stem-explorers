@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Games Hub code review fixes**:
+  - Added missing return statements to games service functions after `handleFirebaseError()` calls, ensuring functions always return appropriate defaults (empty arrays, null, 0, or empty strings)
+  - Improved query key type safety by using `GameType` and `Grade` types instead of strings in `src/lib/queries/keys.ts`
+  - Added `aria-label` to CategoryCard button for screen reader accessibility
+  - Added `aria-label` to GameLayout difficulty selector for screen reader accessibility
+  - Removed console.log from game page and replaced with TODO comment
+
 ### Added
 
 - **Admin panel for game content management**: Complete admin interface for managing game content

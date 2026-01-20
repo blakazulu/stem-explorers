@@ -1,4 +1,5 @@
 import type { Grade } from "@/types";
+import type { GameType } from "@/types/games";
 import type { ResourceType } from "@/lib/services/settings";
 
 export const queryKeys = {
@@ -92,21 +93,21 @@ export const queryKeys = {
   games: {
     content: {
       all: ["games", "content"] as const,
-      byType: (gameType: string) => ["games", "content", gameType] as const,
-      byTypeAndGrade: (gameType: string, grade: string) =>
+      byType: (gameType: GameType) => ["games", "content", gameType] as const,
+      byTypeAndGrade: (gameType: GameType, grade: Grade) =>
         ["games", "content", gameType, grade] as const,
     },
     progress: {
       all: ["games", "progress"] as const,
-      byVisitor: (visitorId: string, grade: string) =>
+      byVisitor: (visitorId: string, grade: Grade) =>
         ["games", "progress", visitorId, grade] as const,
     },
     badges: {
-      byVisitor: (visitorId: string, grade: string) =>
+      byVisitor: (visitorId: string, grade: Grade) =>
         ["games", "badges", visitorId, grade] as const,
     },
     headToHead: {
-      waiting: (grade: string, gameType: string) =>
+      waiting: (grade: Grade, gameType: GameType) =>
         ["games", "headToHead", "waiting", grade, gameType] as const,
       single: (challengeId: string) =>
         ["games", "headToHead", challengeId] as const,

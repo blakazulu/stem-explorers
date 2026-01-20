@@ -118,6 +118,7 @@ export async function getGameContent(
     });
   } catch (error) {
     handleFirebaseError(error, "getGameContent");
+    return [];
   }
 }
 
@@ -167,6 +168,7 @@ export async function getAllGameContent(
     });
   } catch (error) {
     handleFirebaseError(error, "getAllGameContent");
+    return [];
   }
 }
 
@@ -183,6 +185,7 @@ export async function createGameContent(
     return docRef.id;
   } catch (error) {
     handleFirebaseError(error, "createGameContent");
+    return "";
   }
 }
 
@@ -259,6 +262,7 @@ export async function getGameProgress(
     });
   } catch (error) {
     handleFirebaseError(error, "getGameProgress");
+    return [];
   }
 }
 
@@ -364,6 +368,7 @@ export async function getPlayerBadges(
     } as PlayerBadges;
   } catch (error) {
     handleFirebaseError(error, "getPlayerBadges");
+    return null;
   }
 }
 
@@ -466,6 +471,7 @@ export async function updateStreak(
     }
   } catch (error) {
     handleFirebaseError(error, "updateStreak");
+    return 0;
   }
 }
 
@@ -505,6 +511,7 @@ export async function createChallenge(
     return docRef.id;
   } catch (error) {
     handleFirebaseError(error, "createChallenge");
+    return "";
   }
 }
 
@@ -554,6 +561,7 @@ export async function getWaitingChallenges(
       .filter((challenge) => challenge.expiresAt > now);
   } catch (error) {
     handleFirebaseError(error, "getWaitingChallenges");
+    return [];
   }
 }
 

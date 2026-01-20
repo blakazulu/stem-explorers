@@ -68,8 +68,7 @@ export default function GamePage() {
   };
 
   const handleHeadToHead = () => {
-    // In the future, this would open head-to-head matchmaking
-    console.log("Head-to-head mode requested");
+    // TODO: Implement head-to-head mode
   };
 
   return (

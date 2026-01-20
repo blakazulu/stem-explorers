@@ -64,6 +64,7 @@ export function CategoryCard({ category, onClick }: CategoryCardProps) {
   return (
     <button
       onClick={onClick}
+      aria-label={`פתח קטגוריית ${category.nameHe}`}
       className={`
         relative w-full p-5 rounded-2xl border-2
         bg-gradient-to-br ${colors.gradient} ${colors.border}
