@@ -167,3 +167,44 @@ export async function deactivateQuestionnaire(id: string): Promise<void> {
     handleFirebaseError(error, "deactivateQuestionnaire");
   }
 }
+
+export async function copyQuestionnaireToGrades(
+  sourceId: string,
+  targetGrades: Grade[]
+): Promise<number> {
+  try {
+    // Get source questionnaire
+    const source = await getQuestionnaire(sourceId);
+    if (!source) {
+      throw new Error("Source questionnaire not found");
+    }
+
+    // Create copies for each target grade
+    const batch = writeBatch(db);
+    let count = 0;
+
+    for (const grade of targetGrades) {
+      // Skip if same as source grade
+      if (grade === source.gradeId) continue;
+
+      const newDocRef = doc(collection(db, COLLECTION));
+      batch.set(newDocRef, {
+        name: source.name,
+        gradeId: grade,
+        questions: source.questions,
+        isActive: false,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      count++;
+    }
+
+    if (count > 0) {
+      await batch.commit();
+    }
+
+    return count;
+  } catch (error) {
+    handleFirebaseError(error, "copyQuestionnaireToGrades");
+  }
+}

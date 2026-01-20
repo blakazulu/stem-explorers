@@ -20,6 +20,7 @@ export {
   useDeleteQuestionnaire,
   useActivateQuestionnaire,
   useDeactivateQuestionnaire,
+  useCopyQuestionnaireToGrades,
 } from "./questionnaires";
 
 // Journals

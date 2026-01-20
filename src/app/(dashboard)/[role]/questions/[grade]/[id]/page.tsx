@@ -4,18 +4,24 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { useQuestionnaire, useUpdateQuestionnaire, useActivateQuestionnaire, useDeactivateQuestionnaire } from "@/lib/queries";
+import {
+  useQuestionnaire,
+  useUpdateQuestionnaire,
+  useActivateQuestionnaire,
+  useDeactivateQuestionnaire,
+  useCopyQuestionnaireToGrades,
+} from "@/lib/queries";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import { SkeletonCard } from "@/components/ui/Skeleton";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { QuestionFormModal } from "@/components/QuestionFormModal";
 import { useToastActions } from "@/components/ui/Toast";
 import {
   ClipboardList,
   ArrowRight,
   Plus,
-  X,
   Edit2,
   Trash2,
   CheckCircle,
@@ -24,11 +30,19 @@ import {
   CircleDot,
   CheckSquare,
   PenLine,
-  Save,
   Heart,
   ThumbsUp,
+  Copy,
+  X,
+  Check,
 } from "lucide-react";
-import type { EmbeddedQuestion, QuestionType, RatingStyle, Grade, UserRole } from "@/types";
+import type {
+  EmbeddedQuestion,
+  QuestionType,
+  RatingStyle,
+  Grade,
+  UserRole,
+} from "@/types";
 
 const VALID_GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
 const MIN_QUESTIONS = 0;
@@ -40,24 +54,23 @@ const questionTypes: {
   icon: typeof Star;
   color: string;
 }[] = [
-    { value: "rating", label: "דירוג (1-5)", icon: Star, color: "text-accent" },
-    { value: "single", label: "בחירה יחידה", icon: CircleDot, color: "text-primary" },
-    { value: "multiple", label: "בחירה מרובה", icon: CheckSquare, color: "text-secondary" },
-    { value: "open", label: "שאלה פתוחה", icon: PenLine, color: "text-role-student" },
-  ];
+  { value: "rating", label: "דירוג (1-5)", icon: Star, color: "text-accent" },
+  { value: "single", label: "בחירה יחידה", icon: CircleDot, color: "text-primary" },
+  { value: "multiple", label: "בחירה מרובה", icon: CheckSquare, color: "text-secondary" },
+  { value: "open", label: "שאלה פתוחה", icon: PenLine, color: "text-role-student" },
+];
 
 const ratingStyles: {
   value: RatingStyle;
   label: string;
   icon: typeof Star | null;
   emoji: string | null;
-  color: string;
 }[] = [
-    { value: "stars", label: "כוכבים", icon: Star, emoji: null, color: "text-accent" },
-    { value: "hearts", label: "לבבות", icon: Heart, emoji: null, color: "text-error" },
-    { value: "emojis", label: "אימוג'י", icon: null, emoji: "😊", color: "" },
-    { value: "thumbs", label: "אגודלים", icon: ThumbsUp, emoji: null, color: "text-success" },
-  ];
+  { value: "stars", label: "כוכבים", icon: Star, emoji: null },
+  { value: "hearts", label: "לבבות", icon: Heart, emoji: null },
+  { value: "emojis", label: "אימוג'י", icon: null, emoji: "😊" },
+  { value: "thumbs", label: "אגודלים", icon: ThumbsUp, emoji: null },
+];
 
 function generateId(): string {
   return Math.random().toString(36).substring(2, 15);
@@ -77,26 +90,31 @@ export default function EditQuestionnairePage() {
   const updateQuestionnaireMutation = useUpdateQuestionnaire();
   const activateQuestionnaireMutation = useActivateQuestionnaire();
   const deactivateQuestionnaireMutation = useDeactivateQuestionnaire();
-  const saving = updateQuestionnaireMutation.isPending || activateQuestionnaireMutation.isPending || deactivateQuestionnaireMutation.isPending;
+  const copyToGradesMutation = useCopyQuestionnaireToGrades();
 
-  // Question form state
-  const [showQuestionForm, setShowQuestionForm] = useState(false);
-  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
-  const [questionType, setQuestionType] = useState<QuestionType>("open");
-  const [questionText, setQuestionText] = useState("");
-  const [questionOptions, setQuestionOptions] = useState<string[]>([]);
-  const [ratingStyle, setRatingStyle] = useState<RatingStyle>("stars");
-  const [newOption, setNewOption] = useState("");
+  const saving =
+    updateQuestionnaireMutation.isPending ||
+    activateQuestionnaireMutation.isPending ||
+    deactivateQuestionnaireMutation.isPending ||
+    copyToGradesMutation.isPending;
+
+  // Name editing state
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedName, setEditedName] = useState("");
+
+  // Question modal state
+  const [showQuestionModal, setShowQuestionModal] = useState(false);
+  const [editingQuestion, setEditingQuestion] = useState<EmbeddedQuestion | null>(null);
   const [deleteQuestionId, setDeleteQuestionId] = useState<string | null>(null);
+
+  // Copy to grades modal state
+  const [showCopyModal, setShowCopyModal] = useState(false);
+  const [selectedGrades, setSelectedGrades] = useState<Grade[]>([]);
 
   const toast = useToastActions();
   const isAdmin = session?.user.role === "admin";
   const backUrl = `/${role}/questions/${encodeURIComponent(grade)}`;
 
-  const isChoiceType = questionType === "single" || questionType === "multiple";
-  const isRatingType = questionType === "rating";
-  const hasEnoughOptions = !isChoiceType || questionOptions.length >= 2;
-  const isQuestionFormValid = questionText.trim().length > 0 && hasEnoughOptions;
   const canAddQuestion = questionnaire && questionnaire.questions.length < MAX_QUESTIONS;
   const canDeleteQuestion = questionnaire && questionnaire.questions.length > MIN_QUESTIONS;
 
@@ -117,59 +135,79 @@ export default function EditQuestionnairePage() {
     }
   }, [loading, questionnaire, grade, backUrl, router]);
 
-  function resetQuestionForm() {
-    setShowQuestionForm(false);
-    setEditingQuestionId(null);
-    setQuestionType("open");
-    setQuestionText("");
-    setQuestionOptions([]);
-    setRatingStyle("stars");
-    setNewOption("");
-  }
+  // Initialize edited name when questionnaire loads
+  useEffect(() => {
+    if (questionnaire) {
+      setEditedName(questionnaire.name);
+    }
+  }, [questionnaire]);
 
-  function handleEditQuestion(q: EmbeddedQuestion) {
-    setEditingQuestionId(q.id);
-    setQuestionType(q.type);
-    setQuestionText(q.text);
-    setQuestionOptions(q.options || []);
-    setRatingStyle(q.ratingStyle || "stars");
-    setShowQuestionForm(true);
-  }
-
-  function addOption() {
-    if (newOption.trim() && !questionOptions.includes(newOption.trim())) {
-      setQuestionOptions([...questionOptions, newOption.trim()]);
-      setNewOption("");
+  function handleStartEditName() {
+    if (questionnaire) {
+      setEditedName(questionnaire.name);
+      setIsEditingName(true);
     }
   }
 
-  function removeOption(opt: string) {
-    setQuestionOptions(questionOptions.filter((o) => o !== opt));
+  function handleCancelEditName() {
+    setIsEditingName(false);
+    if (questionnaire) {
+      setEditedName(questionnaire.name);
+    }
   }
 
-  async function handleSaveQuestion() {
-    if (!questionnaire || !isQuestionFormValid) return;
+  function handleSaveName() {
+    if (!questionnaire || !editedName.trim()) return;
+
+    updateQuestionnaireMutation.mutate(
+      { id: questionnaire.id, data: { name: editedName.trim() } },
+      {
+        onSuccess: () => {
+          toast.success("שאלונים", "שם השאלון עודכן");
+          setIsEditingName(false);
+        },
+        onError: () => {
+          toast.error("שגיאה", "לא הצלחנו לעדכן את שם השאלון");
+        },
+      }
+    );
+  }
+
+  function handleEditQuestion(q: EmbeddedQuestion) {
+    setEditingQuestion(q);
+    setShowQuestionModal(true);
+  }
+
+  function handleAddQuestion() {
+    setEditingQuestion(null);
+    setShowQuestionModal(true);
+  }
+
+  function handleSaveQuestion(questionData: Omit<EmbeddedQuestion, "id" | "order">) {
+    if (!questionnaire) return;
 
     let updatedQuestions: EmbeddedQuestion[];
 
-    if (editingQuestionId) {
+    if (editingQuestion) {
       // Update existing question
       updatedQuestions = questionnaire.questions.map((q) => {
-        if (q.id !== editingQuestionId) return q;
+        if (q.id !== editingQuestion.id) return q;
         const updated: EmbeddedQuestion = {
           ...q,
-          type: questionType,
-          text: questionText.trim(),
+          type: questionData.type,
+          text: questionData.text,
         };
         // Only include options for choice types (Firebase doesn't support undefined)
-        if (isChoiceType) {
-          updated.options = questionOptions;
+        if (questionData.type === "single" || questionData.type === "multiple") {
+          updated.options = questionData.options;
+          updated.hasOtherOption = questionData.hasOtherOption;
         } else {
           delete updated.options;
+          delete updated.hasOtherOption;
         }
         // Only include ratingStyle for rating type
-        if (isRatingType) {
-          updated.ratingStyle = ratingStyle;
+        if (questionData.type === "rating") {
+          updated.ratingStyle = questionData.ratingStyle;
         } else {
           delete updated.ratingStyle;
         }
@@ -179,28 +217,30 @@ export default function EditQuestionnairePage() {
       // Add new question
       const newQuestion: EmbeddedQuestion = {
         id: generateId(),
-        type: questionType,
-        text: questionText.trim(),
+        type: questionData.type,
+        text: questionData.text,
         order: questionnaire.questions.length + 1,
       };
-      // Only include options for choice types (Firebase doesn't support undefined)
-      if (isChoiceType) {
-        newQuestion.options = questionOptions;
+      // Only include options for choice types
+      if (questionData.type === "single" || questionData.type === "multiple") {
+        newQuestion.options = questionData.options;
+        newQuestion.hasOtherOption = questionData.hasOtherOption;
       }
       // Only include ratingStyle for rating type
-      if (isRatingType) {
-        newQuestion.ratingStyle = ratingStyle;
+      if (questionData.type === "rating") {
+        newQuestion.ratingStyle = questionData.ratingStyle;
       }
       updatedQuestions = [...questionnaire.questions, newQuestion];
     }
 
-    const isEditing = !!editingQuestionId;
+    const isEditing = !!editingQuestion;
     updateQuestionnaireMutation.mutate(
       { id: questionnaire.id, data: { questions: updatedQuestions } },
       {
         onSuccess: () => {
           toast.success("שאלונים", isEditing ? "השאלה עודכנה" : "השאלה נוספה");
-          resetQuestionForm();
+          setShowQuestionModal(false);
+          setEditingQuestion(null);
         },
         onError: () => {
           toast.error("שגיאה", "לא הצלחנו לשמור את השאלה");
@@ -271,6 +311,35 @@ export default function EditQuestionnairePage() {
     }
   }
 
+  function handleOpenCopyModal() {
+    setSelectedGrades([]);
+    setShowCopyModal(true);
+  }
+
+  function handleToggleGrade(g: Grade) {
+    setSelectedGrades((prev) =>
+      prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]
+    );
+  }
+
+  function handleCopyToGrades() {
+    if (!questionnaire || selectedGrades.length === 0) return;
+
+    copyToGradesMutation.mutate(
+      { sourceId: questionnaire.id, targetGrades: selectedGrades },
+      {
+        onSuccess: (count) => {
+          toast.success("שאלונים", `השאלון הועתק ל-${count} כיתות`);
+          setShowCopyModal(false);
+          setSelectedGrades([]);
+        },
+        onError: () => {
+          toast.error("שגיאה", "לא הצלחנו להעתיק את השאלון");
+        },
+      }
+    );
+  }
+
   if (!isAdmin || !VALID_GRADES.includes(grade)) {
     return null;
   }
@@ -297,8 +366,6 @@ export default function EditQuestionnairePage() {
     return null;
   }
 
-  const currentTypeConfig = questionTypes.find((t) => t.value === questionType);
-
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       {/* Page Header */}
@@ -315,23 +382,80 @@ export default function EditQuestionnairePage() {
             <ClipboardList size={24} className="text-role-admin" />
           </div>
           <div>
-            <h1 className="text-xl md:text-2xl font-rubik font-bold text-foreground">
-              {questionnaire.name}
-            </h1>
+            {/* Editable Name */}
+            {isEditingName ? (
+              <div className="flex items-center gap-2">
+                <Input
+                  value={editedName}
+                  onChange={(e) => setEditedName(e.target.value)}
+                  className="text-lg font-rubik font-bold"
+                  disabled={saving}
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSaveName();
+                    if (e.key === "Escape") handleCancelEditName();
+                  }}
+                />
+                <button
+                  onClick={handleSaveName}
+                  disabled={saving || !editedName.trim()}
+                  className="p-2 text-success hover:bg-success/10 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+                  title="שמור"
+                >
+                  <Check size={18} />
+                </button>
+                <button
+                  onClick={handleCancelEditName}
+                  disabled={saving}
+                  className="p-2 text-gray-400 hover:bg-surface-2 rounded-lg transition-colors cursor-pointer"
+                  title="ביטול"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl md:text-2xl font-rubik font-bold text-foreground">
+                  {questionnaire.name}
+                </h1>
+                <button
+                  onClick={handleStartEditName}
+                  disabled={saving}
+                  className="p-1.5 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer"
+                  title="ערוך שם"
+                >
+                  <Edit2 size={16} />
+                </button>
+              </div>
+            )}
             <p className="text-sm text-gray-500">כיתה {grade}</p>
           </div>
         </div>
 
-        {/* Activate Button */}
-        <Button
-          onClick={handleToggleActive}
-          disabled={saving || (!questionnaire.isActive && questionnaire.questions.length === 0)}
-          variant={questionnaire.isActive ? "outline" : "primary"}
-          rightIcon={questionnaire.isActive ? Circle : CheckCircle}
-          title={!questionnaire.isActive && questionnaire.questions.length === 0 ? "יש להוסיף שאלות לפני הפעלה" : undefined}
-        >
-          {questionnaire.isActive ? "השבת" : "הפעל"}
-        </Button>
+        {/* Header Actions */}
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={handleOpenCopyModal}
+            disabled={saving}
+            rightIcon={Copy}
+          >
+            העתק לכיתות
+          </Button>
+          <Button
+            onClick={handleToggleActive}
+            disabled={saving || (!questionnaire.isActive && questionnaire.questions.length === 0)}
+            variant={questionnaire.isActive ? "outline" : "primary"}
+            rightIcon={questionnaire.isActive ? Circle : CheckCircle}
+            title={
+              !questionnaire.isActive && questionnaire.questions.length === 0
+                ? "יש להוסיף שאלות לפני הפעלה"
+                : undefined
+            }
+          >
+            {questionnaire.isActive ? "השבת" : "הפעל"}
+          </Button>
+        </div>
       </div>
 
       {/* Status Banner */}
@@ -348,10 +472,10 @@ export default function EditQuestionnairePage() {
           <h2 className="font-rubik font-semibold text-lg text-foreground">
             שאלות ({questionnaire.questions.length}/{MAX_QUESTIONS})
           </h2>
-          {canAddQuestion && !showQuestionForm && (
+          {canAddQuestion && (
             <Button
               size="sm"
-              onClick={() => setShowQuestionForm(true)}
+              onClick={handleAddQuestion}
               rightIcon={Plus}
               disabled={saving}
             >
@@ -359,164 +483,6 @@ export default function EditQuestionnairePage() {
             </Button>
           )}
         </div>
-
-        {/* Question Form */}
-        {showQuestionForm && (
-          <div className="mb-6 p-4 bg-surface-1 rounded-xl space-y-4 animate-slide-up">
-            <div className="flex items-center justify-between">
-              <h3 className="font-medium text-foreground">
-                {editingQuestionId ? "עריכת שאלה" : "שאלה חדשה"}
-              </h3>
-              <button
-                onClick={resetQuestionForm}
-                className="p-1 text-gray-400 hover:text-gray-600 cursor-pointer"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            {/* Question Type */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              {questionTypes.map((t) => {
-                const IconComponent = t.icon;
-                const isSelected = questionType === t.value;
-                return (
-                  <button
-                    key={t.value}
-                    type="button"
-                    onClick={() => setQuestionType(t.value)}
-                    disabled={saving}
-                    className={`p-3 rounded-lg border-2 text-center transition-all duration-200 cursor-pointer ${isSelected
-                        ? "border-primary bg-primary/5"
-                        : "border-surface-3 hover:border-primary/50"
-                      }`}
-                  >
-                    <IconComponent
-                      size={20}
-                      className={`mx-auto mb-1 ${isSelected ? t.color : "text-gray-400"}`}
-                    />
-                    <span className={`text-xs ${isSelected ? "text-foreground" : "text-gray-500"}`}>
-                      {t.label}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Question Text */}
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                טקסט השאלה
-              </label>
-              <textarea
-                value={questionText}
-                onChange={(e) => setQuestionText(e.target.value)}
-                disabled={saving}
-                className="w-full p-3 border-2 border-surface-3 rounded-xl bg-surface-0 text-foreground placeholder:text-gray-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary resize-none"
-                rows={2}
-                placeholder="הקלד את השאלה..."
-              />
-            </div>
-
-            {/* Rating Style selector */}
-            {isRatingType && (
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-foreground">
-                  <Star size={14} className="text-accent" />
-                  סגנון דירוג
-                </label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                  {ratingStyles.map((style) => {
-                    const isSelected = ratingStyle === style.value;
-                    return (
-                      <button
-                        key={style.value}
-                        type="button"
-                        onClick={() => setRatingStyle(style.value)}
-                        disabled={saving}
-                        className={`p-3 rounded-lg border-2 text-center transition-all duration-200 cursor-pointer ${isSelected
-                            ? "border-primary bg-primary/5"
-                            : "border-surface-3 hover:border-primary/50"
-                          }`}
-                      >
-                        {style.icon ? (
-                          <style.icon
-                            size={20}
-                            className={`mx-auto mb-1 ${isSelected ? style.color : "text-gray-400"}`}
-                          />
-                        ) : (
-                          <span className="text-xl block mb-1">{style.emoji}</span>
-                        )}
-                        <span className={`text-xs ${isSelected ? "text-foreground" : "text-gray-500"}`}>
-                          {style.label}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Options for choice types */}
-            {isChoiceType && (
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-medium text-foreground">
-                  {currentTypeConfig && (
-                    <currentTypeConfig.icon size={14} className={currentTypeConfig.color} />
-                  )}
-                  אפשרויות בחירה (לפחות 2)
-                </label>
-                <div className="flex gap-2">
-                  <Input
-                    value={newOption}
-                    onChange={(e) => setNewOption(e.target.value)}
-                    placeholder="הוסף אפשרות"
-                    disabled={saving}
-                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addOption())}
-                  />
-                  <Button onClick={addOption} size="sm" disabled={saving}>
-                    הוסף
-                  </Button>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {questionOptions.map((opt) => (
-                    <span
-                      key={opt}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-surface-0 border border-surface-3 rounded-lg text-sm"
-                    >
-                      {opt}
-                      <button
-                        onClick={() => removeOption(opt)}
-                        disabled={saving}
-                        className="text-gray-400 hover:text-error cursor-pointer"
-                      >
-                        <X size={14} />
-                      </button>
-                    </span>
-                  ))}
-                  {questionOptions.length === 0 && (
-                    <span className="text-sm text-gray-400">לא נוספו אפשרויות</span>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Form Actions */}
-            <div className="flex justify-end gap-2 pt-2">
-              <Button variant="ghost" onClick={resetQuestionForm} disabled={saving}>
-                ביטול
-              </Button>
-              <Button
-                onClick={handleSaveQuestion}
-                disabled={!isQuestionFormValid || saving}
-                loading={saving}
-                rightIcon={Save}
-              >
-                {editingQuestionId ? "עדכן" : "הוסף"}
-              </Button>
-            </div>
-          </div>
-        )}
 
         {/* Questions */}
         {questionnaire.questions.length === 0 ? (
@@ -531,7 +497,10 @@ export default function EditQuestionnairePage() {
               .map((q, index) => {
                 const typeConfig = questionTypes.find((t) => t.value === q.type);
                 const TypeIcon = typeConfig?.icon || PenLine;
-                const styleConfig = q.type === "rating" ? ratingStyles.find((s) => s.value === (q.ratingStyle || "stars")) : null;
+                const styleConfig =
+                  q.type === "rating"
+                    ? ratingStyles.find((s) => s.value === (q.ratingStyle || "stars"))
+                    : null;
                 return (
                   <div
                     key={q.id}
@@ -549,6 +518,11 @@ export default function EditQuestionnairePage() {
                             ({styleConfig.emoji || styleConfig.label})
                           </span>
                         )}
+                        {q.hasOtherOption && (
+                          <span className="text-xs text-gray-400 bg-surface-2 px-1.5 py-0.5 rounded">
+                            + אחר
+                          </span>
+                        )}
                       </div>
                       <p className="text-foreground">{q.text}</p>
                       {q.options && q.options.length > 0 && (
@@ -560,14 +534,14 @@ export default function EditQuestionnairePage() {
                     <div className="flex gap-1">
                       <button
                         onClick={() => handleEditQuestion(q)}
-                        disabled={saving || showQuestionForm}
+                        disabled={saving}
                         className="p-2 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
                       >
                         <Edit2 size={16} />
                       </button>
                       <button
                         onClick={() => setDeleteQuestionId(q.id)}
-                        disabled={saving || showQuestionForm || !canDeleteQuestion}
+                        disabled={saving || !canDeleteQuestion}
                         className="p-2 text-gray-400 hover:text-error hover:bg-error/10 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
                       >
                         <Trash2 size={16} />
@@ -580,6 +554,19 @@ export default function EditQuestionnairePage() {
         )}
       </Card>
 
+      {/* Question Form Modal */}
+      <QuestionFormModal
+        isOpen={showQuestionModal}
+        onClose={() => {
+          setShowQuestionModal(false);
+          setEditingQuestion(null);
+        }}
+        onSave={handleSaveQuestion}
+        editingQuestion={editingQuestion}
+        saving={saving}
+      />
+
+      {/* Delete Question Dialog */}
       <ConfirmDialog
         isOpen={deleteQuestionId !== null}
         title="מחיקת שאלה"
@@ -588,6 +575,82 @@ export default function EditQuestionnairePage() {
         onConfirm={handleDeleteQuestion}
         onCancel={() => setDeleteQuestionId(null)}
       />
+
+      {/* Copy to Grades Modal */}
+      {showCopyModal && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/50 z-40 animate-fade-in"
+            onClick={() => setShowCopyModal(false)}
+          />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full animate-scale-in"
+              dir="rtl"
+            >
+              <div className="p-6">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-rubik font-bold text-foreground">
+                    העתק לכיתות אחרות
+                  </h2>
+                  <button
+                    onClick={() => setShowCopyModal(false)}
+                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-surface-2 rounded-lg transition-all duration-200 cursor-pointer"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                <p className="text-sm text-gray-500 mb-4">
+                  בחר את הכיתות אליהן להעתיק את השאלון. כל כיתה תקבל עותק עצמאי.
+                </p>
+
+                {/* Grade Checkboxes */}
+                <div className="grid grid-cols-3 gap-2 mb-6">
+                  {VALID_GRADES.filter((g) => g !== grade).map((g) => {
+                    const isSelected = selectedGrades.includes(g);
+                    return (
+                      <button
+                        key={g}
+                        type="button"
+                        onClick={() => handleToggleGrade(g)}
+                        disabled={saving}
+                        className={`p-3 rounded-xl border-2 text-center transition-all duration-200 cursor-pointer ${
+                          isSelected
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-surface-3 hover:border-primary/50 text-foreground"
+                        }`}
+                      >
+                        <span className="text-lg font-rubik font-bold">כיתה {g}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Actions */}
+                <div className="flex justify-end gap-3 pt-4 border-t border-surface-2">
+                  <Button
+                    variant="ghost"
+                    onClick={() => setShowCopyModal(false)}
+                    disabled={saving}
+                  >
+                    ביטול
+                  </Button>
+                  <Button
+                    onClick={handleCopyToGrades}
+                    disabled={selectedGrades.length === 0 || saving}
+                    loading={saving}
+                    rightIcon={Copy}
+                  >
+                    העתק ({selectedGrades.length})
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

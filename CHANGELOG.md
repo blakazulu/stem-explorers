@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.16] - 2026-01-20
+
+### Added
+
+- **Edit questionnaire name**: Admin can now edit questionnaire names inline in the questionnaire edit page using a pencil icon
+- **Copy questionnaire to other grades**: New "העתק לכיתות" button in questionnaire edit page opens a modal to copy the questionnaire (with all questions) to other grades as independent copies
+- **Question form modal**: Add/edit question form now opens in a wide modal dialog instead of inline, providing better UX
+- **"Other" option for choice questions**: Single and multiple choice questions can now include an "אחר" (Other) option that allows free-text input
+  - Checkbox in question form: "אפשר תשובה אחרת"
+  - Student UI shows text input when "Other" is selected
+  - Answers stored with "אחר: " prefix for identification
+
 ### Changed
 
 - **Admin Settings save buttons**: Disabled save buttons in Email Settings and Report Settings when no changes have been made

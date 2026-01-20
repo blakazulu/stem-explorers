@@ -9,6 +9,7 @@ import {
   deleteQuestionnaire,
   activateQuestionnaire,
   deactivateQuestionnaire,
+  copyQuestionnaireToGrades,
 } from "@/lib/services/questionnaires";
 import type { Questionnaire, Grade } from "@/types";
 
@@ -94,6 +95,22 @@ export function useDeactivateQuestionnaire() {
       queryClient.invalidateQueries({ queryKey: queryKeys.questionnaires.all });
       // Also invalidate all active questionnaire queries
       queryClient.invalidateQueries({ queryKey: ["questionnaires", "active"] });
+    },
+  });
+}
+
+export function useCopyQuestionnaireToGrades() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      sourceId,
+      targetGrades,
+    }: {
+      sourceId: string;
+      targetGrades: Grade[];
+    }) => copyQuestionnaireToGrades(sourceId, targetGrades),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.questionnaires.all });
     },
   });
 }

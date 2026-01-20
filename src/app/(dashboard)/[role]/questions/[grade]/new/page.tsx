@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { createQuestionnaire } from "@/lib/services/questionnaires";
+import { useCreateQuestionnaire } from "@/lib/queries";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
@@ -15,6 +15,7 @@ import {
   Plus,
 } from "lucide-react";
 import type { Grade, UserRole } from "@/types";
+import { useState } from "react";
 
 const VALID_GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
 
@@ -28,13 +29,14 @@ export default function NewQuestionnairePage() {
 
   const isValidGrade = VALID_GRADES.includes(grade);
 
-  const [saving, setSaving] = useState(false);
   const [name, setName] = useState("");
   const toast = useToastActions();
+  const createQuestionnaireMutation = useCreateQuestionnaire();
 
   const isAdmin = session?.user.role === "admin";
   const isFormValid = name.trim().length > 0;
   const backUrl = `/${role}/questions/${encodeURIComponent(grade)}`;
+  const saving = createQuestionnaireMutation.isPending;
 
   useEffect(() => {
     if (!isAdmin) {
@@ -50,20 +52,23 @@ export default function NewQuestionnairePage() {
     e.preventDefault();
     if (!isFormValid) return;
 
-    setSaving(true);
-    try {
-      const id = await createQuestionnaire({
+    createQuestionnaireMutation.mutate(
+      {
         name: name.trim(),
         gradeId: grade,
         questions: [],
         isActive: false,
-      });
-      toast.success("שאלונים", "השאלון נוצר בהצלחה");
-      router.push(`/${role}/questions/${encodeURIComponent(grade)}/${id}`);
-    } catch {
-      toast.error("שגיאה", "לא הצלחנו ליצור את השאלון");
-      setSaving(false);
-    }
+      },
+      {
+        onSuccess: (id) => {
+          toast.success("שאלונים", "השאלון נוצר בהצלחה");
+          router.push(`/${role}/questions/${encodeURIComponent(grade)}/${id}`);
+        },
+        onError: () => {
+          toast.error("שגיאה", "לא הצלחנו ליצור את השאלון");
+        },
+      }
+    );
   }
 
   if (!isAdmin || !isValidGrade) {

@@ -23,10 +23,27 @@ interface JournalWizardProps {
   onCancel: () => void;
 }
 
+const OTHER_PREFIX = "אחר: ";
+
 function isAnswerValid(answer: string | number | string[] | undefined): boolean {
   if (answer === undefined) return false;
-  if (Array.isArray(answer)) return answer.length > 0;
-  if (typeof answer === "string") return answer.trim().length > 0;
+  if (Array.isArray(answer)) {
+    // Filter out empty "Other" entries and check if anything remains
+    const validEntries = answer.filter((v) => {
+      if (v.startsWith(OTHER_PREFIX)) {
+        return v.replace(OTHER_PREFIX, "").trim().length > 0;
+      }
+      return true;
+    });
+    return validEntries.length > 0;
+  }
+  if (typeof answer === "string") {
+    // Check if it's an "Other" answer with empty text
+    if (answer.startsWith(OTHER_PREFIX)) {
+      return answer.replace(OTHER_PREFIX, "").trim().length > 0;
+    }
+    return answer.trim().length > 0;
+  }
   return true; // number (rating) - any number is valid including 0
 }
 

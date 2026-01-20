@@ -63,6 +63,7 @@ export interface Question {
   text: string;
   options?: string[];
   ratingStyle?: RatingStyle; // Only used when type === "rating"
+  hasOtherOption?: boolean; // Only used when type === "single" or "multiple"
   target: {
     grades: Grade[];
     units: string[];
@@ -77,6 +78,7 @@ export interface EmbeddedQuestion {
   text: string;
   options?: string[];
   ratingStyle?: RatingStyle; // Only used when type === "rating"
+  hasOtherOption?: boolean; // Only used when type === "single" or "multiple"
   order: number;
 }
 

@@ -47,6 +47,7 @@ export default function QuestionnairePage() {
       text: eq.text,
       options: eq.options,
       ratingStyle: eq.ratingStyle,
+      hasOtherOption: eq.hasOtherOption,
       target: { grades: [grade], units: [] },
       order: eq.order,
     })) ?? [];
