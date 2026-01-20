@@ -1,19 +1,36 @@
 "use client";
 
-import { useEffect } from "react";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUnitsByGrade } from "@/lib/queries";
+import { useReportsByGrade } from "@/lib/queries";
+import { Card } from "@/components/ui/Card";
 import { SkeletonGrid } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { BarChart2, ChevronRight, BookOpen, ArrowRight } from "lucide-react";
-import { Icon, getStemIconForId } from "@/components/ui/Icon";
-import type { Grade, Unit, UserRole } from "@/types";
+import {
+  BarChart2,
+  ArrowRight,
+  Calendar,
+  FileText,
+  Users,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import type { Grade, UserRole, Report } from "@/types";
 
 const VALID_GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
 
-export default function ReportsUnitSelectorPage() {
+function formatDate(date: Date): string {
+  return new Intl.DateTimeFormat("he-IL", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
+}
+
+export default function ReportsListPage() {
   const { session } = useAuth();
   const params = useParams();
   const router = useRouter();
@@ -22,28 +39,32 @@ export default function ReportsUnitSelectorPage() {
   const grade = decodeURIComponent(params.grade as string) as Grade;
 
   const isValidGrade = VALID_GRADES.includes(grade);
+  const isAdmin = session?.user.role === "admin";
+  const isParent = session?.user.role === "parent";
+  const showBackButton = isAdmin;
 
-  const { data: units = [], isLoading: loading } = useUnitsByGrade(
+  const [expandedReportId, setExpandedReportId] = useState<string | null>(null);
+
+  const { data: reports = [], isLoading } = useReportsByGrade(
     isValidGrade ? grade : null
   );
 
-  const isAdmin = session?.user.role === "admin";
-  // Only show back button for admins (others are restricted to their grade)
-  const showBackButton = isAdmin;
-
-  // Validate grade - redirect if invalid
-  useEffect(() => {
-    if (!isValidGrade) {
-      router.replace(`/${role}/reports`);
-    }
-  }, [isValidGrade, role, router]);
-
-  function handleUnitSelect(unit: Unit) {
-    router.push(`/${role}/reports/${grade}/${unit.id}`);
+  // Redirect if invalid grade
+  if (!isValidGrade) {
+    router.replace(`/${role}/reports`);
+    return null;
   }
 
-  if (!isValidGrade) {
-    return null;
+  function toggleReport(reportId: string) {
+    setExpandedReportId((prev) => (prev === reportId ? null : reportId));
+  }
+
+  // Determine which content to show based on role
+  function getReportContent(report: Report): string {
+    if (isParent) {
+      return report.parentContent;
+    }
+    return report.teacherContent;
   }
 
   return (
@@ -66,58 +87,78 @@ export default function ReportsUnitSelectorPage() {
           <h1 className="text-xl md:text-2xl font-rubik font-bold text-foreground">
             דוחות - כיתה {grade}
           </h1>
-          <p className="text-sm text-gray-500">בחר יחידה לצפייה בדוח</p>
+          <p className="text-sm text-gray-500">
+            {reports.length} דוחות
+          </p>
         </div>
       </div>
 
-      {/* Unit Selection */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <BookOpen size={18} className="text-primary" />
-          <h2 className="text-lg font-rubik font-semibold text-foreground">
-            בחר יחידה
-          </h2>
-        </div>
+      {/* Reports List */}
+      {isLoading ? (
+        <SkeletonGrid count={4} columns={1} />
+      ) : reports.length === 0 ? (
+        <EmptyState
+          icon="file-text"
+          title="אין דוחות"
+          description={`עדיין לא נוצרו דוחות לכיתה ${grade}`}
+        />
+      ) : (
+        <div className="space-y-4">
+          {reports.map((report, index) => {
+            const isExpanded = expandedReportId === report.id;
 
-        {loading ? (
-          <SkeletonGrid count={6} columns={3} />
-        ) : units.length === 0 ? (
-          <EmptyState
-            icon="book-open"
-            title="אין יחידות"
-            description={`לא נמצאו יחידות לכיתה ${grade}`}
-          />
-        ) : (
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            {units.map((unit, index) => {
-              const stemIcon = getStemIconForId(unit.id);
-              return (
+            return (
+              <Card
+                key={report.id}
+                className={`overflow-hidden animate-slide-up stagger-${Math.min(index + 1, 6)}`}
+              >
+                {/* Header - Always visible */}
                 <button
-                  key={unit.id}
-                  onClick={() => handleUnitSelect(unit)}
-                  className={`group text-right p-4 bg-surface-0 rounded-xl border-2 border-surface-2 hover:border-secondary hover:shadow-lg transition-all duration-200 cursor-pointer animate-slide-up stagger-${Math.min(index + 1, 6)}`}
+                  onClick={() => toggleReport(report.id)}
+                  className="w-full flex items-center justify-between p-4 text-right cursor-pointer hover:bg-surface-1 transition-colors"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-secondary/10 rounded-lg group-hover:bg-secondary/20 group-hover:scale-110 transition-all duration-200">
-                      <Icon name={stemIcon} size="md" className="text-secondary" />
+                  <div className="flex items-center gap-4">
+                    <div className="p-2 bg-secondary/10 rounded-full">
+                      <FileText size={20} className="text-secondary" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-rubik font-semibold text-foreground group-hover:text-secondary transition-colors">
-                        {unit.name}
+                    <div>
+                      <h3 className="font-rubik font-semibold text-foreground">
+                        {report.questionnaireName}
                       </h3>
-                      <p className="text-xs text-gray-500 mt-1">לחץ לצפייה בדוח</p>
+                      <div className="flex items-center gap-4 text-sm text-gray-500 mt-1">
+                        <span className="flex items-center gap-1">
+                          <Calendar size={14} />
+                          {report.generatedAt
+                            ? formatDate(report.generatedAt)
+                            : "לא ידוע"}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Users size={14} />
+                          {report.journalCount} תגובות
+                        </span>
+                      </div>
                     </div>
-                    <ChevronRight
-                      size={18}
-                      className="text-gray-300 group-hover:text-secondary group-hover:-translate-x-1 transition-all duration-200"
-                    />
                   </div>
+                  {isExpanded ? (
+                    <ChevronUp size={20} className="text-gray-400" />
+                  ) : (
+                    <ChevronDown size={20} className="text-gray-400" />
+                  )}
                 </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
+
+                {/* Expanded Content */}
+                {isExpanded && (
+                  <div className="border-t border-surface-2 p-4 animate-slide-up">
+                    <div className="prose prose-sm max-w-none text-foreground">
+                      <ReactMarkdown>{getReportContent(report)}</ReactMarkdown>
+                    </div>
+                  </div>
+                )}
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

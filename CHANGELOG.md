@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Reports grade page rewritten as list view**: Reports page now shows expandable list of reports per grade instead of unit selector
+  - Each report card shows: questionnaire name, date, and response count
+  - Click to expand and view report content (markdown rendered)
+  - Teachers see teacherContent, parents see parentContent
+  - Removed unit-based navigation
+
+### Fixed
+
+- **Netlify report generation type safety**: Made `journals` parameter type more flexible with index signature to allow additional properties
+- **Netlify daily reports validation**: Added validation to skip journals missing `gradeId` or `questionnaireId` during grouping
+- **Netlify AI response parsing**: Improved JSON parsing with non-greedy regex, better error messages, and validation of required fields
+
+### Changed
+
 - **Netlify generate-report function refactored**: Updated to use `questionnaireName` instead of `unitName`
   - Function signature changed: `generateReportContent(journals, questionnaireName, journalCount, aiPromptInstructions)`
   - AI prompt now references questionnaire responses instead of research journals
