@@ -1,7 +1,8 @@
 // src/components/parent-content/EventCard.tsx
 "use client";
 
-import { Calendar, ExternalLink } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Calendar, ExternalLink, X } from "lucide-react";
 import type { ParentContentEvent } from "@/types";
 
 interface EventCardProps {
@@ -10,6 +11,22 @@ interface EventCardProps {
 }
 
 export function EventCard({ event, isLast }: EventCardProps) {
+  const [isImageExpanded, setIsImageExpanded] = useState(false);
+
+  // Close expanded image on Escape key
+  useEffect(() => {
+    if (!isImageExpanded) return;
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setIsImageExpanded(false);
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isImageExpanded]);
+
   const formatDate = (dateStr: string) => {
     try {
       return new Date(dateStr).toLocaleDateString("he-IL", {
@@ -34,7 +51,7 @@ export function EventCard({ event, isLast }: EventCardProps) {
 
       {/* Content */}
       <div className="flex-1 pb-6">
-        <div className="bg-white rounded-xl border border-surface-2 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+        <div className="relative bg-white rounded-xl border border-surface-2 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
           {/* Date badge */}
           {event.date && (
             <div className="px-4 pt-4">
@@ -45,13 +62,16 @@ export function EventCard({ event, isLast }: EventCardProps) {
             </div>
           )}
 
-          {/* Image */}
+          {/* Image thumbnail */}
           {event.imageUrl && (
-            <div className="mt-3">
+            <div
+              className="mt-3 cursor-pointer group"
+              onClick={() => setIsImageExpanded(true)}
+            >
               <img
                 src={event.imageUrl}
                 alt={event.title}
-                className="w-full h-48 object-cover"
+                className="w-full max-h-96 object-contain bg-gray-50 transition-all group-hover:brightness-95"
               />
             </div>
           )}
@@ -78,6 +98,33 @@ export function EventCard({ event, isLast }: EventCardProps) {
               </a>
             )}
           </div>
+
+          {/* Expanded image overlay - covers entire card */}
+          {event.imageUrl && isImageExpanded && (
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label="תמונה מוגדלת"
+              className="absolute inset-0 z-20 bg-black flex items-center justify-center cursor-pointer animate-fade-in"
+              onClick={() => setIsImageExpanded(false)}
+            >
+              <img
+                src={event.imageUrl}
+                alt={event.title}
+                className="max-w-full max-h-full object-contain"
+              />
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsImageExpanded(false);
+                }}
+                className="absolute top-3 right-3 p-2 bg-white/90 hover:bg-white rounded-full shadow-md transition-colors"
+                aria-label="סגור תמונה"
+              >
+                <X size={20} className="text-gray-700" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

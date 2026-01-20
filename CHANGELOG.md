@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.17] - 2026-01-20
+
+### Changed
+
+- **Parent content event images**: Images now display fully with `object-contain` instead of being cropped; clicking an image expands it to fill the entire card with a dark overlay. Includes hover effect on thumbnail, Escape key to close, and proper ARIA attributes for accessibility
+
 ## [0.9.16] - 2026-01-20
 
 ### Added
