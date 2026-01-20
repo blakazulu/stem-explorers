@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Games Hub design document**: Comprehensive design spec for student games feature
+  - 12 STEM educational games across 6 categories
+  - Badge/achievement system with 18 unlockable badges
+  - Head-to-head multiplayer for Quiz and Math Race
+  - Admin panel for content management
+  - Grade-adaptive difficulty system
+  - Design doc at `docs/plans/2026-01-21-games-hub-design.md`
+
 ## [0.9.22] - 2026-01-20
 
 ### Changed
