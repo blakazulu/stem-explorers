@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Full-screen game layout and game page**: Complete game playing infrastructure
+  - `GameLayout` component: Full-screen (100vw x 100vh) layout that covers entire screen
+    - Top bar with back button, game title/icon, score display, progress indicator
+    - Timer display (MM:SS format, turns red when <= 10 seconds)
+    - Difficulty selector dropdown (easy/medium/hard)
+    - Timer toggle button for non-racing games
+    - Head-to-head button for games that support multiplayer
+    - Emerald gradient background with centered game content area
+  - Game page at `/[role]/games/[gameType]`: Dynamic route for each game
+    - Validates gameType against GAME_INFO
+    - Role validation (admin and student only)
+    - Initializes GameSession state with difficulty and timer settings
+    - Racing games (quiz, mathRace) have timer enabled by default
+    - Shows placeholder with game icon, name, and "Coming soon" message
+
 - **Games sidebar navigation**: Added games to sidebar navigation and visibility configuration
   - Added "משחקים" (Games) nav item for admin and student roles
   - Added "ניהול משחקים" (Game Admin) nav item for admin role only
