@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.18] - 2026-01-20
+
+### Added
+
+- **Max selections for multiple choice**: Admin can now set a maximum number of selections for multiple choice questions
+  - Number input in question form modal (only for multiple choice type)
+  - Student UI shows "ניתן לבחור עד X תשובות" when limit is set
+  - Options become disabled (visually grayed out) when limit is reached
+  - Counter shows "נבחרו X מתוך Y תשובות" during selection
+  - "Other" option also counts towards the limit
+  - Validation ensures maxSelections is clamped to available options count
+
 ## [0.9.17] - 2026-01-20
 
 ### Changed

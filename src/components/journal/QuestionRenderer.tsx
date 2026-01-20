@@ -358,6 +358,10 @@ function MultipleChoiceRenderer({
     otherValue ? getOtherText(otherValue) : ""
   );
 
+  // Check if max selections limit is reached
+  const maxSelections = question.maxSelections;
+  const isMaxReached = maxSelections ? selectedValues.length >= maxSelections : false;
+
   // Sync otherText when value changes externally
   useEffect(() => {
     const other = selectedValues.find(isOtherValue);
@@ -371,6 +375,8 @@ function MultipleChoiceRenderer({
     if (isSelected) {
       onChange(selectedValues.filter((v) => v !== option));
     } else {
+      // Don't allow adding if max reached
+      if (isMaxReached) return;
       onChange([...selectedValues, option]);
     }
   }
@@ -381,6 +387,8 @@ function MultipleChoiceRenderer({
       onChange(selectedValues.filter((v) => !isOtherValue(v)));
       setOtherText("");
     } else {
+      // Don't allow adding if max reached
+      if (isMaxReached) return;
       // Add "other" to selection
       onChange([...selectedValues, OTHER_PREFIX + otherText]);
     }
@@ -403,21 +411,29 @@ function MultipleChoiceRenderer({
       <p className="text-lg font-rubik font-medium text-foreground">
         {question.text}
       </p>
-      <p className="text-sm text-gray-500">ניתן לבחור יותר מתשובה אחת</p>
+      <p className="text-sm text-gray-500">
+        {maxSelections
+          ? `ניתן לבחור עד ${maxSelections} תשובות`
+          : "ניתן לבחור יותר מתשובה אחת"}
+      </p>
       <div className="space-y-2">
         {question.options?.map((option) => {
           const isSelected = selectedValues.includes(option);
+          const isDisabled = !isSelected && isMaxReached;
           return (
             <button
               key={option}
               type="button"
               role="checkbox"
               aria-checked={isSelected}
+              aria-disabled={isDisabled}
               onClick={() => handleOptionClick(option)}
-              className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 text-right transition-all duration-200 cursor-pointer ${
-                isSelected
-                  ? "border-secondary bg-secondary/5"
-                  : "border-surface-3 hover:border-secondary/50 hover:bg-surface-1"
+              className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 text-right transition-all duration-200 ${
+                isDisabled
+                  ? "border-surface-3 opacity-50 cursor-not-allowed"
+                  : isSelected
+                  ? "border-secondary bg-secondary/5 cursor-pointer"
+                  : "border-surface-3 hover:border-secondary/50 hover:bg-surface-1 cursor-pointer"
               }`}
             >
               <div
@@ -441,10 +457,14 @@ function MultipleChoiceRenderer({
         })}
 
         {/* "Other" option */}
-        {question.hasOtherOption && (
+        {question.hasOtherOption && (() => {
+          const isOtherDisabled = !isOtherSelected && isMaxReached;
+          return (
           <div
             className={`rounded-xl border-2 transition-all duration-200 ${
-              isOtherSelected
+              isOtherDisabled
+                ? "border-surface-3 opacity-50"
+                : isOtherSelected
                 ? "border-secondary bg-secondary/5"
                 : "border-surface-3 hover:border-secondary/50"
             }`}
@@ -453,8 +473,11 @@ function MultipleChoiceRenderer({
               type="button"
               role="checkbox"
               aria-checked={isOtherSelected}
+              aria-disabled={isOtherDisabled}
               onClick={handleOtherClick}
-              className="w-full flex items-center gap-3 p-4 text-right cursor-pointer"
+              className={`w-full flex items-center gap-3 p-4 text-right ${
+                isOtherDisabled ? "cursor-not-allowed" : "cursor-pointer"
+              }`}
             >
               <div
                 className={`shrink-0 w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-200 ${
@@ -486,11 +509,14 @@ function MultipleChoiceRenderer({
               </div>
             )}
           </div>
-        )}
+        );
+        })()}
       </div>
       {displayCount > 0 && (
         <p className="text-sm text-secondary">
-          נבחרו {displayCount} תשובות
+          {maxSelections
+            ? `נבחרו ${displayCount} מתוך ${maxSelections} תשובות`
+            : `נבחרו ${displayCount} תשובות`}
         </p>
       )}
     </div>

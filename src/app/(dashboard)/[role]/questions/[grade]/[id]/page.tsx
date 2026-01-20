@@ -205,6 +205,13 @@ export default function EditQuestionnairePage() {
           delete updated.options;
           delete updated.hasOtherOption;
         }
+        // Only include maxSelections for multiple choice type (validated against options)
+        if (questionData.type === "multiple" && questionData.maxSelections && questionData.maxSelections >= 2) {
+          const totalOptions = (updated.options?.length || 0) + (updated.hasOtherOption ? 1 : 0);
+          updated.maxSelections = Math.min(questionData.maxSelections, totalOptions);
+        } else {
+          delete updated.maxSelections;
+        }
         // Only include ratingStyle for rating type
         if (questionData.type === "rating") {
           updated.ratingStyle = questionData.ratingStyle;
@@ -225,6 +232,11 @@ export default function EditQuestionnairePage() {
       if (questionData.type === "single" || questionData.type === "multiple") {
         newQuestion.options = questionData.options;
         newQuestion.hasOtherOption = questionData.hasOtherOption;
+      }
+      // Only include maxSelections for multiple choice type (validated against options)
+      if (questionData.type === "multiple" && questionData.maxSelections && questionData.maxSelections >= 2) {
+        const totalOptions = (newQuestion.options?.length || 0) + (newQuestion.hasOtherOption ? 1 : 0);
+        newQuestion.maxSelections = Math.min(questionData.maxSelections, totalOptions);
       }
       // Only include ratingStyle for rating type
       if (questionData.type === "rating") {
@@ -521,6 +533,11 @@ export default function EditQuestionnairePage() {
                         {q.hasOtherOption && (
                           <span className="text-xs text-gray-400 bg-surface-2 px-1.5 py-0.5 rounded">
                             + אחר
+                          </span>
+                        )}
+                        {q.maxSelections && (
+                          <span className="text-xs text-gray-400 bg-surface-2 px-1.5 py-0.5 rounded">
+                            מקס׳ {q.maxSelections}
                           </span>
                         )}
                       </div>

@@ -63,9 +63,11 @@ export function QuestionFormModal({
   const [questionOptions, setQuestionOptions] = useState<string[]>([]);
   const [ratingStyle, setRatingStyle] = useState<RatingStyle>("stars");
   const [hasOtherOption, setHasOtherOption] = useState(false);
+  const [maxSelections, setMaxSelections] = useState<number | undefined>(undefined);
   const [newOption, setNewOption] = useState("");
 
   const isChoiceType = questionType === "single" || questionType === "multiple";
+  const isMultipleType = questionType === "multiple";
   const isRatingType = questionType === "rating";
   const hasEnoughOptions = !isChoiceType || questionOptions.length >= 2;
   const isFormValid = questionText.trim().length > 0 && hasEnoughOptions;
@@ -81,12 +83,14 @@ export function QuestionFormModal({
         setQuestionOptions(editingQuestion.options || []);
         setRatingStyle(editingQuestion.ratingStyle || "stars");
         setHasOtherOption(editingQuestion.hasOtherOption || false);
+        setMaxSelections(editingQuestion.maxSelections);
       } else {
         setQuestionType("open");
         setQuestionText("");
         setQuestionOptions([]);
         setRatingStyle("stars");
         setHasOtherOption(false);
+        setMaxSelections(undefined);
       }
       setNewOption("");
     }
@@ -142,6 +146,12 @@ export function QuestionFormModal({
     if (isChoiceType) {
       question.options = questionOptions;
       question.hasOtherOption = hasOtherOption;
+    }
+
+    // Only include maxSelections for multiple choice type (minimum 2, clamped to available options)
+    if (isMultipleType && maxSelections && maxSelections >= 2) {
+      const totalOptions = questionOptions.length + (hasOtherOption ? 1 : 0);
+      question.maxSelections = Math.min(maxSelections, totalOptions);
     }
 
     // Only include ratingStyle for rating type
@@ -324,6 +334,33 @@ export function QuestionFormModal({
                   </span>
                 </div>
               </label>
+
+              {/* Max Selections (multiple choice only) */}
+              {isMultipleType && (
+                <div className="flex items-center gap-3 p-3 bg-surface-1 rounded-xl border border-surface-3">
+                  <div className="flex items-center gap-2 flex-1">
+                    <span className="text-sm font-medium text-foreground">
+                      מספר בחירות מקסימלי
+                    </span>
+                    <span className="text-xs text-gray-400">
+                      (השאר ריק ללא הגבלה)
+                    </span>
+                  </div>
+                  <input
+                    type="number"
+                    min={2}
+                    max={questionOptions.length + (hasOtherOption ? 1 : 0)}
+                    value={maxSelections || ""}
+                    onChange={(e) => {
+                      const val = e.target.value ? parseInt(e.target.value, 10) : undefined;
+                      setMaxSelections(val);
+                    }}
+                    disabled={saving}
+                    placeholder="ללא הגבלה"
+                    className="w-24 p-2 text-center border-2 border-surface-3 rounded-lg bg-surface-0 text-foreground placeholder:text-gray-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>
