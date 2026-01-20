@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.20] - 2026-01-20
+
 ### Changed
 
 - Reports are now generated per grade+questionnaire+date instead of per unit
@@ -28,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added missing return statements in questionnaires service functions
 - Improved type safety in admin settings report generation
 - Improved error handling in Netlify AI report generation
+- Fixed type error in gallery page with gradeCounts default value
 
 ## [0.9.19] - 2026-01-20
 

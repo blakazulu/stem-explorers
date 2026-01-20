@@ -16,7 +16,7 @@ const GRADES: { grade: Grade; label: string; color: string; textColor: string; b
 ];
 
 export default function GalleryPage() {
-  const { data: gradeCounts = {} } = useDocumentationCountsByGrade();
+  const { data: gradeCounts = {} as Record<Grade, number> } = useDocumentationCountsByGrade();
 
   return (
     <div className="h-screen flex flex-col relative overflow-hidden">
