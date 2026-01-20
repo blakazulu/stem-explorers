@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Word Search game (חיפוש מילים)**: Complete implementation of the word search puzzle game
+  - `WordSearchGrid` component: Interactive grid with Hebrew letters, click-and-drag selection, automatic direction snapping (horizontal, vertical, diagonal), touch support for mobile, responsive cell sizing (8x8, 10x10, 12x12 grids), found cells highlighted in green, selection preview in pink
+  - `WordList` component: Shows all words to find with progress bar, found words crossed out with green checkmark, completion message when all words found
+  - `WordSearchGame` component: Main game logic with React Query integration for fetching WordSearchContent, grid generation algorithm (places words in valid positions, fills empty cells with random Hebrew letters), selection validation (checks forward and backward directions for Hebrew words), final letter normalization for proper matching, score system (+10 per word found, +50 bonus for completing all words), "next puzzle" flow for multiple puzzles, loading/error/empty states
+  - Game page integration: WordSearchGame rendered when gameType is "wordSearch", difficulty selector works with the game
+  - Pink theme styling matching "משחקי מילים" category color
+
 - **Hangman game content**: 180 STEM-related Hebrew words for all grades (א-ו) and difficulties
   - Grade-appropriate vocabulary: simple words for younger grades, advanced scientific terms for older grades
   - Categories: טבע, מדע, חלל, חיות, צמחים, טכנולוגיה, גוף האדם, פיזיקה, כימיה, ביולוגיה
