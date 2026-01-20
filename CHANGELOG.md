@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Click to expand and view report content (markdown rendered)
   - Teachers see teacherContent, parents see parentContent
   - Removed unit-based navigation
+- **Admin settings report generation updated**: Report generation now groups journals by grade AND questionnaire
+  - Uses new `generateReport` and `checkReportExists` functions
+  - Fetches questionnaire name for each group before generating report
 
 ### Removed
 

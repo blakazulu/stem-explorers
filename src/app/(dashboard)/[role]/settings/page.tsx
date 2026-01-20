@@ -11,9 +11,10 @@ import {
   useTodaysJournals,
 } from "@/lib/queries";
 import {
-  generateDailyReport,
-  checkDailyReportExists,
+  generateReport,
+  checkReportExists,
 } from "@/lib/services/reports";
+import { getQuestionnairesByGrade } from "@/lib/services/questionnaires";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
@@ -194,39 +195,70 @@ export default function SettingsPage() {
     setGenerationError(null);
     setGenerationProgress({
       current: 0,
-      total: gradesWithJournals.length,
+      total: 0,
       completedGrades: [],
       skippedGrades: [],
     });
 
     const today = new Date();
-    const completedGrades: Grade[] = [];
-    const skippedGrades: Grade[] = [];
 
-    for (let i = 0; i < gradesWithJournals.length; i++) {
-      const grade = gradesWithJournals[i];
-      const journals = journalsByGrade[grade];
+    // Group today's journals by grade AND questionnaire
+    const journalsByGroup: Map<string, { gradeId: Grade; questionnaireId: string; journals: typeof todaysJournals }> = new Map();
+
+    for (const journal of todaysJournals) {
+      const key = `${journal.gradeId}|${journal.questionnaireId}`;
+      if (!journalsByGroup.has(key)) {
+        journalsByGroup.set(key, {
+          gradeId: journal.gradeId,
+          questionnaireId: journal.questionnaireId,
+          journals: [],
+        });
+      }
+      journalsByGroup.get(key)!.journals.push(journal);
+    }
+
+    const totalGroups = journalsByGroup.size;
+    let currentIndex = 0;
+
+    setGenerationProgress((prev) => ({ ...prev, total: totalGroups }));
+
+    for (const [, group] of journalsByGroup) {
+      currentIndex++;
+      setGenerationProgress((prev) => ({ ...prev, current: currentIndex }));
 
       try {
-        // Check if report already exists for this grade today
-        const exists = await checkDailyReportExists(grade, today);
+        // Check if report already exists
+        const exists = await checkReportExists(group.gradeId, group.questionnaireId, today);
         if (exists) {
-          skippedGrades.push(grade);
-        } else {
-          await generateDailyReport(grade, journals, today);
-          completedGrades.push(grade);
+          setGenerationProgress((prev) => ({
+            ...prev,
+            skippedGrades: [...prev.skippedGrades, group.gradeId],
+          }));
+          continue;
         }
-      } catch (error) {
-        console.error(`Failed to generate report for grade ${grade}:`, error);
-        setGenerationError(`שגיאה ביצירת דוח לכיתה ${grade}`);
-      }
 
-      setGenerationProgress({
-        current: i + 1,
-        total: gradesWithJournals.length,
-        completedGrades: [...completedGrades],
-        skippedGrades: [...skippedGrades],
-      });
+        // Get questionnaire name
+        const questionnaires = await getQuestionnairesByGrade(group.gradeId);
+        const questionnaire = questionnaires?.find((q) => q.id === group.questionnaireId);
+        const questionnaireName = questionnaire?.name || "שאלון";
+
+        // Generate report
+        await generateReport(
+          group.gradeId,
+          group.questionnaireId,
+          questionnaireName,
+          group.journals,
+          today
+        );
+
+        setGenerationProgress((prev) => ({
+          ...prev,
+          completedGrades: [...prev.completedGrades, group.gradeId],
+        }));
+      } catch (error) {
+        console.error(`Failed to generate report for ${group.gradeId}|${group.questionnaireId}:`, error);
+        setGenerationError(`שגיאה ביצירת דוח עבור ${group.gradeId}`);
+      }
     }
 
     setIsGenerating(false);
