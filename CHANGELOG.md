@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.24] - 2026-01-21
+
+### Fixed
+
+- **Forum page TypeScript error**: Fixed type error where `studentGrade` could be `null` but `useStudentPosts` only accepts `Grade | undefined`
+- **GameContentModal ConfirmDialog props**: Fixed incorrect prop names (`onClose` → `onCancel`, `confirmText` → `confirmLabel`, `cancelText` → `cancelLabel`)
+- **QuizGame TypeScript error**: Added null guard for `currentContent` before rendering QuizQuestion
+
 ### Changed
 
 - **Games icon**: Changed games icon from Gamepad2 to Puzzle in dashboard cards and sidebar for student and admin roles

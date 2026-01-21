@@ -283,7 +283,9 @@ export function QuizGame({
     );
   }
 
-  // Main game view
+  // Main game view - currentContent is guaranteed non-null here due to earlier guards
+  if (!currentContent) return null;
+
   return (
     <div className="w-full max-w-2xl mx-auto p-4" dir="rtl">
       <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 sm:p-6">

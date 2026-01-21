@@ -453,15 +453,15 @@ export function GameContentModal({ gameType, isOpen, onClose }: GameContentModal
       {/* Delete confirmation dialog */}
       <ConfirmDialog
         isOpen={deleteConfirm !== null}
-        onClose={() => setDeleteConfirm(null)}
+        onCancel={() => setDeleteConfirm(null)}
         onConfirm={handleConfirmedDelete}
         title="מחיקת תוכן"
         message={deleteConfirm?.isNew
           ? "האם למחוק פריט חדש זה? הפריט טרם נשמר."
           : "האם למחוק פריט זה? המחיקה תתבצע רק לאחר לחיצה על 'שמור שינויים'."
         }
-        confirmText="מחק"
-        cancelText="ביטול"
+        confirmLabel="מחק"
+        cancelLabel="ביטול"
         variant="danger"
       />
     </dialog>

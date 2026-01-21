@@ -92,7 +92,7 @@ Located in `src/components/ui/`:
 - `EmptyState` - Consistent empty displays; accepts ActionConfig or ReactNode
 - `Progress` - Animated progress bar with step indicators
 - `GradeSelector` - Hebrew grade selection with visual feedback
-- `ConfirmDialog` - Modal with variant-specific icons (danger, warning, info)
+- `ConfirmDialog` - Modal with variant-specific icons (danger, warning, info). **Props**: `isOpen`, `title`, `message`, `onConfirm`, `onCancel` (NOT `onClose`), `confirmLabel` (NOT `confirmText`), `cancelLabel` (NOT `cancelText`), `variant`
 
 ### Styling Conventions
 - Colors via CSS variables (see `globals.css`), referenced in Tailwind config

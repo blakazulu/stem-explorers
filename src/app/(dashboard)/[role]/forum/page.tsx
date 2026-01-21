@@ -58,7 +58,7 @@ export default function ForumPage() {
   const {
     data: studentPosts = [],
     isLoading: studentLoading,
-  } = useStudentPosts(isStudent ? studentGrade : undefined);
+  } = useStudentPosts(isStudent ? (studentGrade ?? undefined) : undefined);
   const deleteStudentPostMutation = useDeleteStudentPost();
   const updateStudentPostMutation = useUpdateStudentPost();
   const pinStudentPostMutation = usePinStudentPost();
@@ -222,7 +222,7 @@ export default function ForumPage() {
       {showNewPost && (
         <NewPostForm
           authorName={session.user.name}
-          authorGrade={isAdmin ? "all" : studentGrade}
+          authorGrade={isAdmin ? "all" : (studentGrade ?? undefined)}
           forumType={activeForumType}
           onCreated={() => setShowNewPost(false)}
           onCancel={() => setShowNewPost(false)}
