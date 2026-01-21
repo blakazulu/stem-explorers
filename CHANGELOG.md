@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated `IMPLEMENTED_GAMES` in CategoryCard and CategoryModal to include "sort"
 
 - **Facebook link on community page**: Added prominent Facebook follow button in header with gradient styling and hover animations
+- **Shake animation**: Added shake keyframes and animation to Tailwind config for wrong placement feedback in Sort game
 
 ## [0.9.24] - 2026-01-21
 
