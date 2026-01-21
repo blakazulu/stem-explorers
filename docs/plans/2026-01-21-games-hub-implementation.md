@@ -10,6 +10,36 @@
 
 ---
 
+## Progress Tracking
+
+| Task | Status | Notes |
+|------|--------|-------|
+| **Phase 1: Infrastructure** | ✅ Complete | All 9 tasks done |
+| Task 1.1: TypeScript Types | ✅ | `src/types/games.ts` |
+| Task 1.2: Game Constants | ✅ | `src/lib/constants/games.ts` |
+| Task 1.3: Firestore Services | ✅ | `src/lib/services/games.ts` |
+| Task 1.4: React Query Hooks | ✅ | `src/lib/queries/games.ts` |
+| Task 1.5: Sidenav Integration | ✅ | Added "משחקים" menu item |
+| Task 1.6: Games Hub Page | ✅ | CategoryCard, CategoryModal, BadgeShelf |
+| Task 1.7: GameLayout Component | ✅ | Full-screen game wrapper |
+| Task 1.8: Game Page Route | ✅ | `[role]/games/[gameType]/page.tsx` |
+| Task 1.9: Badge System | ✅ | Badge definitions and shelf display |
+| **Phase 2: Games** | 🔄 In Progress | 2/12 games complete |
+| Task 2.1: Hangman | ✅ | Content seeded, game complete |
+| Task 2.2: Word Search | ✅ | Content seeded, game complete |
+| Task 2.3: Memory Cards | ⏳ Pending | Coming soon |
+| Task 2.4: STEM Quiz | ⏳ Pending | Coming soon |
+| Task 2.5: Sort It Out | ⏳ Pending | Coming soon |
+| Task 2.6: Number Patterns | ⏳ Pending | Coming soon |
+| Task 2.7: Math Race | ⏳ Pending | Coming soon |
+| Task 2.8: Pattern Recognition | ⏳ Pending | Coming soon |
+| Task 2.9: Coding Puzzles | ⏳ Pending | Coming soon |
+| Task 2.10: Tangram | ⏳ Pending | Coming soon |
+| Task 2.11: Virtual Lab | ⏳ Pending | Coming soon |
+| Task 2.12: Bridge Game | ⏳ Pending | Coming soon |
+
+---
+
 ## Phase 1: Infrastructure
 
 Build all foundational pieces before any games. Code review after phase completion.

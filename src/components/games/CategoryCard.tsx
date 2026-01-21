@@ -4,6 +4,9 @@ import { Icon, type IconName } from "@/components/ui/Icon";
 import { GAME_INFO } from "@/lib/constants/games";
 import type { CategoryInfo, GameType } from "@/types/games";
 
+// Games that are currently implemented
+const IMPLEMENTED_GAMES: GameType[] = ["hangman", "wordSearch"];
+
 interface CategoryCardProps {
   category: CategoryInfo;
   onClick: () => void;
@@ -61,19 +64,33 @@ export function CategoryCard({ category, onClick }: CategoryCardProps) {
   const colors = colorStyles[category.color] || colorStyles.amber;
   const gameCount = category.games.length;
 
+  // Check if category has any implemented games
+  const hasImplementedGames = category.games.some((game) =>
+    IMPLEMENTED_GAMES.includes(game as GameType)
+  );
+
   return (
     <button
-      onClick={onClick}
+      onClick={hasImplementedGames ? onClick : undefined}
+      disabled={!hasImplementedGames}
       aria-label={`פתח קטגוריית ${category.nameHe}`}
       className={`
         relative w-full p-5 rounded-2xl border-2
         bg-gradient-to-br ${colors.gradient} ${colors.border}
         transition-all duration-300 ease-out
-        hover:scale-105 hover:shadow-xl ${colors.glow}
-        cursor-pointer group
         text-right
+        ${hasImplementedGames
+          ? "hover:scale-105 hover:shadow-xl cursor-pointer group " + colors.glow
+          : "opacity-60 cursor-not-allowed"
+        }
       `}
     >
+      {/* Coming Soon badge */}
+      {!hasImplementedGames && (
+        <div className="absolute top-3 left-3 px-2 py-1 bg-gray-500 text-white text-xs font-medium rounded-full z-10">
+          בקרוב
+        </div>
+      )}
       {/* Main icon */}
       <div
         className={`
@@ -81,18 +98,18 @@ export function CategoryCard({ category, onClick }: CategoryCardProps) {
           bg-white/60 backdrop-blur-sm
           flex items-center justify-center
           mb-4 transition-transform duration-300
-          group-hover:scale-110 group-hover:rotate-3
+          ${hasImplementedGames ? "group-hover:scale-110 group-hover:rotate-3" : ""}
         `}
       >
         <Icon
           name={category.icon as IconName}
           size="lg"
-          className={colors.text}
+          className={hasImplementedGames ? colors.text : "text-gray-400"}
         />
       </div>
 
       {/* Category name */}
-      <h3 className={`text-lg font-rubik font-bold ${colors.text} mb-2`}>
+      <h3 className={`text-lg font-rubik font-bold mb-2 ${hasImplementedGames ? colors.text : "text-gray-500"}`}>
         {category.nameHe}
       </h3>
 

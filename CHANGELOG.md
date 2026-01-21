@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Word Search RTL mouse coordinates**: Fixed mouse drag selection in Word Search game to work correctly with RTL layout - column calculation now uses right edge of grid instead of left
+
+### Changed
+
+- **Games Hub "Coming Soon" badges**: Unimplemented games and categories now show "בקרוב" (Coming Soon) badge and are disabled until development is complete. Only "משחקי מילים" category is active with Hangman and Word Search games
+
 ### Added
 
 - **Word Search game (חיפוש מילים)**: Complete implementation of the word search puzzle game

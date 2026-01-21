@@ -167,13 +167,14 @@ export function WordSearchGrid({
 
       if (clientX === undefined || clientY === undefined) return null;
 
-      const x = clientX - rect.left;
       const y = clientY - rect.top;
 
       const cellWidth = rect.width / gridSize;
       const cellHeight = rect.height / gridSize;
 
-      const col = Math.floor(x / cellWidth);
+      // RTL: column 0 is on the right, so calculate from right edge
+      const xFromRight = rect.right - clientX;
+      const col = Math.floor(xFromRight / cellWidth);
       const row = Math.floor(y / cellHeight);
 
       if (row >= 0 && row < gridSize && col >= 0 && col < gridSize) {

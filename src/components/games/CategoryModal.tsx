@@ -7,6 +7,9 @@ import { Icon, type IconName } from "@/components/ui/Icon";
 import { GAME_INFO } from "@/lib/constants/games";
 import type { CategoryInfo, GameType } from "@/types/games";
 
+// Games that are currently implemented
+const IMPLEMENTED_GAMES: GameType[] = ["hangman", "wordSearch"];
+
 interface CategoryModalProps {
   isOpen: boolean;
   category: CategoryInfo | null;
@@ -143,35 +146,46 @@ export function CategoryModal({ isOpen, category, onClose }: CategoryModalProps)
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {category.games.map((gameType) => {
               const gameInfo = GAME_INFO[gameType as GameType];
+              const isImplemented = IMPLEMENTED_GAMES.includes(gameType as GameType);
               return (
                 <button
                   key={gameType}
-                  onClick={() => handleGameClick(gameType as GameType)}
+                  onClick={() => isImplemented && handleGameClick(gameType as GameType)}
+                  disabled={!isImplemented}
                   className={`
                     p-4 rounded-xl border-2 border-surface-2
                     bg-gradient-to-br ${colors.gradient}
-                    hover:border-opacity-50 hover:shadow-md
-                    transition-all duration-200 cursor-pointer
-                    text-right group
+                    transition-all duration-200
+                    text-right group relative
+                    ${isImplemented
+                      ? "hover:border-opacity-50 hover:shadow-md cursor-pointer"
+                      : "opacity-60 cursor-not-allowed"
+                    }
                   `}
                 >
+                  {/* Coming Soon badge */}
+                  {!isImplemented && (
+                    <div className="absolute top-2 left-2 px-2 py-0.5 bg-gray-500 text-white text-xs font-medium rounded-full">
+                      בקרוב
+                    </div>
+                  )}
                   <div className="flex items-start gap-3">
                     <div
                       className={`
                         w-10 h-10 rounded-lg bg-white/60
                         flex items-center justify-center
                         transition-transform duration-200
-                        group-hover:scale-110
+                        ${isImplemented ? "group-hover:scale-110" : ""}
                       `}
                     >
                       <Icon
                         name={gameInfo.icon as IconName}
                         size="md"
-                        className={colors.text}
+                        className={isImplemented ? colors.text : "text-gray-400"}
                       />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-rubik font-semibold text-foreground mb-1">
+                      <h3 className={`font-rubik font-semibold mb-1 ${isImplemented ? "text-foreground" : "text-gray-500"}`}>
                         {gameInfo.nameHe}
                       </h3>
                       {/* Badges */}
@@ -181,7 +195,7 @@ export function CategoryModal({ isOpen, category, onClose }: CategoryModalProps)
                             className={`
                               inline-flex items-center gap-1 px-2 py-0.5
                               text-xs font-medium rounded-full
-                              ${colors.badgeBg}
+                              ${isImplemented ? colors.badgeBg : "bg-gray-100 text-gray-500"}
                             `}
                           >
                             <Swords size={12} />
