@@ -174,7 +174,7 @@ export function SortGame({
 
   // Check for puzzle completion
   useEffect(() => {
-    if (!currentContent || gameComplete) return;
+    if (!currentContent || gameComplete || itemStates.length === 0) return;
 
     const allCorrect = itemStates.every((item) => item.isCorrect);
     const allPlaced = itemStates.every((item) => item.currentBucket !== null);

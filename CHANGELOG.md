@@ -27,6 +27,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Facebook link on community page**: Added prominent Facebook follow button in header with gradient styling and hover animations
 - **Shake animation**: Added shake keyframes and animation to Tailwind config for wrong placement feedback in Sort game
 
+### Fixed
+
+- **Sort game instant completion bug**: Fixed bug where game completed immediately on load because `Array.every()` returns `true` for empty arrays - added `itemStates.length === 0` guard
+
 ## [0.9.24] - 2026-01-21
 
 ### Fixed
