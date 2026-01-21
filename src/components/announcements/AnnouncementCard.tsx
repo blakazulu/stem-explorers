@@ -73,17 +73,21 @@ export function AnnouncementCard({
         {/* Header */}
         <div className="flex items-center justify-between px-4 md:px-6 py-4 border-b border-surface-2 bg-gradient-to-l from-emerald-500/5 to-teal-500/5">
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <Calendar size={14} />
-              <span>
-                {announcement.createdAt?.toLocaleDateString("he-IL", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                })}
-              </span>
-            </div>
-            <span className="text-gray-300">•</span>
+            {isAdmin && (
+              <>
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <Calendar size={14} />
+                  <span>
+                    {announcement.createdAt?.toLocaleDateString("he-IL", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </span>
+                </div>
+                <span className="text-gray-300">•</span>
+              </>
+            )}
             <span className="text-sm text-gray-500">{announcement.authorName}</span>
           </div>
           <div className="flex items-center gap-2">
@@ -180,10 +184,14 @@ export function AnnouncementCard({
                             <Users size={10} />
                             כיתה {comment.authorGrade}׳
                           </span>
-                          <span className="text-xs text-gray-400">•</span>
-                          <span className="text-xs text-gray-400">
-                            {comment.createdAt?.toLocaleDateString("he-IL")}
-                          </span>
+                          {isAdmin && (
+                            <>
+                              <span className="text-xs text-gray-400">•</span>
+                              <span className="text-xs text-gray-400">
+                                {comment.createdAt?.toLocaleDateString("he-IL")}
+                              </span>
+                            </>
+                          )}
                         </div>
                       </div>
 
