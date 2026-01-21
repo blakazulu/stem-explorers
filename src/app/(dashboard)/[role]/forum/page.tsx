@@ -31,6 +31,9 @@ export default function ForumPage() {
   const isAdmin = userRole === "admin";
   const isStudent = userRole === "student";
 
+  // Get student's grade for filtering
+  const studentGrade = session?.user.grade;
+
   // Determine which forum to show by default
   const defaultForumType: ForumType = isStudent ? "student" : "teacher";
   const [activeForumType, setActiveForumType] = useState<ForumType>(defaultForumType);
@@ -51,11 +54,11 @@ export default function ForumPage() {
   const updateTeacherPostMutation = useUpdatePost();
   const pinTeacherPostMutation = usePinPost();
 
-  // Student forum hooks
+  // Student forum hooks - students see only their grade, admin sees all
   const {
     data: studentPosts = [],
     isLoading: studentLoading,
-  } = useStudentPosts();
+  } = useStudentPosts(isStudent ? studentGrade : undefined);
   const deleteStudentPostMutation = useDeleteStudentPost();
   const updateStudentPostMutation = useUpdateStudentPost();
   const pinStudentPostMutation = usePinStudentPost();
@@ -219,6 +222,7 @@ export default function ForumPage() {
       {showNewPost && (
         <NewPostForm
           authorName={session.user.name}
+          authorGrade={isAdmin ? "all" : studentGrade}
           forumType={activeForumType}
           onCreated={() => setShowNewPost(false)}
           onCancel={() => setShowNewPost(false)}

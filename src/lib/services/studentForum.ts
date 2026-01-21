@@ -10,10 +10,11 @@ import {
   arrayUnion,
   serverTimestamp,
   writeBatch,
+  where,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { handleFirebaseError } from "@/lib/utils/errors";
-import type { ForumPost, ForumReply } from "@/types";
+import type { ForumPost, ForumReply, Grade } from "@/types";
 
 const COLLECTION = "student-forum";
 
@@ -26,12 +27,20 @@ function sanitizeString(str: string, maxLength: number): string {
   return str.trim().slice(0, maxLength);
 }
 
-export async function getStudentPosts(): Promise<ForumPost[]> {
+export async function getStudentPosts(grade?: Grade): Promise<ForumPost[]> {
   try {
-    const q = query(
-      collection(db, COLLECTION),
-      orderBy("createdAt", "desc")
-    );
+    // If grade is provided, filter by it (include "all" for admin posts visible to everyone)
+    // If no grade, return all posts (for admin view)
+    const q = grade
+      ? query(
+          collection(db, COLLECTION),
+          where("authorGrade", "in", [grade, "all"]),
+          orderBy("createdAt", "desc")
+        )
+      : query(
+          collection(db, COLLECTION),
+          orderBy("createdAt", "desc")
+        );
 
     const snapshot = await getDocs(q);
     return snapshot.docs.map((doc) => ({
@@ -58,6 +67,7 @@ export async function createStudentPost(
       title: sanitizeString(data.title, MAX_TITLE_LENGTH),
       content: sanitizeString(data.content, MAX_CONTENT_LENGTH),
       authorName: sanitizeString(data.authorName, MAX_AUTHOR_LENGTH),
+      authorGrade: data.authorGrade, // Include grade for filtering
       replies: [],
       createdAt: serverTimestamp(),
     };

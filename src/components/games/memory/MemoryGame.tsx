@@ -161,17 +161,20 @@ export function MemoryGame({
       const finalScore = baseScore + bonus;
 
       setScore(finalScore);
-      onScoreUpdate(finalScore);
       setShowCelebration(true);
       setGameComplete(true);
-      onGameComplete(true);
+
+      // Defer parent callbacks to avoid setState during render
+      setTimeout(() => {
+        onScoreUpdate(finalScore);
+        onGameComplete(true);
+      }, 0);
     }
   }, [
     matchedPairs.size,
     currentContent?.pairs,
     gameComplete,
     moves,
-    score,
     onScoreUpdate,
     onGameComplete,
   ]);
@@ -212,11 +215,10 @@ export function MemoryGame({
             setIsChecking(false);
 
             // Award points for match
-            setScore((prev) => {
-              const newScore = prev + 10;
-              onScoreUpdate(newScore);
-              return newScore;
-            });
+            const newScore = score + 10;
+            setScore(newScore);
+            // Use setTimeout to avoid setState during render
+            setTimeout(() => onScoreUpdate(newScore), 0);
           }, 500);
         } else {
           // No match - flip back after delay
@@ -227,7 +229,7 @@ export function MemoryGame({
         }
       }
     },
-    [cards, flippedCards, isChecking, matchedPairs, onScoreUpdate]
+    [cards, flippedCards, isChecking, matchedPairs, score, onScoreUpdate]
   );
 
   // Handle next puzzle

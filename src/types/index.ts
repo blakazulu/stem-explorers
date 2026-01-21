@@ -113,6 +113,7 @@ export type ForumType = "teacher" | "student";
 export interface ForumPost {
   id: string;
   authorName: string;
+  authorGrade?: Grade | "all"; // Grade for students, "all" for admin posts visible to everyone
   title: string;
   content: string;
   replies: ForumReply[];

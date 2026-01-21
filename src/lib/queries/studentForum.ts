@@ -8,12 +8,16 @@ import {
   updateStudentPost,
   pinStudentPost,
 } from "@/lib/services/studentForum";
-import type { ForumReply } from "@/types";
+import type { ForumReply, Grade } from "@/types";
 
-export function useStudentPosts() {
+/**
+ * Fetch student forum posts.
+ * @param grade - If provided, filters posts by grade. If undefined, returns all posts (for admin).
+ */
+export function useStudentPosts(grade?: Grade) {
   return useQuery({
-    queryKey: queryKeys.studentForum.posts,
-    queryFn: getStudentPosts,
+    queryKey: grade ? queryKeys.studentForum.postsByGrade(grade) : queryKeys.studentForum.posts,
+    queryFn: () => getStudentPosts(grade),
   });
 }
 

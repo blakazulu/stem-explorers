@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.9.23] - 2026-01-21
 
 ### Added
 
@@ -54,6 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Memory Game setState during render**: Fixed React warning "Cannot update a component while rendering a different component" by deferring parent callbacks (`onScoreUpdate`, `onGameComplete`) using setTimeout to avoid synchronous state updates in parent during child's state update cycle
 - **Admin Games content validation**: Added validation before save to prevent empty content (missing word/hint/category for Hangman, no words for Word Search, no pairs for Memory)
 - **Admin Games delete confirmation**: Added ConfirmDialog before deleting content items to prevent accidental deletions
 - **Admin Games empty content filtering**: Content is now cleaned before save (empty words in Word Search, empty pairs in Memory are filtered out)

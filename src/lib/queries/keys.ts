@@ -52,6 +52,7 @@ export const queryKeys = {
   },
   studentForum: {
     posts: ["studentForum", "posts"] as const,
+    postsByGrade: (grade: Grade) => ["studentForum", "posts", grade] as const,
   },
   users: {
     all: ["users", "all"] as const,

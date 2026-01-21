@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Every change must update CHANGELOG.md** - When making any code changes, add an entry to the appropriate section (Added, Changed, Fixed, etc.) under `[Unreleased]`.
 - **UI components must follow system design** - When creating or changing UI components, always refer to `docs/system-design.md` and consider role-based theming if the component needs it.
 - **Always run code-reviewer before pushing** - Never push to git without first running the code-reviewer agent on the changes. Review must pass before any push.
+- **Always use full `npm run build` for verification** - Never use shortcuts like `tsc --noEmit` or `npm run lint` alone. Always run the complete `npm run build` command to verify changes work correctly.
 
 ## Commands
 

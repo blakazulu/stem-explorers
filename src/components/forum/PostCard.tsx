@@ -176,10 +176,12 @@ export function PostCard({
             </h3>
             <div className="flex items-center gap-3 text-sm text-gray-500 mt-0.5">
               <span className="font-medium">{post.authorName}</span>
-              <span className="inline-flex items-center gap-1">
-                <Calendar size={12} />
-                {post.createdAt.toLocaleDateString("he-IL")}
-              </span>
+              {isAdmin && (
+                <span className="inline-flex items-center gap-1">
+                  <Calendar size={12} />
+                  {post.createdAt.toLocaleDateString("he-IL")}
+                </span>
+              )}
               {repliesCount > 0 && (
                 <span className="inline-flex items-center gap-1">
                   <MessageCircle size={12} />
@@ -336,8 +338,8 @@ export function PostCard({
                           <LinkifiedText text={reply.content} />
                         </p>
                         <p className="text-xs text-gray-400 mt-1">
-                          {reply.authorName} •{" "}
-                          {reply.createdAt?.toLocaleDateString("he-IL")}
+                          {reply.authorName}
+                          {isAdmin && <> • {reply.createdAt?.toLocaleDateString("he-IL")}</>}
                         </p>
                       </div>
                     </div>
