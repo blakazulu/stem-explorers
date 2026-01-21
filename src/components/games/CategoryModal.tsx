@@ -8,7 +8,7 @@ import { GAME_INFO } from "@/lib/constants/games";
 import type { CategoryInfo, GameType } from "@/types/games";
 
 // Games that are currently implemented
-const IMPLEMENTED_GAMES: GameType[] = ["hangman", "wordSearch", "memory", "quiz", "sort"];
+const IMPLEMENTED_GAMES: GameType[] = ["hangman", "wordSearch", "memory", "quiz", "sort", "numberPattern"];
 
 interface CategoryModalProps {
   isOpen: boolean;

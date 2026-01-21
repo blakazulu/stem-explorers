@@ -12,11 +12,12 @@ import { WordSearchContentEditor } from "./WordSearchContentEditor";
 import { MemoryContentEditor } from "./MemoryContentEditor";
 import { QuizContentEditor } from "./QuizContentEditor";
 import { SortContentEditor } from "./SortContentEditor";
+import { NumberPatternContentEditor } from "./NumberPatternContentEditor";
 import { useGameContent, useUpdateGameContent, useDeleteGameContent, useCreateGameContent } from "@/lib/queries/games";
 import { useToastActions } from "@/components/ui/Toast";
 import { GAME_INFO, DIFFICULTY_LABELS } from "@/lib/constants/games";
 import type { Grade } from "@/types";
-import type { GameType, Difficulty, GameContent, HangmanContent, WordSearchContent, MemoryContent, QuizContent, SortContent } from "@/types/games";
+import type { GameType, Difficulty, GameContent, HangmanContent, WordSearchContent, MemoryContent, QuizContent, SortContent, NumberPatternContent } from "@/types/games";
 
 const GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
 const DIFFICULTIES: Difficulty[] = ["easy", "medium", "hard"];
@@ -202,6 +203,19 @@ export function GameContentModal({ gameType, isOpen, onClose }: GameContentModal
           updatedAt: new Date(),
         } as SortContent;
         break;
+      case "numberPattern":
+        newItem = {
+          id: tempId,
+          gameType: "numberPattern",
+          grade: selectedGrade,
+          difficulty: selectedDifficulty,
+          sequence: [1, 2, 3, null, 5],
+          answer: 4,
+          rule: "",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as NumberPatternContent;
+        break;
       default:
         return;
     }
@@ -247,6 +261,11 @@ export function GameContentModal({ gameType, isOpen, onClose }: GameContentModal
       if (validBuckets.length < 2) return "יש להוסיף לפחות 2 קטגוריות";
       const validItems = s.items.filter((i) => i.text.trim() && i.correctBucket.trim());
       if (validItems.length === 0) return "יש להוסיף לפחות פריט אחד תקין";
+    } else if (item.gameType === "numberPattern") {
+      const n = item as NumberPatternContent;
+      if (n.sequence.length < 3) return "יש להוסיף לפחות 3 מספרים לסדרה";
+      if (!n.sequence.includes(null)) return "יש לבחור מספר חסר (?)";
+      if (!n.rule.trim()) return "יש להוסיף תיאור הכלל";
     }
     return null;
   };
@@ -545,6 +564,15 @@ function ContentEditor({ content, gameType, onEdit, onDelete, isNew }: ContentEd
       return (
         <SortContentEditor
           content={content as SortContent}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          isNew={isNew}
+        />
+      );
+    case "numberPattern":
+      return (
+        <NumberPatternContentEditor
+          content={content as NumberPatternContent}
           onEdit={onEdit}
           onDelete={onDelete}
           isNew={isNew}

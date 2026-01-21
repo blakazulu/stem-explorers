@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Number Patterns game (סדרות מספרים)**: Complete implementation of the number sequence completion game
+  - `NumberPatternGame` component: Main game logic with React Query integration for fetching NumberPatternContent, Fisher-Yates shuffle for puzzle randomization, attempt-based scoring system (+10 first try, +5 second, +2 third, 0 after 3 failures), rule explanation reveal after solving
+  - `SequenceDisplay` component: Visual display of number sequence with highlighted missing number slot (pulsing border), shows result feedback (green for correct, red for incorrect)
+  - `NumberInput` component: Text input for entering number guesses with submit button, retry button when wrong (attempts remaining), remaining attempts indicator, keyboard support (Enter to submit)
+  - Visual design: Blue/orange theme matching "אתגרי חשבון" category, smooth animations, progress bar
+  - Game flow: Show sequence with missing number (?), player enters guess, check answer, show result with rule explanation, continue to next puzzle
+  - Game page integration: NumberPatternGame rendered when gameType is "numberPattern"
+  - Admin editor: `NumberPatternContentEditor` component with sequence builder (add/remove numbers, mark missing number with ? button), answer input, rule description input
+  - Updated GameContentModal with numberPattern content validation (at least 3 numbers, missing number selected, rule required)
+  - Content seeder script: `scripts/seed-number-pattern-content.ts` with 6 patterns per grade/difficulty (108 total)
+    - Grade א-ב: Simple +1, +2 sequences, skip counting by 5s and 10s
+    - Grade ג-ד: Multiplication tables, triangular numbers, Fibonacci introduction
+    - Grade ה-ו: Primes, squares, cubes, factorials, Catalan numbers, perfect numbers
+  - Updated `IMPLEMENTED_GAMES` in CategoryCard and CategoryModal to include "numberPattern"
+
 ## [0.9.25] - 2026-01-21
 
 ### Added

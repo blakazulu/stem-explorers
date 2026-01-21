@@ -4,3 +4,4 @@ export { WordSearchContentEditor } from "./WordSearchContentEditor";
 export { MemoryContentEditor } from "./MemoryContentEditor";
 export { QuizContentEditor } from "./QuizContentEditor";
 export { SortContentEditor } from "./SortContentEditor";
+export { NumberPatternContentEditor } from "./NumberPatternContentEditor";
