@@ -13,11 +13,17 @@ import { MemoryContentEditor } from "./MemoryContentEditor";
 import { QuizContentEditor } from "./QuizContentEditor";
 import { SortContentEditor } from "./SortContentEditor";
 import { NumberPatternContentEditor } from "./NumberPatternContentEditor";
+import { PatternContentEditor } from "./PatternContentEditor";
+import { ExperimentContentEditor } from "./ExperimentContentEditor";
+import { MathRaceContentEditor } from "./MathRaceContentEditor";
+import { TangramContentEditor } from "./TangramContentEditor";
+import { BridgeContentEditor } from "./BridgeContentEditor";
+import { CodingContentEditor } from "./CodingContentEditor";
 import { useGameContent, useUpdateGameContent, useDeleteGameContent, useCreateGameContent } from "@/lib/queries/games";
 import { useToastActions } from "@/components/ui/Toast";
 import { GAME_INFO, DIFFICULTY_LABELS } from "@/lib/constants/games";
 import type { Grade } from "@/types";
-import type { GameType, Difficulty, GameContent, HangmanContent, WordSearchContent, MemoryContent, QuizContent, SortContent, NumberPatternContent } from "@/types/games";
+import type { GameType, Difficulty, GameContent, HangmanContent, WordSearchContent, MemoryContent, QuizContent, SortContent, NumberPatternContent, PatternContent, ExperimentContent, MathRaceContent, TangramContent, BridgeContent, CodingContent } from "@/types/games";
 
 const GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
 const DIFFICULTIES: Difficulty[] = ["easy", "medium", "hard"];
@@ -216,6 +222,98 @@ export function GameContentModal({ gameType, isOpen, onClose }: GameContentModal
           updatedAt: new Date(),
         } as NumberPatternContent;
         break;
+      case "pattern":
+        newItem = {
+          id: tempId,
+          gameType: "pattern",
+          grade: selectedGrade,
+          difficulty: selectedDifficulty,
+          sequence: ["", "", "", "?"],
+          options: ["", "", "", ""],
+          correctIndex: 0,
+          rule: "",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as PatternContent;
+        break;
+      case "experiment":
+        newItem = {
+          id: tempId,
+          gameType: "experiment",
+          grade: selectedGrade,
+          difficulty: selectedDifficulty,
+          title: "",
+          hypothesisPrompt: "",
+          steps: [{ instruction: "" }],
+          conclusion: "",
+          imageUrl: undefined,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as ExperimentContent;
+        break;
+      case "tangram":
+        newItem = {
+          id: tempId,
+          gameType: "tangram",
+          grade: selectedGrade,
+          difficulty: selectedDifficulty,
+          targetShape: "square",
+          pieces: [
+            { type: "triangle-large-1", color: "#F87171", initialPosition: { x: 50, y: 50 }, initialRotation: 0 },
+            { type: "triangle-large-2", color: "#FB923C", initialPosition: { x: 100, y: 50 }, initialRotation: 0 },
+            { type: "triangle-medium", color: "#FBBF24", initialPosition: { x: 50, y: 100 }, initialRotation: 0 },
+          ],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as TangramContent;
+        break;
+      case "bridge":
+        newItem = {
+          id: tempId,
+          gameType: "bridge",
+          grade: selectedGrade,
+          difficulty: selectedDifficulty,
+          gapWidth: selectedDifficulty === "easy" ? 40 : selectedDifficulty === "medium" ? 60 : 80,
+          budget: selectedDifficulty === "easy" ? 200 : selectedDifficulty === "medium" ? 180 : 160,
+          materials: [
+            { type: "wood", cost: 25, strength: 55 },
+            { type: "steel", cost: 50, strength: 120 },
+          ],
+          vehicleWeight: selectedDifficulty === "easy" ? 40 : selectedDifficulty === "medium" ? 70 : 100,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as BridgeContent;
+        break;
+      case "mathRace":
+        newItem = {
+          id: tempId,
+          gameType: "mathRace",
+          grade: selectedGrade,
+          difficulty: selectedDifficulty,
+          problem: "",
+          answer: 0,
+          options: [0, 0, 0, 0],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as MathRaceContent;
+        break;
+      case "coding":
+        newItem = {
+          id: tempId,
+          gameType: "coding",
+          grade: selectedGrade,
+          difficulty: selectedDifficulty,
+          gridSize: selectedDifficulty === "easy" ? 3 : selectedDifficulty === "medium" ? 4 : 5,
+          start: { x: 0, y: 0 },
+          goal: { x: 2, y: 2 },
+          obstacles: [],
+          maxMoves: selectedDifficulty === "easy" ? 5 : selectedDifficulty === "medium" ? 8 : 12,
+          allowLoops: selectedDifficulty !== "easy",
+          allowConditionals: selectedDifficulty === "hard",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as CodingContent;
+        break;
       default:
         return;
     }
@@ -266,6 +364,51 @@ export function GameContentModal({ gameType, isOpen, onClose }: GameContentModal
       if (n.sequence.length < 3) return "יש להוסיף לפחות 3 מספרים לסדרה";
       if (!n.sequence.includes(null)) return "יש לבחור מספר חסר (?)";
       if (!n.rule.trim()) return "יש להוסיף תיאור הכלל";
+    } else if (item.gameType === "pattern") {
+      const p = item as PatternContent;
+      if (p.sequence.length < 3) return "יש להוסיף לפחות 3 פריטים לסדרה";
+      if (!p.sequence.includes("?")) return "יש לבחור פריט חסר (?)";
+      const filledSequence = p.sequence.filter((s) => s.trim() && s !== "?");
+      if (filledSequence.length < 2) return "יש למלא לפחות 2 פריטים בסדרה";
+      const filledOptions = p.options.filter((o) => o.trim());
+      if (filledOptions.length < 4) return "יש למלא את כל 4 האפשרויות";
+      if (!p.options[p.correctIndex]?.trim()) return "התשובה הנכונה חייבת להיות מלאה";
+      if (!p.rule.trim()) return "יש להוסיף הסבר לכלל";
+    } else if (item.gameType === "experiment") {
+      const e = item as ExperimentContent;
+      if (!e.title.trim()) return "חסרה כותרת הניסוי";
+      if (!e.hypothesisPrompt.trim()) return "חסרה שאלת המחקר";
+      const validSteps = e.steps.filter((s) => s.instruction.trim());
+      if (validSteps.length === 0) return "יש להוסיף לפחות שלב אחד לניסוי";
+      if (!e.conclusion.trim()) return "חסרה מסקנת הניסוי";
+    } else if (item.gameType === "tangram") {
+      const t = item as TangramContent;
+      if (!t.targetShape.trim()) return "יש לבחור צורת יעד";
+      if (!t.pieces || t.pieces.length === 0) return "יש להוסיף לפחות חלק אחד";
+    } else if (item.gameType === "bridge") {
+      const b = item as BridgeContent;
+      if (!b.gapWidth || b.gapWidth <= 0) return "יש להזין רוחב פער תקין";
+      if (!b.budget || b.budget <= 0) return "יש להזין תקציב תקין";
+      if (!b.vehicleWeight || b.vehicleWeight <= 0) return "יש להזין משקל רכב תקין";
+      if (!b.materials || b.materials.length === 0) return "יש להוסיף לפחות חומר אחד";
+      const hasStrongMaterial = b.materials.some((m) => m.strength >= b.vehicleWeight);
+      if (!hasStrongMaterial) return "לפחות חומר אחד חייב להיות חזק מספיק לשאת את משקל הרכב";
+    } else if (item.gameType === "mathRace") {
+      const m = item as MathRaceContent;
+      if (!m.problem.trim()) return "חסר תרגיל";
+      if (m.options.length !== 4) return "יש להזין בדיוק 4 אפשרויות תשובה";
+      if (!m.options.includes(m.answer)) return "התשובה הנכונה חייבת להיות אחת מהאפשרויות";
+    } else if (item.gameType === "coding") {
+      const c = item as CodingContent;
+      if (!c.gridSize || c.gridSize < 3 || c.gridSize > 5) return "יש לבחור גודל רשת תקין (3-5)";
+      if (!c.maxMoves || c.maxMoves <= 0) return "יש להזין מספר צעדים תקין";
+      // Start and goal must be different
+      if (c.start.x === c.goal.x && c.start.y === c.goal.y) return "נקודת התחלה ויעד חייבות להיות שונות";
+      // Start and goal must be within grid
+      if (c.start.x < 0 || c.start.x >= c.gridSize || c.start.y < 0 || c.start.y >= c.gridSize)
+        return "נקודת התחלה חייבת להיות בתוך הרשת";
+      if (c.goal.x < 0 || c.goal.x >= c.gridSize || c.goal.y < 0 || c.goal.y >= c.gridSize)
+        return "נקודת היעד חייבת להיות בתוך הרשת";
     }
     return null;
   };
@@ -284,6 +427,12 @@ export function GameContentModal({ gameType, isOpen, onClose }: GameContentModal
         ...s,
         buckets: s.buckets.filter((b) => b.trim()),
         items: s.items.filter((i) => i.text.trim() && i.correctBucket.trim()),
+      } as GameContent;
+    } else if (item.gameType === "experiment") {
+      const e = item as ExperimentContent;
+      return {
+        ...e,
+        steps: e.steps.filter((s) => s.instruction.trim()),
       } as GameContent;
     }
     return item;
@@ -573,6 +722,60 @@ function ContentEditor({ content, gameType, onEdit, onDelete, isNew }: ContentEd
       return (
         <NumberPatternContentEditor
           content={content as NumberPatternContent}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          isNew={isNew}
+        />
+      );
+    case "pattern":
+      return (
+        <PatternContentEditor
+          content={content as PatternContent}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          isNew={isNew}
+        />
+      );
+    case "experiment":
+      return (
+        <ExperimentContentEditor
+          content={content as ExperimentContent}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          isNew={isNew}
+        />
+      );
+    case "mathRace":
+      return (
+        <MathRaceContentEditor
+          content={content as MathRaceContent}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          isNew={isNew}
+        />
+      );
+    case "tangram":
+      return (
+        <TangramContentEditor
+          content={content as TangramContent}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          isNew={isNew}
+        />
+      );
+    case "bridge":
+      return (
+        <BridgeContentEditor
+          content={content as BridgeContent}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          isNew={isNew}
+        />
+      );
+    case "coding":
+      return (
+        <CodingContentEditor
+          content={content as CodingContent}
           onEdit={onEdit}
           onDelete={onDelete}
           isNew={isNew}

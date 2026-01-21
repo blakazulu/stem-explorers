@@ -73,6 +73,7 @@ import {
   Flame,
   Calculator,
   Type,
+  Eye,
 } from "lucide-react";
 
 // Icon name to component mapping
@@ -150,6 +151,8 @@ const iconMap = {
   flame: Flame,
   calculator: Calculator,
   type: Type,
+  eye: Eye,
+  "flask-conical": FlaskConical,
 } as const;
 
 export type IconName = keyof typeof iconMap;
@@ -249,6 +252,7 @@ export {
   Flame,
   Calculator,
   Type,
+  Eye,
 };
 
 // Export icon type for external use

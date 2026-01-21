@@ -33,7 +33,7 @@ export const GAME_CATEGORIES: CategoryInfo[] = [
     icon: "cog",
     color: "cyan",
     pattern: "circuit",
-    games: ["pattern", "coding", "tangram"],
+    games: ["pattern", "coding"],
   },
   {
     id: "math",
@@ -55,9 +55,9 @@ export const GAME_CATEGORIES: CategoryInfo[] = [
     id: "build",
     nameHe: "בנייה וניסויים",
     icon: "flask",
-    color: "indigo",
+    color: "orange",
     pattern: "blueprint",
-    games: ["experiment", "bridge"],
+    games: ["tangram", "experiment", "bridge"],
   },
 ];
 
@@ -94,8 +94,8 @@ export const GAME_INFO: Record<
     defaultTimer: false,
   },
   pattern: {
-    nameHe: "זיהוי תבניות",
-    icon: "workflow",
+    nameHe: "זיהוי דפוסים",
+    icon: "eye",
     hasHeadToHead: false,
     defaultTimer: false,
   },
@@ -107,7 +107,7 @@ export const GAME_INFO: Record<
   },
   tangram: {
     nameHe: "טנגרם",
-    icon: "shapes",
+    icon: "puzzle",
     hasHeadToHead: false,
     defaultTimer: false,
   },
@@ -137,7 +137,7 @@ export const GAME_INFO: Record<
   },
   experiment: {
     nameHe: "מעבדה וירטואלית",
-    icon: "flask",
+    icon: "flask-conical",
     hasHeadToHead: false,
     defaultTimer: false,
   },

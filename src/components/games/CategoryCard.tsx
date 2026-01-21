@@ -5,7 +5,7 @@ import { GAME_INFO } from "@/lib/constants/games";
 import type { CategoryInfo, GameType } from "@/types/games";
 
 // Games that are currently implemented
-const IMPLEMENTED_GAMES: GameType[] = ["hangman", "wordSearch", "memory", "quiz", "sort", "numberPattern"];
+const IMPLEMENTED_GAMES: GameType[] = ["hangman", "wordSearch", "memory", "quiz", "sort", "numberPattern", "pattern", "tangram", "experiment", "bridge", "mathRace"];
 
 interface CategoryCardProps {
   category: CategoryInfo;

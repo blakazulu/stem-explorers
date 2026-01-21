@@ -10,6 +10,12 @@ import { MemoryGame } from "@/components/games/memory";
 import { QuizGame } from "@/components/games/quiz";
 import { SortGame } from "@/components/games/sort";
 import { NumberPatternGame } from "@/components/games/number-pattern";
+import { PatternGame } from "@/components/games/pattern";
+import { TangramGame } from "@/components/games/tangram";
+import { ExperimentGame } from "@/components/games/experiment";
+import { BridgeGame } from "@/components/games/bridge";
+import { CodingGame } from "@/components/games/coding";
+import { MathRaceGame } from "@/components/games/math-race";
 import { Icon, IconName } from "@/components/ui/Icon";
 import { GAME_INFO, DIFFICULTY_LABELS } from "@/lib/constants/games";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -158,6 +164,60 @@ export default function GamePage() {
       case "numberPattern":
         return (
           <NumberPatternGame
+            grade={userGrade}
+            difficulty={difficulty}
+            onScoreUpdate={handleScoreUpdate}
+            onGameComplete={handleGameComplete}
+          />
+        );
+      case "pattern":
+        return (
+          <PatternGame
+            grade={userGrade}
+            difficulty={difficulty}
+            onScoreUpdate={handleScoreUpdate}
+            onGameComplete={handleGameComplete}
+          />
+        );
+      case "tangram":
+        return (
+          <TangramGame
+            grade={userGrade}
+            difficulty={difficulty}
+            onScoreUpdate={handleScoreUpdate}
+            onGameComplete={handleGameComplete}
+          />
+        );
+      case "experiment":
+        return (
+          <ExperimentGame
+            grade={userGrade}
+            difficulty={difficulty}
+            onScoreUpdate={handleScoreUpdate}
+            onGameComplete={handleGameComplete}
+          />
+        );
+      case "bridge":
+        return (
+          <BridgeGame
+            grade={userGrade}
+            difficulty={difficulty}
+            onScoreUpdate={handleScoreUpdate}
+            onGameComplete={handleGameComplete}
+          />
+        );
+      case "coding":
+        return (
+          <CodingGame
+            grade={userGrade}
+            difficulty={difficulty}
+            onScoreUpdate={handleScoreUpdate}
+            onGameComplete={handleGameComplete}
+          />
+        );
+      case "mathRace":
+        return (
+          <MathRaceGame
             grade={userGrade}
             difficulty={difficulty}
             onScoreUpdate={handleScoreUpdate}

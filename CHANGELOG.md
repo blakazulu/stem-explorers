@@ -7,7 +7,102 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.27] - 2026-01-21
+
 ### Added
+
+- **Virtual Lab game (מעבדה וירטואלית)**: Complete implementation of the science experiment simulation
+  - `ExperimentGame` component: Main game logic with step-by-step experiment walkthrough, hypothesis input, React Query integration
+  - `ExperimentHeader` component: Title and hypothesis prompt display
+  - `ExperimentStep` component: Single step with instruction and optional image
+  - `ExperimentConclusion` component: Final results and explanation
+  - Scoring: +10 per step completed
+  - Content seeder script: `scripts/seed-experiment-content.ts` with 2 experiments per grade/difficulty (36 total)
+    - Grade א-ב: Simple observations (floating/sinking, magnets, colors, seeds)
+    - Grade ג-ד: Basic science (water cycle, circuits, states of matter, friction)
+    - Grade ה-ו: Complex experiments (pH indicators, electrolysis, DNA extraction, greenhouse effect)
+
+- **Math Race game (מרוץ חשבון)**: Complete implementation of the speed math game
+  - `MathRaceGame` component: Main game logic with React Query integration for fetching MathRaceContent, Fisher-Yates shuffle for problem randomization, 30-second countdown timer per problem, scoring system (+10 correct, -5 wrong, speed bonus up to +5 for quick answers), auto-advance after answer/timeout
+  - `ProblemDisplay` component: Large math problem display with visual feedback (green for correct, red for wrong), LTR direction for proper math notation
+  - `AnswerOptions` component: 4 clickable answer buttons in 2x2 grid, shows correct answer after selection with checkmark, wrong selection with X mark
+  - Visual design: Blue theme matching "אתגרי חשבון" category, animated timer bar with color changes (green/amber/red), progress tracking, celebration on completion
+  - Game flow: Timer counts down from 30 seconds, answer quickly for speed bonus, correct answers +10 points, wrong answers -5 points, timer runs out moves to next problem with 0 points, game ends after all problems
+  - Results screen: Shows total score, correct answers count, percentage, total speed bonus, different celebration levels based on performance
+  - Game page integration: MathRaceGame rendered when gameType is "mathRace"
+  - Admin editor: `MathRaceContentEditor` component with problem input (with ? placeholder), answer input, 4 options inputs, correct answer highlighting
+  - Updated GameContentModal with mathRace content creation (default values with empty problem, 0 answer, 4 zero options), validation (problem required, exactly 4 options, correct answer must be in options), content editor case
+  - Content seeder script: `scripts/seed-math-race-content.ts` with 10 problems per grade/difficulty (180 total)
+    - Grade א-ב: Simple addition/subtraction up to 20
+    - Grade ג-ד: Multiplication and division
+    - Grade ה-ו: Decimals, fractions, and order of operations (PEMDAS)
+  - Updated `IMPLEMENTED_GAMES` in CategoryCard and CategoryModal to include "mathRace"
+
+- **Coding Puzzles game (פאזלי קוד)**: Complete implementation of the visual programming puzzle game
+  - `CodingGame` component: Main game logic with @dnd-kit/core for drag-and-drop commands, React Query integration for fetching CodingContent, Fisher-Yates shuffle for puzzle randomization, step-by-step command execution with animation, scoring system (start at 100, -15 per wall/obstacle hit, -10 for not reaching goal, +20 first try bonus, +10 speed bonus, +10 efficiency bonus)
+  - `CodingGrid` component: Visual grid display with robot (Bot icon), goal (Flag icon), and obstacles, supports 3x3 to 5x5 grid sizes, robot direction rotation animation, error/success state highlighting with shake animation
+  - `CommandPalette` component: Draggable command blocks (up, down, left, right, loop, conditional), color-coded by type (blue for movement, purple for loops, orange for conditionals), disabled state during execution
+  - `CommandSequence` component: Drop zone for building program, command index badges, remove button on hover, max moves indicator with warning when exceeded, run button with loading state
+  - Visual design: Cyan/teal theme matching "חשיבה לוגית" category, smooth animations, grid legend showing robot/goal/obstacle symbols
+  - Game flow: Show grid with start/goal/obstacles, drag commands to build program, click Run to execute step-by-step with animation, reach goal for success or hit obstacle/edge for retry
+  - Game page integration: CodingGame rendered when gameType is "coding"
+  - Admin editor: `CodingContentEditor` component with grid size selector (3-5), interactive grid for setting start/goal/obstacle positions, max moves input, allowLoops and allowConditionals toggles
+  - Updated GameContentModal with coding content validation (valid grid size, start/goal different, positions within bounds)
+  - Content seeder script: `scripts/seed-coding-content.ts` with 4 puzzles per grade/difficulty (72 total)
+    - Grade א-ב: 3x3 grid, no/few obstacles, basic moves only
+    - Grade ג-ד: 4x4 grid, some obstacles, introduce loops
+    - Grade ה-ו: 5x5 grid, complex paths, loops + conditionals
+  - Updated `IMPLEMENTED_GAMES` in CategoryModal to include "coding"
+
+- **Bridge Building game (בנה גשר)**: Complete implementation of the engineering bridge building challenge
+  - `BridgeGame` component: Main game logic with React Query integration for fetching BridgeContent, Fisher-Yates shuffle for challenge randomization, scoring based on budget efficiency (+50 for unused budget) and first-try bonus (+50 first try, +25 second, +10 otherwise), test animation for vehicle crossing
+  - `BridgeCanvas` component: SVG-based visual bridge building area with clickable position slots, segment rendering with material colors, cliff/water terrain, animated vehicle crossing, failure point visualization with crack effects, real-time bridge completion status
+  - `MaterialPalette` component: Interactive material selection panel with cost/strength display, visual feedback for selected material, Hebrew material names, 8 supported materials (wood, steel, rope, concrete, bamboo, plastic, stone, carbon fiber)
+  - `BudgetDisplay` component: Real-time budget tracker with progress bar, low budget warning (amber), over budget warning (red), spent/remaining display
+  - Visual design: Orange theme matching "בנייה וניסויים" category, gradient sky background, animated water waves, smooth transitions for segment placement/removal
+  - Game flow: Show gap to bridge with budget and vehicle weight, select materials from palette, click bridge positions to add segments, each material has cost and strength, test button simulates vehicle crossing, bridge holds if all segments strong enough for vehicle weight, failure shows collapse animation at weakest point with explanation
+  - Game page integration: BridgeGame rendered when gameType is "bridge"
+  - Admin editor: `BridgeContentEditor` component with gap width, budget, vehicle weight inputs, materials array builder with type dropdown, cost/strength inputs, add/remove materials
+  - Updated GameContentModal with bridge content creation (default values based on difficulty), validation (gap/budget/weight required, at least one material, material strength must support vehicle weight), content editor case
+  - Content seeder script: `scripts/seed-bridge-content.ts` with 3 challenges per grade/difficulty (54 total)
+    - Grade א-ב: Small gaps (40-65m), high budgets (170-220), simple materials (wood, bamboo, rope), light vehicles (25-65kg)
+    - Grade ג-ד: Medium gaps (55-90m), moderate budgets (190-280), steel/concrete introduced, medium vehicles (50-150kg)
+    - Grade ה-ו: Large gaps (70-110m), tight budgets (240-380), complex trade-offs with carbon fiber, heavy vehicles (95-260kg)
+  - Updated `IMPLEMENTED_GAMES` in CategoryCard and CategoryModal to include "bridge"
+
+- **Tangram game (טנגרם)**: Complete implementation of the shape puzzle game
+  - `TangramGame` component: Main game logic with @dnd-kit/core for drag-and-drop, React Query integration for fetching TangramContent, Fisher-Yates shuffle for puzzle randomization, scoring system (start at 100, -15 per hint used, +20 speed bonus for under 2 minutes), timer display, celebration animation on completion
+  - `TangramCanvas` component: Play area with target shape silhouette (gray background), drop zone for pieces, target shape name display, instructions overlay
+  - `TangramPiece` component: Draggable and rotatable SVG piece, click to rotate 45 degrees, visual feedback for correct/hinted/dragging states, supports 7 standard tangram piece types
+  - Target shapes: 15 predefined shapes (square, house, boat, arrow, tree, cat, bird, fish, rabbit, heart, person, rocket, swan, runner, dinosaur) with Hebrew names
+  - Visual design: Orange theme matching "בנייה וניסויים" category, smooth animations, mobile-friendly touch support via dnd-kit sensors
+  - Game flow: Show target silhouette, drag and rotate colored pieces to match target, use hint button to highlight piece positions, click "Complete" when done
+  - Game page integration: TangramGame rendered when gameType is "tangram"
+  - Admin editor: `TangramContentEditor` component with target shape selector dropdown, piece configuration (type, color picker, position X/Y, rotation), add/remove pieces
+  - Updated GameContentModal with tangram content validation (target shape required, at least 1 piece)
+  - Content seeder script: `scripts/seed-tangram-content.ts` with 3 puzzles per grade/difficulty (54 total)
+    - Grade א-ב: Simple shapes (square, house, boat) with 3-5 pieces
+    - Grade ג-ד: Medium complexity (cat, bird, person) with 5-6 pieces
+    - Grade ה-ו: Complex shapes (runner, dinosaur, swan) with all 7 standard tangram pieces
+  - Updated `IMPLEMENTED_GAMES` in CategoryCard and CategoryModal to include "tangram"
+  - Moved tangram from "logic" category to "build" category with orange color
+  - Changed tangram icon from "shapes" to "puzzle"
+
+- **Pattern Recognition game (זיהוי דפוסים)**: Complete implementation of the visual pattern completion game
+  - `PatternGame` component: Main game logic with React Query integration for fetching PatternContent, Fisher-Yates shuffle for puzzle randomization, attempt-based scoring system (+10 first try, +5 second try, 0 after 2 failures), rule explanation reveal after solving
+  - `PatternSequence` component: Visual display of pattern sequence with highlighted missing slot (?) animated with pulsing border, shows correct answer with green highlight when revealed
+  - `PatternOptions` component: 4 clickable answer options in 2x2 grid, correct/wrong highlighting after selection with check/X icons
+  - Visual design: Cyan/teal theme matching "חשיבה לוגית" category, smooth animations, confetti on first-try success
+  - Game flow: Show sequence with ? for missing item, player picks from 4 options, check answer, show result with rule explanation, continue to next puzzle
+  - Game page integration: PatternGame rendered when gameType is "pattern"
+  - Admin editor: `PatternContentEditor` component with sequence builder (add/remove items, set ? position via button), options array with 4 inputs, correct index radio selector, rule description textarea
+  - Updated GameContentModal with pattern content validation (at least 3 items, missing item selected, 4 options filled, rule required)
+  - Content seeder script: `scripts/seed-pattern-content.ts` with 6 patterns per grade/difficulty (108 total)
+    - Grade א-ב: Simple ABAB, AABB emoji patterns with shapes, colors, animals
+    - Grade ג-ד: ABC patterns, numeric sequences (+5, +3, doubles), growing/shrinking patterns
+    - Grade ה-ו: Complex rules (Fibonacci, primes, squares, cubes, factorials, algebraic expressions)
+  - Updated `IMPLEMENTED_GAMES` in CategoryCard and CategoryModal to include "pattern"
+  - Updated GAME_INFO icon to "eye" and name to "זיהוי דפוסים"
 
 - **Number Patterns game (סדרות מספרים)**: Complete implementation of the number sequence completion game
   - `NumberPatternGame` component: Main game logic with React Query integration for fetching NumberPatternContent, Fisher-Yates shuffle for puzzle randomization, attempt-based scoring system (+10 first try, +5 second, +2 third, 0 after 3 failures), rule explanation reveal after solving
@@ -23,6 +118,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Grade ג-ד: Multiplication tables, triangular numbers, Fibonacci introduction
     - Grade ה-ו: Primes, squares, cubes, factorials, Catalan numbers, perfect numbers
   - Updated `IMPLEMENTED_GAMES` in CategoryCard and CategoryModal to include "numberPattern"
+
+### Fixed
+
+- **Icon component missing icons**: Added `eye` and `flask-conical` icons to Icon.tsx to support Pattern Recognition and Virtual Lab games
 
 ## [0.9.25] - 2026-01-21
 
