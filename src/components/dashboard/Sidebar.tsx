@@ -29,7 +29,7 @@ import {
   Globe,
   Calendar,
   Trophy,
-  Gamepad2,
+  Puzzle,
 } from "lucide-react";
 import type { UserRole } from "@/types";
 import type { LucideIcon } from "lucide-react";
@@ -47,8 +47,8 @@ const navItems: NavItem[] = [
   { label: "משאבי הוראה", href: "/teaching-resources", roles: ["admin", "teacher"], icon: FileText },
   { label: "תיעודים", href: "/documentation", roles: ["admin", "teacher", "parent", "student"], icon: Image },
   { label: "יוצאים לדרך", href: "/announcements", roles: ["admin", "student"], icon: Rocket },
-  { label: "משחקים", href: "/games", roles: ["student"], icon: Gamepad2 },
-  { label: "ניהול משחקים", href: "/games", roles: ["admin"], icon: Gamepad2 },
+  { label: "משחקים", href: "/games", roles: ["student"], icon: Puzzle },
+  { label: "ניהול משחקים", href: "/games", roles: ["admin"], icon: Puzzle },
   { label: "יומן חוקר", href: "/journal", roles: ["student"], icon: PenTool },
   { label: "במה אישית - תלמידים", href: "/personal", roles: ["admin", "student"], icon: Heart },
   { label: "פורומים", href: "/forum", roles: ["admin"], icon: MessageSquare },

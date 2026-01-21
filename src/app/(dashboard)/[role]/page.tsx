@@ -20,6 +20,7 @@ import {
   ArrowLeft,
   Users,
   Heart,
+  Puzzle,
 } from "lucide-react";
 import type { UserRole, ConfigurableRole } from "@/types";
 import type { LucideIcon } from "lucide-react";
@@ -37,6 +38,7 @@ const CARD_METADATA: Record<string, { icon: LucideIcon; color: string; href: str
   questions: { icon: HelpCircle, color: "bg-role-admin", href: "/questions" },
   passwords: { icon: Key, color: "bg-primary", href: "/passwords" },
   settings: { icon: Settings, color: "bg-secondary", href: "/settings" },
+  games: { icon: Puzzle, color: "bg-role-student", href: "/games" },
 };
 
 interface QuickAction {
