@@ -1,23 +1,26 @@
 // src/app/(dashboard)/admin/parent-content/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Pencil, Check, X, Users } from "lucide-react";
+import { Plus, Pencil, Check, X, Users, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { EventForm } from "@/components/parent-content/EventForm";
 import { EventList } from "@/components/parent-content/EventList";
+import { ChallengeCard, ChallengeForm } from "@/components/challenges";
 import {
   useParentContent,
   useUpdateParentContentIntro,
   useUpdateParentContentEvents,
   useDeleteParentContentImage,
+  useChallenges,
 } from "@/lib/queries";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToastActions } from "@/components/ui/Toast";
-import type { ParentContentPageId, ParentContentEvent } from "@/types";
+import type { ParentContentPageId, ParentContentEvent, Challenge } from "@/types";
 
 type TabId = ParentContentPageId;
 
@@ -34,9 +37,16 @@ export default function AdminParentContentPage() {
   const [activeTab, setActiveTab] = useState<TabId>("community-activities");
   const [isEditingIntro, setIsEditingIntro] = useState(false);
   const [editIntroText, setEditIntroText] = useState("");
+
+  // Events state (for community-activities tab)
   const [showEventForm, setShowEventForm] = useState(false);
   const [editingEvent, setEditingEvent] = useState<ParentContentEvent | null>(null);
   const [deletingEvent, setDeletingEvent] = useState<ParentContentEvent | null>(null);
+
+  // Challenges state (for stem-family tab)
+  const [showChallengeForm, setShowChallengeForm] = useState(false);
+  const [editingChallenge, setEditingChallenge] = useState<Challenge | null>(null);
+  const challengeDialogRef = useRef<HTMLDialogElement>(null);
 
   // Redirect non-admins
   useEffect(() => {
@@ -46,17 +56,52 @@ export default function AdminParentContentPage() {
   }, [session, router]);
 
   // Queries
-  const { data: content, isLoading } = useParentContent(activeTab);
+  const { data: content, isLoading: isLoadingContent } = useParentContent(activeTab);
+  const { data: challenges = [], isLoading: isLoadingChallenges } = useChallenges();
 
   // Mutations
   const updateIntro = useUpdateParentContentIntro();
   const updateEvents = useUpdateParentContentEvents();
   const deleteImage = useDeleteParentContentImage();
 
+  // Handle challenge dialog open/close
+  useEffect(() => {
+    const dialog = challengeDialogRef.current;
+    if (!dialog) return;
+
+    if (showChallengeForm || editingChallenge) {
+      dialog.showModal();
+    } else {
+      dialog.close();
+    }
+  }, [showChallengeForm, editingChallenge]);
+
+  // Handle escape key for challenge dialog
+  useEffect(() => {
+    const dialog = challengeDialogRef.current;
+    if (!dialog) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowChallengeForm(false);
+        setEditingChallenge(null);
+      }
+    };
+
+    dialog.addEventListener("keydown", handleKeyDown);
+    return () => dialog.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   // Early return for non-admins
   if (!session || session.user.role !== "admin") {
     return null;
   }
+
+  const isLoading = activeTab === "stem-family" ? isLoadingChallenges : isLoadingContent;
+
+  // Separate active and inactive challenges
+  const activeChallenge = challenges.find((c) => c.isActive);
+  const inactiveChallenges = challenges.filter((c) => !c.isActive);
 
   const handleStartEditIntro = () => {
     setEditIntroText(content?.intro || "");
@@ -82,6 +127,7 @@ export default function AdminParentContentPage() {
     }
   };
 
+  // Event handlers (for community-activities)
   const handleAddEvent = () => {
     setEditingEvent(null);
     setShowEventForm(true);
@@ -163,6 +209,16 @@ export default function AdminParentContentPage() {
       console.error("Reorder events error:", error);
       toast.error("שגיאה בסידור מחדש");
     }
+  };
+
+  // Challenge handlers (for stem-family)
+  const handleCloseChallengeModal = () => {
+    setShowChallengeForm(false);
+    setEditingChallenge(null);
+  };
+
+  const handleEditChallenge = (challenge: Challenge) => {
+    setEditingChallenge(challenge);
   };
 
   return (
@@ -263,26 +319,110 @@ export default function AdminParentContentPage() {
             )}
           </div>
 
-          {/* Events Section */}
-          <div className="p-6 bg-surface-1 rounded-2xl border border-surface-2">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-foreground">אירועים</h2>
-              <Button onClick={handleAddEvent} leftIcon={Plus} size="sm">
-                הוסף אירוע
-              </Button>
-            </div>
+          {/* Content Section - Events for community-activities, Challenges for stem-family */}
+          {activeTab === "community-activities" ? (
+            // Events Section
+            <div className="p-6 bg-surface-1 rounded-2xl border border-surface-2">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-foreground">אירועים</h2>
+                <Button onClick={handleAddEvent} leftIcon={Plus} size="sm">
+                  הוסף אירוע
+                </Button>
+              </div>
 
-            <EventList
-              events={content?.events || []}
-              onReorder={handleReorderEvents}
-              onEdit={handleEditEvent}
-              onDelete={setDeletingEvent}
-            />
-          </div>
+              <EventList
+                events={content?.events || []}
+                onReorder={handleReorderEvents}
+                onEdit={handleEditEvent}
+                onDelete={setDeletingEvent}
+              />
+            </div>
+          ) : (
+            // Challenges Section (for stem-family)
+            <div className="space-y-6">
+              {/* Stats & Add Button */}
+              <div className="flex items-center justify-between">
+                <div className="flex gap-4 text-sm">
+                  {challenges.length > 0 && (
+                    <div className="px-4 py-2 bg-surface-1 rounded-lg">
+                      <span className="text-gray-500">סה״כ אתגרים:</span>{" "}
+                      <span className="font-semibold text-foreground">{challenges.length}</span>
+                    </div>
+                  )}
+                  {activeChallenge && (
+                    <div className="px-4 py-2 bg-amber-50 rounded-lg">
+                      <span className="text-amber-600">אתגר פעיל:</span>{" "}
+                      <span className="font-semibold text-amber-700">{activeChallenge.title}</span>
+                    </div>
+                  )}
+                </div>
+                <Button
+                  onClick={() => setShowChallengeForm(true)}
+                  className="bg-amber-500 hover:bg-amber-600"
+                  rightIcon={Plus}
+                >
+                  אתגר חדש
+                </Button>
+              </div>
+
+              {/* Empty State */}
+              {challenges.length === 0 && (
+                <EmptyState
+                  icon="trophy"
+                  title="אין אתגרים עדיין"
+                  description="צור אתגר חדש כדי להתחיל"
+                  action={{
+                    label: "אתגר חדש",
+                    onClick: () => setShowChallengeForm(true),
+                  }}
+                />
+              )}
+
+              {/* Active Challenge */}
+              {activeChallenge && (
+                <div className="space-y-2">
+                  <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide flex items-center gap-2">
+                    <Trophy size={16} className="text-amber-500" />
+                    אתגר פעיל
+                  </h2>
+                  <ChallengeCard
+                    challenge={activeChallenge}
+                    userRole={session.user.role}
+                    userName={session.user.name}
+                    userGrade={session.user.grade}
+                    isExpanded={true}
+                    onEdit={() => handleEditChallenge(activeChallenge)}
+                  />
+                </div>
+              )}
+
+              {/* Inactive Challenges */}
+              {inactiveChallenges.length > 0 && (
+                <div className="space-y-4">
+                  <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide">
+                    אתגרים לא פעילים ({inactiveChallenges.length})
+                  </h2>
+                  <div className="space-y-3">
+                    {inactiveChallenges.map((challenge) => (
+                      <ChallengeCard
+                        key={challenge.id}
+                        challenge={challenge}
+                        userRole={session.user.role}
+                        userName={session.user.name}
+                        userGrade={session.user.grade}
+                        isExpanded={false}
+                        onEdit={() => handleEditChallenge(challenge)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </>
       )}
 
-      {/* Event Form Modal */}
+      {/* Event Form Modal (for community-activities) */}
       {showEventForm && (
         <EventForm
           event={editingEvent || undefined}
@@ -296,7 +436,32 @@ export default function AdminParentContentPage() {
         />
       )}
 
-      {/* Delete Confirmation */}
+      {/* Challenge Form Modal (for stem-family) */}
+      <dialog
+        ref={challengeDialogRef}
+        className="fixed inset-0 m-auto h-fit z-50 rounded-2xl p-0 backdrop:bg-black/50 backdrop:animate-fade-in max-w-xl w-full shadow-2xl animate-scale-in border-0 bg-transparent"
+        onClose={handleCloseChallengeModal}
+      >
+        <div className="relative" dir="rtl">
+          {/* Close button */}
+          <button
+            onClick={handleCloseChallengeModal}
+            className="absolute top-4 left-4 z-10 p-2 text-gray-400 hover:text-gray-600 hover:bg-surface-2 rounded-lg transition-all duration-200 cursor-pointer bg-white/80 backdrop-blur-sm"
+            aria-label="סגור"
+          >
+            <X size={18} />
+          </button>
+
+          <ChallengeForm
+            authorName={session.user.name}
+            editingChallenge={editingChallenge}
+            onSuccess={handleCloseChallengeModal}
+            onCancel={handleCloseChallengeModal}
+          />
+        </div>
+      </dialog>
+
+      {/* Delete Event Confirmation */}
       <ConfirmDialog
         isOpen={!!deletingEvent}
         onCancel={() => setDeletingEvent(null)}

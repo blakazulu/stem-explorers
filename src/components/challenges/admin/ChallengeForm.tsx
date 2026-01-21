@@ -546,7 +546,7 @@ export function ChallengeForm({
                 </div>
               )}
               <p className="text-xs text-gray-500">
-                הסרטון יכווץ אוטומטית לגודל מתאים
+                מקסימום 3 דקות. הסרטון יכווץ אוטומטית ל-720p.
               </p>
             </div>
           )}

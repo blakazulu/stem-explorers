@@ -24,10 +24,10 @@
 | Task 1.7: GameLayout Component | ✅ | Full-screen game wrapper |
 | Task 1.8: Game Page Route | ✅ | `[role]/games/[gameType]/page.tsx` |
 | Task 1.9: Badge System | ✅ | Badge definitions and shelf display |
-| **Phase 2: Games** | 🔄 In Progress | 2/12 games complete |
+| **Phase 2: Games** | 🔄 In Progress | 3/12 games complete |
 | Task 2.1: Hangman | ✅ | Content seeded, game complete |
 | Task 2.2: Word Search | ✅ | Content seeded, game complete |
-| Task 2.3: Memory Cards | ⏳ Pending | Coming soon |
+| Task 2.3: Memory Cards | ✅ | Content seeded, game complete |
 | Task 2.4: STEM Quiz | ⏳ Pending | Coming soon |
 | Task 2.5: Sort It Out | ⏳ Pending | Coming soon |
 | Task 2.6: Number Patterns | ⏳ Pending | Coming soon |

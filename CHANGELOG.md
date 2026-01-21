@@ -7,11 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Memory Cards game (משחק זיכרון)**: Complete implementation of the memory matching game
+  - `MemoryCard` component: Interactive card with 3D flip animation using CSS transforms, violet/purple gradient back design with brain icon, white front showing term/match text, matched cards show green border with checkmark indicator, keyboard accessible with Enter/Space support, staggered entrance animation
+  - `MemoryGame` component: Main game logic with React Query integration for fetching MemoryContent, card deck creation from term/match pairs, Fisher-Yates shuffle algorithm, flipped cards tracking (max 2 at a time), match detection (same pairId, different type), 1-second flip-back delay for non-matches, moves counter, score system (+10 per match, +50 bonus for completion, final score = max(100, 1000 - moves*10)), celebration animation on completion, multiple puzzle support with "next game" flow, loading/error/empty states
+  - Game page integration: MemoryGame rendered when gameType is "memory", difficulty selector works with the game
+  - Violet/purple theme styling matching "זיכרון ומיון" category color
+  - Content seeder script: `scripts/seed-memory-content.ts` for populating Firestore with STEM-themed matching pairs for all grades and difficulties
+    - Grade א-ב: Simple pairs (animal sounds, colors in nature, body parts, opposites)
+    - Grade ג-ד: Science concepts (body systems, states of matter, planets, food chains)
+    - Grade ה-ו: Advanced concepts (force and motion, waves, atomic structure, biotechnology)
+  - Updated `IMPLEMENTED_GAMES` in CategoryCard and CategoryModal to include "memory"
+
 ### Fixed
 
 - **Word Search RTL mouse coordinates**: Fixed mouse drag selection in Word Search game to work correctly with RTL layout - column calculation now uses right edge of grid instead of left
+- **Parent content events save error**: Fixed Firestore error when saving events with optional fields (date, imageUrl, linkUrl) - service now filters out undefined values which Firestore doesn't accept
+- **Event date format**: Changed event date display from Hebrew locale format to DD/MM/YYYY in both EventList (admin) and EventCard (parent view)
 
 ### Changed
+
+- **Merged "אתגר הורים" into "STEM במשפחה"**: Consolidated the separate challenges feature into the STEM במשפחה page
+  - Admin: Challenges now managed under `/admin/parent-content` → "STEM במשפחה" tab (with intro editing + challenges management)
+  - Parent: Challenges now displayed at `/parent/stem-family` with intro text, active challenge with comments, and past challenges
+  - Removed: Deleted `/admin/challenges` and `/parent/challenges` pages
+  - Updated sidebar: Removed "אתגר הורים" link, changed "STEM במשפחה" icon from Home to Trophy
+  - Updated visibility defaults: Removed "challenges" from dashboard cards and sidebar links
+
+- **Admin sidebar cleanup**: Removed "משחקים" link from admin sidebar (admin already has "ניהול משחקים")
+
+- **Challenge form video upload hint**: Updated helper text to show "מקסימום 3 דקות. הסרטון יכווץ אוטומטית ל-720p." instead of generic "הסרטון יכווץ אוטומטית לגודל מתאים" - now matches the Personal Media Uploader and clearly communicates video limitations upfront
 
 - **Games Hub "Coming Soon" badges**: Unimplemented games and categories now show "בקרוב" (Coming Soon) badge and are disabled until development is complete. Only "משחקי מילים" category is active with Hangman and Word Search games
 

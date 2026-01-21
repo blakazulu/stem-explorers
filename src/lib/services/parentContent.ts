@@ -103,11 +103,19 @@ export async function updateParentContentEvents(
 ): Promise<void> {
   try {
     const docRef = doc(db, COLLECTION, pageId);
-    // Convert dates to Timestamps for Firestore
-    const firestoreEvents = events.map((e) => ({
-      ...e,
-      createdAt: Timestamp.fromDate(e.createdAt),
-    }));
+    // Convert dates to Timestamps and remove undefined values (Firestore doesn't accept undefined)
+    const firestoreEvents = events.map((e) => {
+      const event: Record<string, unknown> = {
+        id: e.id,
+        title: e.title,
+        description: e.description,
+        createdAt: Timestamp.fromDate(e.createdAt),
+      };
+      if (e.date) event.date = e.date;
+      if (e.imageUrl) event.imageUrl = e.imageUrl;
+      if (e.linkUrl) event.linkUrl = e.linkUrl;
+      return event;
+    });
     await setDoc(
       docRef,
       {

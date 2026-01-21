@@ -1,14 +1,34 @@
 // src/app/(dashboard)/parent/stem-family/page.tsx
 "use client";
 
-import { Home } from "lucide-react";
+import { Home, Trophy } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useParentContent, useChallengesByGrade } from "@/lib/queries";
+import { ChallengeCard } from "@/components/challenges";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { EventCard } from "@/components/parent-content/EventCard";
-import { useParentContent } from "@/lib/queries";
 
 export default function StemFamilyPage() {
-  const { data: content, isLoading } = useParentContent("stem-family");
+  const { session } = useAuth();
+  const userGrade = session?.user.grade;
+
+  const { data: content, isLoading: isLoadingContent } = useParentContent("stem-family");
+  const { data: challenges = [], isLoading: isLoadingChallenges } = useChallengesByGrade(userGrade ?? null);
+
+  const isLoading = isLoadingContent || isLoadingChallenges;
+
+  // Separate active and inactive challenges
+  const activeChallenge = challenges.find((c) => c.isActive);
+  const pastChallenges = challenges.filter((c) => !c.isActive);
+
+  // Show loading state before session is available
+  if (!session) {
+    return (
+      <div className="flex items-center justify-center min-h-[200px]">
+        <div className="animate-pulse text-gray-400">טוען...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
@@ -21,14 +41,17 @@ export default function StemFamilyPage() {
           <h1 className="text-xl md:text-2xl font-rubik font-bold text-foreground">
             STEM במשפחה
           </h1>
+          <p className="text-sm text-gray-500">
+            אתגרים מהנים לכל המשפחה
+          </p>
         </div>
       </div>
 
       {isLoading ? (
         <div className="space-y-6">
           <Skeleton variant="text" className="w-full h-16" />
-          <Skeleton variant="card" className="h-48" />
-          <Skeleton variant="card" className="h-48" />
+          <Skeleton variant="card" className="h-64" />
+          <Skeleton variant="card" className="h-24" />
         </div>
       ) : (
         <>
@@ -39,23 +62,54 @@ export default function StemFamilyPage() {
             </div>
           )}
 
-          {/* Events Timeline */}
-          {content?.events && content.events.length > 0 ? (
-            <div className="mt-6">
-              {content.events.map((event, index) => (
-                <EventCard
-                  key={event.id}
-                  event={event}
-                  isLast={index === content.events.length - 1}
-                />
-              ))}
-            </div>
-          ) : (
+          {/* Empty State */}
+          {challenges.length === 0 && (
             <EmptyState
-              icon="home"
-              title="אין אירועים להצגה"
-              description="אירועים חדשים יופיעו כאן"
+              icon="trophy"
+              title="אין אתגרים להצגה"
+              description="אתגרים חדשים יופיעו כאן בקרוב"
             />
+          )}
+
+          {/* Active Challenge */}
+          {activeChallenge && (
+            <div className="space-y-2">
+              <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide flex items-center gap-2">
+                <Trophy size={16} className="text-amber-500" />
+                אתגר פעיל
+              </h2>
+              <ChallengeCard
+                challenge={activeChallenge}
+                userRole={session.user.role}
+                userName={session.user.name}
+                userGrade={session.user.grade}
+                isExpanded={true}
+              />
+            </div>
+          )}
+
+          {/* Past Challenges */}
+          {pastChallenges.length > 0 && (
+            <div className="space-y-4">
+              <h2 className="text-lg font-rubik font-semibold text-foreground flex items-center gap-2">
+                <span className="text-gray-400">אתגרים קודמים</span>
+                <span className="text-sm font-normal text-gray-400">
+                  ({pastChallenges.length})
+                </span>
+              </h2>
+              <div className="space-y-3">
+                {pastChallenges.map((challenge) => (
+                  <ChallengeCard
+                    key={challenge.id}
+                    challenge={challenge}
+                    userRole={session.user.role}
+                    userName={session.user.name}
+                    userGrade={session.user.grade}
+                    isExpanded={false}
+                  />
+                ))}
+              </div>
+            </div>
           )}
         </>
       )}
