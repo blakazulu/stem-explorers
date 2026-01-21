@@ -189,7 +189,7 @@ export function ChallengeForm({
       return;
     }
 
-    const targetGrades = allGrades ? "all" : selectedGrades;
+    const targetGrades = allGrades ? ("all" as const) : selectedGrades;
     if (!allGrades && selectedGrades.length === 0) {
       toast.error("שגיאה", "יש לבחור לפחות כיתה אחת");
       return;

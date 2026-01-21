@@ -112,13 +112,12 @@ export function ChallengeCommentList({
       {/* Delete Comment Confirmation */}
       <ConfirmDialog
         isOpen={!!deleteCommentId}
-        onClose={() => setDeleteCommentId(null)}
+        onCancel={() => setDeleteCommentId(null)}
         onConfirm={handleDeleteComment}
         title="מחיקת תגובה"
         message="האם אתה בטוח שברצונך למחוק את התגובה?"
-        confirmText="מחק"
+        confirmLabel="מחק"
         variant="danger"
-        loading={deleteComment.isPending}
       />
 
       {/* Expanded Image Modal */}

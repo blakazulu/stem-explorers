@@ -218,25 +218,23 @@ export function AnnouncementCard({
       {/* Delete Announcement Confirmation */}
       <ConfirmDialog
         isOpen={showDeleteConfirm}
-        onClose={() => setShowDeleteConfirm(false)}
+        onCancel={() => setShowDeleteConfirm(false)}
         onConfirm={handleDeleteAnnouncement}
         title="מחיקת פרסום"
         message="האם אתה בטוח שברצונך למחוק את הפרסום? פעולה זו לא ניתנת לביטול."
-        confirmText="מחק"
+        confirmLabel="מחק"
         variant="danger"
-        loading={deleteAnnouncement.isPending}
       />
 
       {/* Delete Comment Confirmation */}
       <ConfirmDialog
         isOpen={!!deleteCommentId}
-        onClose={() => setDeleteCommentId(null)}
+        onCancel={() => setDeleteCommentId(null)}
         onConfirm={handleDeleteComment}
         title="מחיקת תגובה"
         message="האם אתה בטוח שברצונך למחוק את התגובה?"
-        confirmText="מחק"
+        confirmLabel="מחק"
         variant="danger"
-        loading={deleteComment.isPending}
       />
     </>
   );

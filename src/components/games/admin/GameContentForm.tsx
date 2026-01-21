@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { Icon, IconName } from "@/components/ui/Icon";
 import { Button } from "@/components/ui/Button";
 import { GAME_INFO, DIFFICULTY_LABELS } from "@/lib/constants/games";
-import type { GameContent, GameType, Difficulty } from "@/types/games";
+import type { GameContent, GameType, Difficulty, HangmanContent, QuizContent } from "@/types/games";
 import type { Grade } from "@/types";
 import { X, ChevronDown, Loader2 } from "lucide-react";
 
@@ -118,16 +118,17 @@ export function GameContentForm({
 
     // Build the content object based on game type
     if (gameType === "hangman") {
-      onSubmit({
+      const data: Omit<HangmanContent, "id" | "createdAt" | "updatedAt"> = {
         gameType: "hangman",
         grade,
         difficulty,
         word,
         hint,
         category,
-      });
+      };
+      onSubmit(data);
     } else if (gameType === "quiz") {
-      onSubmit({
+      const data: Omit<QuizContent, "id" | "createdAt" | "updatedAt"> = {
         gameType: "quiz",
         grade,
         difficulty,
@@ -135,7 +136,8 @@ export function GameContentForm({
         options,
         correctIndex,
         explanation,
-      });
+      };
+      onSubmit(data);
     }
   };
 

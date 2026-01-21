@@ -22,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **ConfirmDialog prop mismatches**: Fixed incorrect prop names in ConfirmDialog usage across multiple components (`onClose` → `onCancel`, `confirmText` → `confirmLabel`) - affected AnnouncementCard, ChallengeCard, and ChallengeCommentList
+- **ChallengeForm targetGrades type**: Fixed TypeScript type error where `"all"` string literal was being widened to `string` instead of preserving literal type
+- **GameContentForm union type handling**: Fixed TypeScript error by explicitly typing game-specific content objects (HangmanContent, QuizContent) before passing to onSubmit
 - **Word Search RTL mouse coordinates**: Fixed mouse drag selection in Word Search game to work correctly with RTL layout - column calculation now uses right edge of grid instead of left
 - **Parent content events save error**: Fixed Firestore error when saving events with optional fields (date, imageUrl, linkUrl) - service now filters out undefined values which Firestore doesn't accept
 - **Event date format**: Changed event date display from Hebrew locale format to DD/MM/YYYY in both EventList (admin) and EventCard (parent view)

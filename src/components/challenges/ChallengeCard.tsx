@@ -270,13 +270,12 @@ export function ChallengeCard({
       {/* Delete Challenge Confirmation */}
       <ConfirmDialog
         isOpen={showDeleteConfirm}
-        onClose={() => setShowDeleteConfirm(false)}
+        onCancel={() => setShowDeleteConfirm(false)}
         onConfirm={handleDeleteChallenge}
         title="מחיקת אתגר"
         message="האם אתה בטוח שברצונך למחוק את האתגר? כל התגובות והקבצים יימחקו. פעולה זו לא ניתנת לביטול."
-        confirmText="מחק"
+        confirmLabel="מחק"
         variant="danger"
-        loading={deleteChallenge.isPending}
       />
     </>
   );
