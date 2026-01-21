@@ -226,14 +226,23 @@ export function WordSearchGrid({
     setDragCells(new Set());
   }, [isDragging, startCell, currentCell, gridSize, onSelectionComplete]);
 
-  // Add global event listeners for drag
+  // Store callbacks in refs to avoid re-adding event listeners on every render
+  const handleMoveRef = useRef(handleMove);
+  const handleEndRef = useRef(handleEnd);
+
+  useEffect(() => {
+    handleMoveRef.current = handleMove;
+    handleEndRef.current = handleEnd;
+  }, [handleMove, handleEnd]);
+
+  // Add global event listeners for drag - only re-run when isDragging changes
   useEffect(() => {
     const handleGlobalMove = (e: MouseEvent | TouchEvent) => {
-      handleMove(e);
+      handleMoveRef.current(e);
     };
 
     const handleGlobalEnd = () => {
-      handleEnd();
+      handleEndRef.current();
     };
 
     if (isDragging) {
@@ -249,7 +258,7 @@ export function WordSearchGrid({
       document.removeEventListener("touchmove", handleGlobalMove);
       document.removeEventListener("touchend", handleGlobalEnd);
     };
-  }, [isDragging, handleMove, handleEnd]);
+  }, [isDragging]);
 
   // Get cell styling based on state
   const getCellStyles = useCallback(

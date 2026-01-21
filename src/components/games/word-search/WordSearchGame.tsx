@@ -216,6 +216,12 @@ function generateGrid(
         }
       }
     }
+
+    // If word still couldn't be placed, skip it (don't add to wordPositions)
+    // This prevents unwinnable puzzles
+    if (!placed) {
+      console.warn(`Word Search: Could not place word "${word}" in ${gridSize}x${gridSize} grid`);
+    }
   }
 
   // Fill remaining empty cells with random Hebrew letters
@@ -336,16 +342,18 @@ export function WordSearchGame({
   // Check for game completion
   useEffect(() => {
     if (words.length > 0 && foundWords.size === words.length && !gameComplete) {
-      // All words found - add bonus!
+      // All words found - add bonus using functional update to avoid race condition
       const bonus = 50;
-      const newScore = score + bonus;
-      setScore(newScore);
-      onScoreUpdate(newScore);
+      setScore((prevScore) => {
+        const newScore = prevScore + bonus;
+        onScoreUpdate(newScore);
+        return newScore;
+      });
       setShowCelebration(true);
       setGameComplete(true);
       onGameComplete(true);
     }
-  }, [foundWords.size, words.length, gameComplete, score, onScoreUpdate, onGameComplete]);
+  }, [foundWords.size, words.length, gameComplete, onScoreUpdate, onGameComplete]);
 
   // Handle cell selection during drag
   const handleCellSelect = useCallback((row: number, col: number) => {
