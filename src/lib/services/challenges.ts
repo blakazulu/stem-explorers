@@ -59,6 +59,8 @@ function mapDocToChallenge(docSnapshot: { id: string; data: () => Record<string,
       authorGrade: c.authorGrade as Grade,
       content: c.content as string,
       imageUrl: c.imageUrl as string | undefined,
+      imageUrls: c.imageUrls as string[] | undefined,
+      videoUrl: c.videoUrl as string | undefined,
       createdAt: c.createdAt instanceof Date ? c.createdAt : (c.createdAt as { toDate?: () => Date })?.toDate?.() || new Date(),
     })),
   };
@@ -212,9 +214,10 @@ export async function deleteChallenge(id: string): Promise<void> {
         }
       }
 
-      // Delete comment images from storage
+      // Delete comment media from storage
       const comments = data.comments || [];
       for (const comment of comments) {
+        // Delete legacy single image
         if (comment.imageUrl) {
           const commentImagePath = getStoragePathFromUrl(comment.imageUrl);
           if (commentImagePath) {
@@ -222,6 +225,30 @@ export async function deleteChallenge(id: string): Promise<void> {
               await deleteObject(ref(storage, commentImagePath));
             } catch (e) {
               console.error("Failed to delete comment image:", e);
+            }
+          }
+        }
+        // Delete images array
+        if (comment.imageUrls?.length) {
+          for (const imageUrl of comment.imageUrls) {
+            const imagePath = getStoragePathFromUrl(imageUrl);
+            if (imagePath) {
+              try {
+                await deleteObject(ref(storage, imagePath));
+              } catch (e) {
+                console.error("Failed to delete comment image:", e);
+              }
+            }
+          }
+        }
+        // Delete video
+        if (comment.videoUrl) {
+          const videoPath = getStoragePathFromUrl(comment.videoUrl);
+          if (videoPath) {
+            try {
+              await deleteObject(ref(storage, videoPath));
+            } catch (e) {
+              console.error("Failed to delete comment video:", e);
             }
           }
         }
@@ -297,6 +324,8 @@ export async function addChallengeComment(
       authorName: sanitizeString(comment.authorName, MAX_AUTHOR_LENGTH),
       authorGrade: comment.authorGrade,
       imageUrl: comment.imageUrl || null,
+      imageUrls: comment.imageUrls || null,
+      videoUrl: comment.videoUrl || null,
       createdAt: new Date(),
     };
 
@@ -327,7 +356,7 @@ export async function deleteChallengeComment(
       (c: { id: string }) => c.id === commentId
     );
 
-    // Delete comment image from storage if exists
+    // Delete comment image from storage if exists (legacy single image)
     if (commentToDelete?.imageUrl) {
       const imagePath = getStoragePathFromUrl(commentToDelete.imageUrl);
       if (imagePath) {
@@ -335,6 +364,32 @@ export async function deleteChallengeComment(
           await deleteObject(ref(storage, imagePath));
         } catch (e) {
           console.error("Failed to delete comment image:", e);
+        }
+      }
+    }
+
+    // Delete comment images array from storage
+    if (commentToDelete?.imageUrls?.length) {
+      for (const imageUrl of commentToDelete.imageUrls) {
+        const imagePath = getStoragePathFromUrl(imageUrl);
+        if (imagePath) {
+          try {
+            await deleteObject(ref(storage, imagePath));
+          } catch (e) {
+            console.error("Failed to delete comment image:", e);
+          }
+        }
+      }
+    }
+
+    // Delete comment video from storage
+    if (commentToDelete?.videoUrl) {
+      const videoPath = getStoragePathFromUrl(commentToDelete.videoUrl);
+      if (videoPath) {
+        try {
+          await deleteObject(ref(storage, videoPath));
+        } catch (e) {
+          console.error("Failed to delete comment video:", e);
         }
       }
     }

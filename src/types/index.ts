@@ -363,7 +363,9 @@ export interface ChallengeComment {
   authorName: string;
   authorGrade: Grade;
   content: string;
-  imageUrl?: string;
+  imageUrl?: string;       // Legacy single image (for backwards compatibility)
+  imageUrls?: string[];    // Up to 3 images
+  videoUrl?: string;       // Single video URL from Firebase Storage
   createdAt: Date;
 }
 

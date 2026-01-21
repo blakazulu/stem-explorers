@@ -391,7 +391,7 @@ export default function PersonalMediaUploader({
             />
             {mode === "video" && (
               <p className="text-xs text-gray-500 mt-1 text-right">
-                מקסימום 3 דקות. הסרטון יכווץ אוטומטית ל-720p.
+                מקסימום 5 דקות. הסרטון יכווץ אוטומטית ל-720p.
               </p>
             )}
           </div>

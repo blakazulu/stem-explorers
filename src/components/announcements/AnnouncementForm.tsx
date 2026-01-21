@@ -11,7 +11,7 @@ import type { Grade } from "@/types";
 
 const grades: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
 const VALID_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15MB
 
 interface AnnouncementFormProps {
   authorName: string;
@@ -41,7 +41,7 @@ export function AnnouncementForm({ authorName, onCreated }: AnnouncementFormProp
 
     // Validate file size
     if (file.size > MAX_FILE_SIZE) {
-      toast.error("שגיאה", "גודל הקובץ חייב להיות עד 10MB");
+      toast.error("שגיאה", "גודל הקובץ חייב להיות עד 15MB");
       if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }

@@ -6,8 +6,8 @@ let ffmpeg: FFmpeg | null = null;
 let isLoading = false;
 let loadPromise: Promise<void> | null = null;
 
-// Maximum video duration in seconds (3 minutes)
-const MAX_DURATION_SECONDS = 180;
+// Maximum video duration in seconds (5 minutes)
+const MAX_DURATION_SECONDS = 300;
 // Maximum resolution (720p)
 const MAX_HEIGHT = 720;
 // CRF value for quality/size balance (lower = better quality, larger file)

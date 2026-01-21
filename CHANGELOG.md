@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.29] - 2026-01-21
+
+### Changed
+
+- **Challenge comments**: Parents can now attach up to 3 images and 1 video per comment (text still required). Video is compressed automatically before upload.
+- **Upload limits increased**: Images now allow up to 15MB (up from 5-10MB), videos allow up to 5 minutes (up from 3 minutes)
+- **Image modals**: Added Escape key to close image modals in challenges
+
+### Fixed
+
+- **Challenge comments persistence**: Fixed critical bug where imageUrls and videoUrl were not being saved to Firestore
+- **Storage cleanup**: Fixed storage cleanup to properly delete multiple images and videos when comments/challenges are deleted
+
 ## [0.9.28] - 2026-01-21
 
 ### Added

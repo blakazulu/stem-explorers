@@ -25,7 +25,7 @@ import type { Challenge, Grade } from "@/types";
 
 const grades: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
 const VALID_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_IMAGE_SIZE = 15 * 1024 * 1024; // 15MB
 
 interface ChallengeFormProps {
   authorName: string;
@@ -119,7 +119,7 @@ export function ChallengeForm({
     }
 
     if (file.size > MAX_IMAGE_SIZE) {
-      toast.error("שגיאה", "גודל הקובץ חייב להיות עד 10MB");
+      toast.error("שגיאה", "גודל הקובץ חייב להיות עד 15MB");
       if (imageInputRef.current) imageInputRef.current.value = "";
       return;
     }
@@ -546,7 +546,7 @@ export function ChallengeForm({
                 </div>
               )}
               <p className="text-xs text-gray-500">
-                מקסימום 3 דקות. הסרטון יכווץ אוטומטית ל-720p.
+                מקסימום 5 דקות. הסרטון יכווץ אוטומטית ל-720p.
               </p>
             </div>
           )}

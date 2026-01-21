@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Play, ExternalLink, X } from "lucide-react";
 
 interface ChallengeMediaProps {
@@ -62,6 +62,16 @@ export function ChallengeMedia({
 }: ChallengeMediaProps) {
   const [videoPlaying, setVideoPlaying] = useState(false);
   const [imageModalOpen, setImageModalOpen] = useState(false);
+
+  // Handle Escape key to close modal
+  useEffect(() => {
+    if (!imageModalOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setImageModalOpen(false);
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [imageModalOpen]);
 
   const hasVideo = videoUrl || videoStorageUrl;
   const hasImage = imageUrl;
