@@ -1,0 +1,420 @@
+"use client";
+
+import { useState, useEffect, useRef, useMemo } from "react";
+import { X, Save, Loader2 } from "lucide-react";
+import { Icon, type IconName } from "@/components/ui/Icon";
+import { Button } from "@/components/ui/Button";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { HangmanContentEditor } from "./HangmanContentEditor";
+import { WordSearchContentEditor } from "./WordSearchContentEditor";
+import { MemoryContentEditor } from "./MemoryContentEditor";
+import { useGameContent, useUpdateGameContent, useDeleteGameContent, useCreateGameContent } from "@/lib/queries/games";
+import { useToastActions } from "@/components/ui/Toast";
+import { GAME_INFO, DIFFICULTY_LABELS } from "@/lib/constants/games";
+import type { Grade } from "@/types";
+import type { GameType, Difficulty, GameContent, HangmanContent, WordSearchContent, MemoryContent } from "@/types/games";
+
+const GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
+const DIFFICULTIES: Difficulty[] = ["easy", "medium", "hard"];
+
+interface GameContentModalProps {
+  gameType: GameType | null;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function GameContentModal({ gameType, isOpen, onClose }: GameContentModalProps) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const toast = useToastActions();
+
+  const [selectedGrade, setSelectedGrade] = useState<Grade>("א");
+  const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>("easy");
+  const [editedContent, setEditedContent] = useState<Map<string, GameContent>>(new Map());
+  const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
+  const [newContent, setNewContent] = useState<GameContent[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Fetch content for selected game/grade/difficulty
+  const { data: content = [], isLoading, refetch } = useGameContent(
+    gameType,
+    selectedGrade,
+    selectedDifficulty
+  );
+
+  // Mutations
+  const updateContent = useUpdateGameContent();
+  const deleteContent = useDeleteGameContent();
+  const createContent = useCreateGameContent();
+
+  // Reset state when game or filters change
+  useEffect(() => {
+    setEditedContent(new Map());
+    setDeletedIds(new Set());
+    setNewContent([]);
+  }, [gameType, selectedGrade, selectedDifficulty]);
+
+  // Open/close dialog
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    if (isOpen) {
+      dialog.showModal();
+    } else {
+      dialog.close();
+    }
+  }, [isOpen]);
+
+  // Handle escape key
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+
+    dialog.addEventListener("keydown", handleKeyDown);
+    return () => dialog.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
+  // Check if there are unsaved changes
+  const hasChanges = useMemo(() => {
+    return editedContent.size > 0 || deletedIds.size > 0 || newContent.length > 0;
+  }, [editedContent, deletedIds, newContent]);
+
+  // Get visible content (original minus deleted, plus edited versions)
+  const visibleContent = useMemo(() => {
+    return content
+      .filter((item) => !deletedIds.has(item.id))
+      .map((item) => editedContent.get(item.id) || item);
+  }, [content, deletedIds, editedContent]);
+
+  // Handle content edit
+  const handleContentEdit = (id: string, updates: Partial<GameContent>) => {
+    const original = content.find((c) => c.id === id);
+    if (!original) return;
+
+    const updated = { ...original, ...updates } as GameContent;
+    setEditedContent((prev) => new Map(prev).set(id, updated));
+  };
+
+  // Handle content delete
+  const handleContentDelete = (id: string) => {
+    setDeletedIds((prev) => new Set(prev).add(id));
+    // Remove from edited if it was there
+    setEditedContent((prev) => {
+      const next = new Map(prev);
+      next.delete(id);
+      return next;
+    });
+  };
+
+  // Handle add new content
+  const handleAddNew = () => {
+    if (!gameType) return;
+
+    const tempId = `new-${Date.now()}`;
+    let newItem: GameContent;
+
+    switch (gameType) {
+      case "hangman":
+        newItem = {
+          id: tempId,
+          gameType: "hangman",
+          grade: selectedGrade,
+          difficulty: selectedDifficulty,
+          word: "",
+          hint: "",
+          category: "",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as HangmanContent;
+        break;
+      case "wordSearch":
+        newItem = {
+          id: tempId,
+          gameType: "wordSearch",
+          grade: selectedGrade,
+          difficulty: selectedDifficulty,
+          words: [""],
+          gridSize: selectedDifficulty === "easy" ? 8 : selectedDifficulty === "medium" ? 10 : 12,
+          directions: selectedDifficulty === "easy" ? ["horizontal"] : selectedDifficulty === "medium" ? ["horizontal", "vertical"] : ["horizontal", "vertical", "diagonal"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as WordSearchContent;
+        break;
+      case "memory":
+        newItem = {
+          id: tempId,
+          gameType: "memory",
+          grade: selectedGrade,
+          difficulty: selectedDifficulty,
+          pairs: [{ term: "", match: "" }],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as MemoryContent;
+        break;
+      default:
+        return;
+    }
+
+    setNewContent((prev) => [...prev, newItem]);
+  };
+
+  // Handle new content edit
+  const handleNewContentEdit = (tempId: string, updates: Partial<GameContent>) => {
+    setNewContent((prev) =>
+      prev.map((item) =>
+        item.id === tempId ? ({ ...item, ...updates } as GameContent) : item
+      )
+    );
+  };
+
+  // Handle new content delete
+  const handleNewContentDelete = (tempId: string) => {
+    setNewContent((prev) => prev.filter((item) => item.id !== tempId));
+  };
+
+  // Save all changes
+  const handleSave = async () => {
+    if (!hasChanges) return;
+
+    setIsSaving(true);
+
+    try {
+      // Delete removed items
+      for (const id of deletedIds) {
+        await deleteContent.mutateAsync(id);
+      }
+
+      // Update edited items
+      for (const [id, item] of editedContent) {
+        const { id: _, createdAt, updatedAt, ...data } = item;
+        await updateContent.mutateAsync({ id, data });
+      }
+
+      // Create new items
+      for (const item of newContent) {
+        const { id: _, createdAt, updatedAt, ...data } = item;
+        await createContent.mutateAsync(data as Omit<GameContent, "id" | "createdAt" | "updatedAt">);
+      }
+
+      // Reset state and refetch
+      setEditedContent(new Map());
+      setDeletedIds(new Set());
+      setNewContent([]);
+      await refetch();
+
+      toast.success("השינויים נשמרו בהצלחה");
+    } catch (error) {
+      console.error("Error saving changes:", error);
+      toast.error("שגיאה בשמירת השינויים");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  if (!gameType) return null;
+
+  const gameInfo = GAME_INFO[gameType];
+
+  return (
+    <dialog
+      ref={dialogRef}
+      className="fixed inset-0 m-auto max-h-[90vh] w-full max-w-3xl z-50 rounded-xl p-0 backdrop:bg-black/50 backdrop:animate-fade-in shadow-2xl animate-scale-in border-0 bg-transparent overflow-hidden"
+      onClose={onClose}
+    >
+      <div className="bg-white rounded-xl flex flex-col max-h-[90vh]" dir="rtl">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-indigo-100 rounded-lg">
+              <Icon name={gameInfo.icon as IconName} size="md" className="text-indigo-600" />
+            </div>
+            <h2 className="text-xl font-rubik font-bold text-gray-900">
+              {gameInfo.nameHe}
+            </h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Filters */}
+        <div className="p-4 border-b border-gray-200 bg-gray-50/50">
+          <div className="flex flex-wrap items-center gap-6">
+            {/* Grade selector */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-600">כיתה:</span>
+              <div className="flex gap-1">
+                {GRADES.map((grade) => (
+                  <button
+                    key={grade}
+                    onClick={() => setSelectedGrade(grade)}
+                    className={`
+                      w-8 h-8 rounded-lg font-medium text-sm
+                      transition-all duration-150
+                      ${selectedGrade === grade
+                        ? "bg-indigo-600 text-white shadow-sm"
+                        : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+                      }
+                    `}
+                  >
+                    {grade}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Difficulty selector */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-600">רמה:</span>
+              <div className="flex gap-1">
+                {DIFFICULTIES.map((diff) => (
+                  <button
+                    key={diff}
+                    onClick={() => setSelectedDifficulty(diff)}
+                    className={`
+                      px-3 py-1.5 rounded-lg font-medium text-sm
+                      transition-all duration-150
+                      ${selectedDifficulty === diff
+                        ? "bg-indigo-600 text-white shadow-sm"
+                        : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+                      }
+                    `}
+                  >
+                    {DIFFICULTY_LABELS[diff]}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Content area */}
+        <div className="flex-1 overflow-y-auto p-4">
+          {isLoading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} variant="card" className="h-24" />
+              ))}
+            </div>
+          ) : visibleContent.length === 0 && newContent.length === 0 ? (
+            <EmptyState
+              icon="file-text"
+              title="אין תוכן"
+              description={`אין תוכן עבור כיתה ${selectedGrade} ברמת ${DIFFICULTY_LABELS[selectedDifficulty]}`}
+              action={{
+                label: "הוסף תוכן חדש",
+                onClick: handleAddNew,
+              }}
+            />
+          ) : (
+            <div className="space-y-4">
+              {/* Existing content */}
+              {visibleContent.map((item) => (
+                <ContentEditor
+                  key={item.id}
+                  content={item}
+                  gameType={gameType}
+                  onEdit={(updates) => handleContentEdit(item.id, updates)}
+                  onDelete={() => handleContentDelete(item.id)}
+                  isNew={false}
+                />
+              ))}
+
+              {/* New content */}
+              {newContent.map((item) => (
+                <ContentEditor
+                  key={item.id}
+                  content={item}
+                  gameType={gameType}
+                  onEdit={(updates) => handleNewContentEdit(item.id, updates)}
+                  onDelete={() => handleNewContentDelete(item.id)}
+                  isNew={true}
+                />
+              ))}
+
+              {/* Add new button */}
+              <button
+                onClick={handleAddNew}
+                className="w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all duration-150 font-medium"
+              >
+                + הוסף פריט חדש
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Footer with save button */}
+        <div className="p-4 border-t border-gray-200 bg-gray-50">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-500">
+              {hasChanges ? "יש שינויים שלא נשמרו" : "אין שינויים"}
+            </span>
+            <Button
+              onClick={handleSave}
+              disabled={!hasChanges || isSaving}
+              loading={isSaving}
+              leftIcon={Save}
+              variant="primary"
+              className="bg-indigo-600 hover:bg-indigo-700"
+            >
+              שמור שינויים
+            </Button>
+          </div>
+        </div>
+      </div>
+    </dialog>
+  );
+}
+
+// Content editor wrapper that renders the appropriate editor
+interface ContentEditorProps {
+  content: GameContent;
+  gameType: GameType;
+  onEdit: (updates: Partial<GameContent>) => void;
+  onDelete: () => void;
+  isNew: boolean;
+}
+
+function ContentEditor({ content, gameType, onEdit, onDelete, isNew }: ContentEditorProps) {
+  switch (gameType) {
+    case "hangman":
+      return (
+        <HangmanContentEditor
+          content={content as HangmanContent}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          isNew={isNew}
+        />
+      );
+    case "wordSearch":
+      return (
+        <WordSearchContentEditor
+          content={content as WordSearchContent}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          isNew={isNew}
+        />
+      );
+    case "memory":
+      return (
+        <MemoryContentEditor
+          content={content as MemoryContent}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          isNew={isNew}
+        />
+      );
+    default:
+      return null;
+  }
+}

@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Admin Games Management Page**: New admin interface for viewing and editing game content
+  - Category-based view showing all game types organized by category
+  - Click game to open modal with grade and difficulty selectors
+  - View all content for selected grade/difficulty combination
+  - Inline editing of content (word, hint, category for Hangman; words, grid size, directions for Word Search; term/match pairs for Memory)
+  - Add new content with "+" button
+  - Delete content with trash icon
+  - Save button disabled until changes are made
+  - Located at `/admin/games` with "ניהול משחקים" sidebar entry
+
 - **Memory Cards game (משחק זיכרון)**: Complete implementation of the memory matching game
   - `MemoryCard` component: Interactive card with 3D flip animation using CSS transforms, violet/purple gradient back design with brain icon, white front showing term/match text, matched cards show green border with checkmark indicator, keyboard accessible with Enter/Space support, staggered entrance animation
   - `MemoryGame` component: Main game logic with React Query integration for fetching MemoryContent, card deck creation from term/match pairs, Fisher-Yates shuffle algorithm, flipped cards tracking (max 2 at a time), match detection (same pairId, different type), 1-second flip-back delay for non-matches, moves counter, score system (+10 per match, +50 bonus for completion, final score = max(100, 1000 - moves*10)), celebration animation on completion, multiple puzzle support with "next game" flow, loading/error/empty states
@@ -25,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **ConfirmDialog prop mismatches**: Fixed incorrect prop names in ConfirmDialog usage across multiple components (`onClose` → `onCancel`, `confirmText` → `confirmLabel`) - affected AnnouncementCard, ChallengeCard, and ChallengeCommentList
 - **ChallengeForm targetGrades type**: Fixed TypeScript type error where `"all"` string literal was being widened to `string` instead of preserving literal type
 - **GameContentForm union type handling**: Fixed TypeScript error by explicitly typing game-specific content objects (HangmanContent, QuizContent) before passing to onSubmit
+- **GameContentModal union type spread**: Fixed TypeScript error when spreading Partial<GameContent> updates by adding type assertion to preserve discriminated union
 - **Word Search RTL mouse coordinates**: Fixed mouse drag selection in Word Search game to work correctly with RTL layout - column calculation now uses right edge of grid instead of left
 - **Parent content events save error**: Fixed Firestore error when saving events with optional fields (date, imageUrl, linkUrl) - service now filters out undefined values which Firestore doesn't accept
 - **Event date format**: Changed event date display from Hebrew locale format to DD/MM/YYYY in both EventList (admin) and EventCard (parent view)
