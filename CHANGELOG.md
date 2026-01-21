@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.28] - 2026-01-21
+
+### Added
+
+- **Experts calendar month navigation**: Users can now view current month and next month in the experts calendar
+  - Added prev/next navigation buttons with Hebrew labels
+  - Limited to current and next month only (no past months)
+  - New `getMonthDates` utility function for generating dates for any month
+
+### Changed
+
+- **Challenge media display**: Now shows both video and image when both are uploaded (previously video took precedence and image was hidden or used only as thumbnail). Clicking the image now opens it in a modal instead of a new tab.
+
 ## [0.9.27] - 2026-01-21
 
 ### Added

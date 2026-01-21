@@ -78,18 +78,14 @@ export function isDateInPast(dateStr: string): boolean {
   return date < today;
 }
 
-// Get current month dates in YYYY-MM-DD format
-export function getCurrentMonthDates(): {
+// Get dates for a specific month in YYYY-MM-DD format
+export function getMonthDates(year: number, month: number): {
   year: number;
   month: number;
   dates: string[];
   startDate: string;
   endDate: string;
 } {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth(); // 0-indexed
-
   const dates: string[] = [];
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
@@ -102,6 +98,18 @@ export function getCurrentMonthDates(): {
   const endDate = dates[dates.length - 1];
 
   return { year, month, dates, startDate, endDate };
+}
+
+// Get current month dates in YYYY-MM-DD format
+export function getCurrentMonthDates(): {
+  year: number;
+  month: number;
+  dates: string[];
+  startDate: string;
+  endDate: string;
+} {
+  const now = new Date();
+  return getMonthDates(now.getFullYear(), now.getMonth());
 }
 
 // Format date for Hebrew display
