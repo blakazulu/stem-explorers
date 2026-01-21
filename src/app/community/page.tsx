@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Calendar, ExternalLink, CalendarHeart, X } from "lucide-react";
+import { ArrowRight, Calendar, ExternalLink, CalendarHeart, X, Facebook } from "lucide-react";
 import { useParentContent } from "@/lib/queries";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -159,6 +159,20 @@ export default function CommunityPage() {
           <ArrowRight size={20} />
           <span className="font-medium hidden sm:inline">חזרה לדף הבית</span>
         </Link>
+
+        {/* Facebook Link - Prominent */}
+        <a
+          href="https://www.facebook.com/share/1D83N98pwJ/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#1877F2] to-[#0D65D9] text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 hover:from-[#0D65D9] hover:to-[#1877F2]"
+        >
+          <Facebook size={22} className="group-hover:animate-pulse" />
+          <span className="font-semibold text-sm md:text-base">
+            עקבו אחרינו בפייסבוק
+          </span>
+          <span className="hidden md:inline text-white/80 text-xs mr-1">✨</span>
+        </a>
 
         <div className="flex items-center gap-3">
           <h1 className="text-lg md:text-xl font-rubik font-bold text-gray-800">
