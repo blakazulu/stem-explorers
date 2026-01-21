@@ -6,14 +6,16 @@ import { Icon, type IconName } from "@/components/ui/Icon";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { HangmanContentEditor } from "./HangmanContentEditor";
 import { WordSearchContentEditor } from "./WordSearchContentEditor";
 import { MemoryContentEditor } from "./MemoryContentEditor";
+import { QuizContentEditor } from "./QuizContentEditor";
 import { useGameContent, useUpdateGameContent, useDeleteGameContent, useCreateGameContent } from "@/lib/queries/games";
 import { useToastActions } from "@/components/ui/Toast";
 import { GAME_INFO, DIFFICULTY_LABELS } from "@/lib/constants/games";
 import type { Grade } from "@/types";
-import type { GameType, Difficulty, GameContent, HangmanContent, WordSearchContent, MemoryContent } from "@/types/games";
+import type { GameType, Difficulty, GameContent, HangmanContent, WordSearchContent, MemoryContent, QuizContent } from "@/types/games";
 
 const GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
 const DIFFICULTIES: Difficulty[] = ["easy", "medium", "hard"];
@@ -34,6 +36,7 @@ export function GameContentModal({ gameType, isOpen, onClose }: GameContentModal
   const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set());
   const [newContent, setNewContent] = useState<GameContent[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; isNew: boolean } | null>(null);
 
   // Fetch content for selected game/grade/difficulty
   const { data: content = [], isLoading, refetch } = useGameContent(
@@ -102,15 +105,29 @@ export function GameContentModal({ gameType, isOpen, onClose }: GameContentModal
     setEditedContent((prev) => new Map(prev).set(id, updated));
   };
 
-  // Handle content delete
-  const handleContentDelete = (id: string) => {
-    setDeletedIds((prev) => new Set(prev).add(id));
-    // Remove from edited if it was there
-    setEditedContent((prev) => {
-      const next = new Map(prev);
-      next.delete(id);
-      return next;
-    });
+  // Handle content delete request (shows confirmation)
+  const handleContentDeleteRequest = (id: string, isNew: boolean) => {
+    setDeleteConfirm({ id, isNew });
+  };
+
+  // Handle confirmed delete
+  const handleConfirmedDelete = () => {
+    if (!deleteConfirm) return;
+
+    if (deleteConfirm.isNew) {
+      // Delete new (unsaved) content
+      setNewContent((prev) => prev.filter((item) => item.id !== deleteConfirm.id));
+    } else {
+      // Mark existing content for deletion
+      setDeletedIds((prev) => new Set(prev).add(deleteConfirm.id));
+      // Remove from edited if it was there
+      setEditedContent((prev) => {
+        const next = new Map(prev);
+        next.delete(deleteConfirm.id);
+        return next;
+      });
+    }
+    setDeleteConfirm(null);
   };
 
   // Handle add new content
@@ -158,6 +175,20 @@ export function GameContentModal({ gameType, isOpen, onClose }: GameContentModal
           updatedAt: new Date(),
         } as MemoryContent;
         break;
+      case "quiz":
+        newItem = {
+          id: tempId,
+          gameType: "quiz",
+          grade: selectedGrade,
+          difficulty: selectedDifficulty,
+          question: "",
+          options: ["", "", "", ""],
+          correctIndex: 0,
+          explanation: "",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as QuizContent;
+        break;
       default:
         return;
     }
@@ -174,14 +205,58 @@ export function GameContentModal({ gameType, isOpen, onClose }: GameContentModal
     );
   };
 
-  // Handle new content delete
-  const handleNewContentDelete = (tempId: string) => {
-    setNewContent((prev) => prev.filter((item) => item.id !== tempId));
+
+  // Validate content before save
+  const validateContent = (item: GameContent): string | null => {
+    if (item.gameType === "hangman") {
+      const h = item as HangmanContent;
+      if (!h.word.trim()) return "חסרה מילה";
+      if (!h.hint.trim()) return "חסר רמז";
+      if (!h.category.trim()) return "חסרה קטגוריה";
+    } else if (item.gameType === "wordSearch") {
+      const w = item as WordSearchContent;
+      const validWords = w.words.filter((word) => word.trim());
+      if (validWords.length === 0) return "יש להוסיף לפחות מילה אחת";
+    } else if (item.gameType === "memory") {
+      const m = item as MemoryContent;
+      const validPairs = m.pairs.filter((p) => p.term.trim() && p.match.trim());
+      if (validPairs.length === 0) return "יש להוסיף לפחות זוג אחד תקין";
+    } else if (item.gameType === "quiz") {
+      const q = item as QuizContent;
+      if (!q.question.trim()) return "חסרה שאלה";
+      const validOptions = q.options.filter((o) => o.trim());
+      if (validOptions.length < 2) return "יש להוסיף לפחות 2 אפשרויות תשובה";
+      if (!q.options[q.correctIndex]?.trim()) return "התשובה הנכונה חייבת להיות מלאה";
+      if (!q.explanation.trim()) return "חסר הסבר";
+    }
+    return null;
+  };
+
+  // Clean content before save (filter empty items)
+  const cleanContent = (item: GameContent): GameContent => {
+    if (item.gameType === "wordSearch") {
+      const w = item as WordSearchContent;
+      return { ...w, words: w.words.filter((word) => word.trim()) } as GameContent;
+    } else if (item.gameType === "memory") {
+      const m = item as MemoryContent;
+      return { ...m, pairs: m.pairs.filter((p) => p.term.trim() && p.match.trim()) } as GameContent;
+    }
+    return item;
   };
 
   // Save all changes
   const handleSave = async () => {
     if (!hasChanges) return;
+
+    // Validate all content
+    const allContent = [...Array.from(editedContent.values()), ...newContent];
+    for (const item of allContent) {
+      const error = validateContent(item);
+      if (error) {
+        toast.error(error);
+        return;
+      }
+    }
 
     setIsSaving(true);
 
@@ -191,15 +266,17 @@ export function GameContentModal({ gameType, isOpen, onClose }: GameContentModal
         await deleteContent.mutateAsync(id);
       }
 
-      // Update edited items
+      // Update edited items (clean before save)
       for (const [id, item] of editedContent) {
-        const { id: _, createdAt, updatedAt, ...data } = item;
+        const cleaned = cleanContent(item);
+        const { id: _, createdAt, updatedAt, ...data } = cleaned;
         await updateContent.mutateAsync({ id, data });
       }
 
-      // Create new items
+      // Create new items (clean before save)
       for (const item of newContent) {
-        const { id: _, createdAt, updatedAt, ...data } = item;
+        const cleaned = cleanContent(item);
+        const { id: _, createdAt, updatedAt, ...data } = cleaned;
         await createContent.mutateAsync(data as Omit<GameContent, "id" | "createdAt" | "updatedAt">);
       }
 
@@ -325,7 +402,7 @@ export function GameContentModal({ gameType, isOpen, onClose }: GameContentModal
                   content={item}
                   gameType={gameType}
                   onEdit={(updates) => handleContentEdit(item.id, updates)}
-                  onDelete={() => handleContentDelete(item.id)}
+                  onDelete={() => handleContentDeleteRequest(item.id, false)}
                   isNew={false}
                 />
               ))}
@@ -337,7 +414,7 @@ export function GameContentModal({ gameType, isOpen, onClose }: GameContentModal
                   content={item}
                   gameType={gameType}
                   onEdit={(updates) => handleNewContentEdit(item.id, updates)}
-                  onDelete={() => handleNewContentDelete(item.id)}
+                  onDelete={() => handleContentDeleteRequest(item.id, true)}
                   isNew={true}
                 />
               ))}
@@ -372,6 +449,21 @@ export function GameContentModal({ gameType, isOpen, onClose }: GameContentModal
           </div>
         </div>
       </div>
+
+      {/* Delete confirmation dialog */}
+      <ConfirmDialog
+        isOpen={deleteConfirm !== null}
+        onClose={() => setDeleteConfirm(null)}
+        onConfirm={handleConfirmedDelete}
+        title="מחיקת תוכן"
+        message={deleteConfirm?.isNew
+          ? "האם למחוק פריט חדש זה? הפריט טרם נשמר."
+          : "האם למחוק פריט זה? המחיקה תתבצע רק לאחר לחיצה על 'שמור שינויים'."
+        }
+        confirmText="מחק"
+        cancelText="ביטול"
+        variant="danger"
+      />
     </dialog>
   );
 }
@@ -409,6 +501,15 @@ function ContentEditor({ content, gameType, onEdit, onDelete, isNew }: ContentEd
       return (
         <MemoryContentEditor
           content={content as MemoryContent}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          isNew={isNew}
+        />
+      );
+    case "quiz":
+      return (
+        <QuizContentEditor
+          content={content as QuizContent}
           onEdit={onEdit}
           onDelete={onDelete}
           isNew={isNew}

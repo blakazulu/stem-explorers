@@ -7,6 +7,7 @@ import { GameLayout } from "@/components/games/GameLayout";
 import { HangmanGame } from "@/components/games/hangman";
 import { WordSearchGame } from "@/components/games/word-search";
 import { MemoryGame } from "@/components/games/memory";
+import { QuizGame } from "@/components/games/quiz";
 import { Icon, IconName } from "@/components/ui/Icon";
 import { GAME_INFO, DIFFICULTY_LABELS } from "@/lib/constants/games";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -128,6 +129,15 @@ export default function GamePage() {
       case "memory":
         return (
           <MemoryGame
+            grade={userGrade}
+            difficulty={difficulty}
+            onScoreUpdate={handleScoreUpdate}
+            onGameComplete={handleGameComplete}
+          />
+        );
+      case "quiz":
+        return (
+          <QuizGame
             grade={userGrade}
             difficulty={difficulty}
             onScoreUpdate={handleScoreUpdate}

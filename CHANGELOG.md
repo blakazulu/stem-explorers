@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **STEM Quiz game (חידון STEM)**: Complete implementation of the multiple-choice trivia game
+  - `QuizGame` component: Main game logic with React Query integration for fetching QuizContent, Fisher-Yates shuffle algorithm for question randomization, score tracking (+10 per correct answer), percentage-based results calculation, celebration animation on completion, loading/error/empty states
+  - `QuizQuestion` component: Single question display with 4 answer options in a 2x2 grid (stacked on mobile), animated feedback on answer selection (green for correct, red for incorrect), explanation shown after each answer, "המשך" button to advance to next question
+  - `QuizProgress` component: Progress bar showing current question number out of total, amber color theme matching quiz category, live score display
+  - Results screen: Shows final score, correct answers count, success percentage, color-coded progress bar (gold for perfect, green for good, blue for passing), confetti animation for perfect scores
+  - Game page integration: QuizGame rendered when gameType is "quiz", difficulty selector works with the game
+  - Amber/yellow theme styling matching "חידונים" category color
+  - Admin editor: `QuizContentEditor` component with question textarea, 4 option inputs, correct answer dropdown, explanation textarea
+  - Updated GameContentModal with quiz content validation (question required, at least 2 options, correct answer must be filled, explanation required)
+  - Content seeder script: `scripts/seed-quiz-content.ts` for populating Firestore with STEM-themed questions for all grades and difficulties (6 questions per combination, 108 total)
+    - Grade א-ב: Simple nature and surroundings questions (sky color, plants, animals, seasons)
+    - Grade ג-ד: Basic science concepts (states of matter, solar system, electricity, gravity)
+    - Grade ה-ו: Advanced topics (atoms, DNA, evolution, quantum mechanics, relativity)
+  - Updated `IMPLEMENTED_GAMES` in CategoryCard and CategoryModal to include "quiz"
+
 - **Admin Games Management Page**: New admin interface for viewing and editing game content
   - Category-based view showing all game types organized by category
   - Click game to open modal with grade and difficulty selectors
@@ -18,6 +33,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Delete content with trash icon
   - Save button disabled until changes are made
   - Located at `/admin/games` with "ניהול משחקים" sidebar entry
+
+- **Student forum grade filtering**: Students now only see posts from their own grade in the Data Collection Documentation forum
+  - Added `authorGrade` field to ForumPost type
+  - Updated student forum service to filter posts by grade
+  - Students see only their grade's posts, admins see all posts
+  - Admin posts use `authorGrade: "all"` and are visible to all grades
+  - Migration script: `scripts/migrate-student-forum-add-grade.ts` to add grade to existing posts
 
 - **Memory Cards game (משחק זיכרון)**: Complete implementation of the memory matching game
   - `MemoryCard` component: Interactive card with 3D flip animation using CSS transforms, violet/purple gradient back design with brain icon, white front showing term/match text, matched cards show green border with checkmark indicator, keyboard accessible with Enter/Space support, staggered entrance animation
@@ -32,6 +54,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Admin Games content validation**: Added validation before save to prevent empty content (missing word/hint/category for Hangman, no words for Word Search, no pairs for Memory)
+- **Admin Games delete confirmation**: Added ConfirmDialog before deleting content items to prevent accidental deletions
+- **Admin Games empty content filtering**: Content is now cleaned before save (empty words in Word Search, empty pairs in Memory are filtered out)
 - **ConfirmDialog prop mismatches**: Fixed incorrect prop names in ConfirmDialog usage across multiple components (`onClose` → `onCancel`, `confirmText` → `confirmLabel`) - affected AnnouncementCard, ChallengeCard, and ChallengeCommentList
 - **ChallengeForm targetGrades type**: Fixed TypeScript type error where `"all"` string literal was being widened to `string` instead of preserving literal type
 - **GameContentForm union type handling**: Fixed TypeScript error by explicitly typing game-specific content objects (HangmanContent, QuizContent) before passing to onSubmit
