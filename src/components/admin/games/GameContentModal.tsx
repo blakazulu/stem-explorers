@@ -11,11 +11,12 @@ import { HangmanContentEditor } from "./HangmanContentEditor";
 import { WordSearchContentEditor } from "./WordSearchContentEditor";
 import { MemoryContentEditor } from "./MemoryContentEditor";
 import { QuizContentEditor } from "./QuizContentEditor";
+import { SortContentEditor } from "./SortContentEditor";
 import { useGameContent, useUpdateGameContent, useDeleteGameContent, useCreateGameContent } from "@/lib/queries/games";
 import { useToastActions } from "@/components/ui/Toast";
 import { GAME_INFO, DIFFICULTY_LABELS } from "@/lib/constants/games";
 import type { Grade } from "@/types";
-import type { GameType, Difficulty, GameContent, HangmanContent, WordSearchContent, MemoryContent, QuizContent } from "@/types/games";
+import type { GameType, Difficulty, GameContent, HangmanContent, WordSearchContent, MemoryContent, QuizContent, SortContent } from "@/types/games";
 
 const GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
 const DIFFICULTIES: Difficulty[] = ["easy", "medium", "hard"];
@@ -189,6 +190,18 @@ export function GameContentModal({ gameType, isOpen, onClose }: GameContentModal
           updatedAt: new Date(),
         } as QuizContent;
         break;
+      case "sort":
+        newItem = {
+          id: tempId,
+          gameType: "sort",
+          grade: selectedGrade,
+          difficulty: selectedDifficulty,
+          buckets: ["קטגוריה 1", "קטגוריה 2"],
+          items: [{ text: "", correctBucket: "קטגוריה 1" }],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as SortContent;
+        break;
       default:
         return;
     }
@@ -228,6 +241,12 @@ export function GameContentModal({ gameType, isOpen, onClose }: GameContentModal
       if (validOptions.length < 2) return "יש להוסיף לפחות 2 אפשרויות תשובה";
       if (!q.options[q.correctIndex]?.trim()) return "התשובה הנכונה חייבת להיות מלאה";
       if (!q.explanation.trim()) return "חסר הסבר";
+    } else if (item.gameType === "sort") {
+      const s = item as SortContent;
+      const validBuckets = s.buckets.filter((b) => b.trim());
+      if (validBuckets.length < 2) return "יש להוסיף לפחות 2 קטגוריות";
+      const validItems = s.items.filter((i) => i.text.trim() && i.correctBucket.trim());
+      if (validItems.length === 0) return "יש להוסיף לפחות פריט אחד תקין";
     }
     return null;
   };
@@ -240,6 +259,13 @@ export function GameContentModal({ gameType, isOpen, onClose }: GameContentModal
     } else if (item.gameType === "memory") {
       const m = item as MemoryContent;
       return { ...m, pairs: m.pairs.filter((p) => p.term.trim() && p.match.trim()) } as GameContent;
+    } else if (item.gameType === "sort") {
+      const s = item as SortContent;
+      return {
+        ...s,
+        buckets: s.buckets.filter((b) => b.trim()),
+        items: s.items.filter((i) => i.text.trim() && i.correctBucket.trim()),
+      } as GameContent;
     }
     return item;
   };
@@ -510,6 +536,15 @@ function ContentEditor({ content, gameType, onEdit, onDelete, isNew }: ContentEd
       return (
         <QuizContentEditor
           content={content as QuizContent}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          isNew={isNew}
+        />
+      );
+    case "sort":
+      return (
+        <SortContentEditor
+          content={content as SortContent}
           onEdit={onEdit}
           onDelete={onDelete}
           isNew={isNew}

@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Sort It Out game (מיון וסיווג)**: Complete implementation of the drag-and-drop classification game
+  - `SortGame` component: Main game logic with @dnd-kit/core for drag-and-drop, React Query integration for fetching SortContent, Fisher-Yates shuffle for item randomization, scoring system (start at 100, -5 per wrong placement, +20 speed bonus for under 60 seconds), timer display, celebration animation on completion
+  - `SortBucket` component: Drop zone container with dashed border, hover state visual feedback, item count display, placeholder text when empty
+  - `SortableItem` component: Draggable item pill with grip icon, correct placement indicator (green check), wrong placement shake animation (red border), drag overlay
+  - Visual design: Violet/purple theme matching "זיכרון ומיון" category, smooth animations, mobile-friendly touch support via dnd-kit sensors
+  - Game flow: Items displayed in pool at bottom, drag to correct bucket at top, correct placements stay in bucket, wrong placements return to pool with shake animation
+  - Game page integration: SortGame rendered when gameType is "sort"
+  - Admin editor: `SortContentEditor` component with bucket management (add/remove categories, min 2, max 4), items list with text input and bucket dropdown selector
+  - Updated GameContentModal with sort content validation (at least 2 buckets, at least 1 valid item)
+  - Content seeder script: `scripts/seed-sort-content.ts` with 3 content sets per grade/difficulty (54 total)
+    - Grade א-ב: Simple categories (land/water animals, fruits/vegetables, warm/cool colors, day/night)
+    - Grade ג-ד: Science categories (states of matter, vertebrates/invertebrates, renewable/non-renewable energy, inner/outer planets)
+    - Grade ה-ו: Complex categories (elements/compounds, DNA/RNA, metals/non-metals/metalloids, nuclear fission/fusion)
+  - Updated `IMPLEMENTED_GAMES` in CategoryCard and CategoryModal to include "sort"
+
 - **Facebook link on community page**: Added prominent Facebook follow button in header with gradient styling and hover animations
 
 ## [0.9.24] - 2026-01-21
