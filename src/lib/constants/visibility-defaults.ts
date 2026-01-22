@@ -91,13 +91,13 @@ const DEFAULT_STUDENT_DASHBOARD: DashboardConfig = {
   intro: "",
   cards: [
     { id: "pedagogical", visible: true, order: 0 },
-    { id: "announcements", visible: true, order: 1 },
+    { id: "documentation", visible: true, order: 1 },
     { id: "journal", visible: true, order: 2 },
     { id: "personal", visible: true, order: 3 },
-    { id: "games", visible: true, order: 4, description: "משחקי STEM חינוכיים" },
-    { id: "documentation", visible: true, order: 5 },
-    { id: "experts", visible: true, order: 6 },
-    { id: "globe-monitor", visible: true, order: 7 },
+    { id: "experts", visible: true, order: 4 },
+    { id: "globe-monitor", visible: true, order: 5 },
+    { id: "announcements", visible: true, order: 6 },
+    { id: "games", visible: true, order: 7, description: "משחקי STEM חינוכיים" },
   ],
 };
 
@@ -128,13 +128,13 @@ const DEFAULT_PARENT_SIDEBAR: SidebarConfig = {
 const DEFAULT_STUDENT_SIDEBAR: SidebarConfig = {
   links: [
     { id: "pedagogical", label: "מודל פדגוגי ומו\"פ", visible: true },
-    { id: "announcements", label: "יוצאים לדרך", visible: true },
-    { id: "games", label: "משחקים", visible: true },
+    { id: "documentation", label: "הצצה ללמידה", visible: true },
     { id: "journal", label: "יומן חוקר", visible: true },
-    { id: "personal", label: "אישי", visible: true },
-    { id: "documentation", label: "תיעודים", visible: true },
+    { id: "personal", label: "במה אישית", visible: true },
     { id: "experts", label: "שאל את המומחה", visible: true },
     { id: "globe-monitor", label: "גלוב-ניטור", visible: true },
+    { id: "announcements", label: "יוצאים לדרך", visible: true },
+    { id: "games", label: "משחקים", visible: true },
   ],
 };
 

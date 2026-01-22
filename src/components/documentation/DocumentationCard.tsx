@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Image, Calendar, User, Trash2, Images, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
+import { useAuth } from "@/contexts/AuthContext";
 import type { Documentation } from "@/types";
 
 interface DocumentationVisibility {
@@ -28,8 +29,10 @@ export function DocumentationCard({
   index = 0,
   visibility = { images: true, text: true, teacherName: true },
 }: DocumentationCardProps) {
+  const { session } = useAuth();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const isAdmin = session?.user.role === "admin";
 
   return (
     <Card
@@ -89,10 +92,12 @@ export function DocumentationCard({
               {doc.teacherName}
             </span>
           )}
-          <span className="inline-flex items-center gap-1.5">
-            <Calendar size={14} />
-            {doc.createdAt.toLocaleDateString("he-IL")}
-          </span>
+          {isAdmin && (
+            <span className="inline-flex items-center gap-1.5">
+              <Calendar size={14} />
+              {doc.createdAt.toLocaleDateString("he-IL")}
+            </span>
+          )}
         </div>
 
         {/* Delete button */}

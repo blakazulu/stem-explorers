@@ -257,7 +257,10 @@ export function Sidebar({ onClose }: SidebarProps) {
   const LogoIcon = theme.logoIcon;
 
   // For admin, show all items they have access to (fixed sidebar)
-  // For other roles, filter based on visibility config
+  // For other roles, filter based on visibility config and respect custom order
+  const configurableRole = role && role !== "admin" ? role as ConfigurableRole : null;
+  const sidebarConfig = configurableRole ? getSidebarConfig(configurableRole) : null;
+
   const visibleItems = navItems.filter((item) => {
     if (!role || !item.roles.includes(role)) return false;
 
@@ -265,14 +268,23 @@ export function Sidebar({ onClose }: SidebarProps) {
     if (role === "admin") return true;
 
     // For configurable roles, check visibility config
-    const configurableRole = role as ConfigurableRole;
-    const sidebarConfig = getSidebarConfig(configurableRole);
-    const linkConfig = sidebarConfig.links.find(l => l.id === item.href.slice(1));
+    const linkConfig = sidebarConfig?.links.find(l => l.id === item.href.slice(1));
 
     // If no config for this link, show it (backwards compatibility)
     if (!linkConfig) return true;
 
     return linkConfig.visible;
+  }).sort((a, b) => {
+    // For non-admin roles, use the order from visibility config
+    if (sidebarConfig) {
+      const aIndex = sidebarConfig.links.findIndex(l => l.id === a.href.slice(1));
+      const bIndex = sidebarConfig.links.findIndex(l => l.id === b.href.slice(1));
+      // Items not in the config go to the end
+      const aOrder = aIndex === -1 ? 999 : aIndex;
+      const bOrder = bIndex === -1 ? 999 : bIndex;
+      return aOrder - bOrder;
+    }
+    return 0; // Keep original order for admin
   });
 
   // Get custom labels for sidebar items (non-admin roles only)

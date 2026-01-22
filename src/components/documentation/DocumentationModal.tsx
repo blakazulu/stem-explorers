@@ -10,6 +10,7 @@ import {
   Images,
   Loader2,
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 import type { Documentation } from "@/types";
 
 interface DocumentationVisibility {
@@ -31,8 +32,10 @@ export function DocumentationModal({
   onClose,
   visibility = { images: true, text: true, teacherName: true },
 }: DocumentationModalProps) {
+  const { session } = useAuth();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set());
+  const isAdmin = session?.user.role === "admin";
 
   const hasMultipleImages = doc.images.length > 1;
 
@@ -231,10 +234,12 @@ export function DocumentationModal({
                 {doc.teacherName}
               </span>
             )}
-            <span className="inline-flex items-center gap-1.5">
-              <Calendar size={14} />
-              {doc.createdAt.toLocaleDateString("he-IL")}
-            </span>
+            {isAdmin && (
+              <span className="inline-flex items-center gap-1.5">
+                <Calendar size={14} />
+                {doc.createdAt.toLocaleDateString("he-IL")}
+              </span>
+            )}
           </div>
         </div>
       </div>

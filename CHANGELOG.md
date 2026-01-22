@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.30] - 2026-01-22
+
+### Added
+
+- **Sidebar drag-and-drop reordering**: Admins can now reorder sidebar items for each role via drag-and-drop in the Display settings panel. Includes accessible up/down arrow buttons for keyboard users.
+
+### Changed
+
+- **Documentation cards**: Created date is now only visible to admins (hidden from students, teachers, and parents)
+- **Student sidebar order**: Reordered navigation items for students: מודל פדגוגי ומו"פ → הצצה ללמידה → יומן חוקר → במה אישית → שאל את המומחה → גלוב ניטור → יוצאים לדרך → משחקים
+- **Student sidebar labels**: Updated default labels - "תיעודים" renamed to "הצצה ללמידה", "אישי" renamed to "במה אישית"
+- **Student dashboard order**: Aligned dashboard card order with sidebar order for consistency
+
 ## [0.9.29] - 2026-01-21
 
 ### Changed
