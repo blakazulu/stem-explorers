@@ -79,10 +79,25 @@ async function loadFFmpeg(onProgress?: ProgressCallback): Promise<FFmpeg> {
       ? "https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/esm"
       : "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm";
 
-    await ffmpeg.load({
-      coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
-      wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
-    });
+    try {
+      if (useMultiThreaded) {
+        // Multi-threaded requires worker file
+        await ffmpeg.load({
+          coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
+          wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
+          workerURL: await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, "text/javascript"),
+        });
+      } else {
+        // Single-threaded doesn't need worker
+        await ffmpeg.load({
+          coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
+          wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
+        });
+      }
+    } catch (loadError) {
+      console.error("FFmpeg load error:", loadError);
+      throw new Error(`שגיאה בטעינת מנוע הוידאו: ${loadError instanceof Error ? loadError.message : "Unknown error"}`);
+    }
 
     onProgress?.({
       stage: "loading",
