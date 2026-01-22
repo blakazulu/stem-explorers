@@ -75,9 +75,10 @@ async function loadFFmpeg(onProgress?: ProgressCallback): Promise<FFmpeg> {
     // Use multi-threaded core if supported, otherwise fall back to single-threaded
     // @ffmpeg/core = single-threaded (works everywhere)
     // @ffmpeg/core-mt = multi-threaded (requires SharedArrayBuffer, faster)
+    // Using UMD builds for better bundler compatibility
     const baseURL = useMultiThreaded
-      ? "https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/esm"
-      : "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm";
+      ? "https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/umd"
+      : "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
 
     try {
       if (useMultiThreaded) {
