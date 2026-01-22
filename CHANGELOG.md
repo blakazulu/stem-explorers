@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.34] - 2026-01-22
+
+### Added
+
+- **Video viewer modal**: Clicking on uploaded videos in challenges and comments now opens them in a fullscreen modal (similar to images) instead of playing inline
+
 ## [0.9.33] - 2026-01-22
 
 ### Fixed

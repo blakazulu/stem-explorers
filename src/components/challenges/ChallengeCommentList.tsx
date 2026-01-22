@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { VideoViewerModal } from "@/components/ui/VideoViewerModal";
 import { useToastActions } from "@/components/ui/Toast";
 import { useDeleteChallengeComment } from "@/lib/queries";
 import { Trash2, Users, X, Play } from "lucide-react";
@@ -20,7 +21,7 @@ export function ChallengeCommentList({
 }: ChallengeCommentListProps) {
   const [deleteCommentId, setDeleteCommentId] = useState<string | null>(null);
   const [expandedImage, setExpandedImage] = useState<string | null>(null);
-  const [playingVideo, setPlayingVideo] = useState<string | null>(null);
+  const [videoModalUrl, setVideoModalUrl] = useState<string | null>(null);
   const toast = useToastActions();
   const deleteComment = useDeleteChallengeComment();
 
@@ -112,33 +113,23 @@ export function ChallengeCommentList({
                 {/* Comment video */}
                 {comment.videoUrl && (
                   <div className="mt-2">
-                    {playingVideo === comment.id ? (
+                    <button
+                      type="button"
+                      onClick={() => setVideoModalUrl(comment.videoUrl!)}
+                      className="relative block cursor-pointer group"
+                    >
                       <video
                         src={comment.videoUrl}
-                        controls
-                        autoPlay
-                        className="max-h-48 rounded-lg shadow-sm bg-gray-900"
-                      >
-                        הדפדפן שלך לא תומך בתגית וידאו
-                      </video>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => setPlayingVideo(comment.id)}
-                        className="relative block cursor-pointer group"
-                      >
-                        <video
-                          src={comment.videoUrl}
-                          className="h-24 max-w-[200px] rounded-lg shadow-sm bg-gray-900 object-cover"
-                          muted
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-lg group-hover:bg-black/40 transition-colors">
-                          <div className="w-10 h-10 flex items-center justify-center bg-white/90 rounded-full shadow-lg group-hover:scale-110 transition-transform">
-                            <Play className="w-5 h-5 text-amber-600 mr-[-2px]" />
-                          </div>
+                        className="h-24 max-w-[200px] rounded-lg shadow-sm bg-gray-900 object-cover"
+                        muted
+                        playsInline
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-lg group-hover:bg-black/40 transition-colors">
+                        <div className="w-10 h-10 flex items-center justify-center bg-white/90 rounded-full shadow-lg group-hover:scale-110 transition-transform">
+                          <Play className="w-5 h-5 text-amber-600 mr-[-2px]" />
                         </div>
-                      </button>
-                    )}
+                      </div>
+                    </button>
                   </div>
                 )}
 
@@ -205,6 +196,13 @@ export function ChallengeCommentList({
           </button>
         </div>
       )}
+
+      {/* Video Modal */}
+      <VideoViewerModal
+        videoUrl={videoModalUrl || ""}
+        isOpen={!!videoModalUrl}
+        onClose={() => setVideoModalUrl(null)}
+      />
     </>
   );
 }

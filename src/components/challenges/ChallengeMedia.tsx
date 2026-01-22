@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Play, ExternalLink, X } from "lucide-react";
+import { VideoViewerModal } from "@/components/ui/VideoViewerModal";
 
 interface ChallengeMediaProps {
   imageUrl?: string;
@@ -60,7 +61,7 @@ export function ChallengeMedia({
   videoStorageUrl,
   title,
 }: ChallengeMediaProps) {
-  const [videoPlaying, setVideoPlaying] = useState(false);
+  const [videoModalOpen, setVideoModalOpen] = useState(false);
   const [imageModalOpen, setImageModalOpen] = useState(false);
 
   // Handle Escape key to close modal
@@ -118,30 +119,25 @@ export function ChallengeMedia({
       }
     }
 
-    // Direct uploaded video
+    // Direct uploaded video - opens in modal
     if (videoStorageUrl) {
       return (
-        <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-gray-900">
-          {!videoPlaying ? (
-            <button
-              onClick={() => setVideoPlaying(true)}
-              className="absolute inset-0 flex items-center justify-center bg-black/40 hover:bg-black/50 transition-colors cursor-pointer group"
-            >
-              <div className="relative z-10 w-16 h-16 md:w-20 md:h-20 flex items-center justify-center bg-white/90 rounded-full shadow-lg group-hover:scale-110 transition-transform">
-                <Play className="w-8 h-8 md:w-10 md:h-10 text-amber-600 mr-[-2px]" />
-              </div>
-            </button>
-          ) : (
-            <video
-              src={videoStorageUrl}
-              controls
-              autoPlay
-              className="w-full h-full object-contain"
-            >
-              הדפדפן שלך לא תומך בתגית וידאו
-            </video>
-          )}
-        </div>
+        <button
+          onClick={() => setVideoModalOpen(true)}
+          className="relative w-full aspect-video rounded-xl overflow-hidden bg-gray-900 cursor-pointer group"
+        >
+          <video
+            src={videoStorageUrl}
+            className="w-full h-full object-contain"
+            muted
+            playsInline
+          />
+          <div className="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/50 transition-colors">
+            <div className="relative z-10 w-16 h-16 md:w-20 md:h-20 flex items-center justify-center bg-white/90 rounded-full shadow-lg group-hover:scale-110 transition-transform">
+              <Play className="w-8 h-8 md:w-10 md:h-10 text-amber-600 mr-[-2px]" />
+            </div>
+          </div>
+        </button>
       );
     }
 
@@ -209,6 +205,15 @@ export function ChallengeMedia({
             onClick={(e) => e.stopPropagation()}
           />
         </div>
+      )}
+
+      {/* Video Modal */}
+      {videoStorageUrl && (
+        <VideoViewerModal
+          videoUrl={videoStorageUrl}
+          isOpen={videoModalOpen}
+          onClose={() => setVideoModalOpen(false)}
+        />
       )}
     </>
   );
