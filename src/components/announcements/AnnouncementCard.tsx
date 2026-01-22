@@ -7,7 +7,9 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToastActions } from "@/components/ui/Toast";
 import { useDeleteAnnouncement, useDeleteAnnouncementComment } from "@/lib/queries";
 import { CommentForm } from "./CommentForm";
-import { Trash2, MessageCircle, Users, Calendar } from "lucide-react";
+import { ImageViewerModal } from "./ImageViewerModal";
+import { EditAnnouncementModal } from "./EditAnnouncementModal";
+import { Trash2, MessageCircle, Users, Calendar, Pencil, ChevronDown, ChevronUp } from "lucide-react";
 import type { Announcement, Grade, UserRole } from "@/types";
 
 interface AnnouncementCardProps {
@@ -35,13 +37,17 @@ export function AnnouncementCard({
 }: AnnouncementCardProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteCommentId, setDeleteCommentId] = useState<string | null>(null);
-  const [showComments, setShowComments] = useState(true);
+  const [showComments, setShowComments] = useState(false); // Default collapsed
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const toast = useToastActions();
   const deleteAnnouncement = useDeleteAnnouncement();
   const deleteComment = useDeleteAnnouncementComment();
 
   const isAdmin = userRole === "admin";
-  const canComment = userRole === "student" && userName && userGrade;
+  // Check if user's grade is allowed to comment
+  const canComment = userRole === "student" && userName && userGrade &&
+    (announcement.allowedCommentGrades || []).includes(userGrade);
 
   const handleDeleteAnnouncement = async () => {
     try {
@@ -71,41 +77,55 @@ export function AnnouncementCard({
     <>
       <Card padding="none" className="overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 md:px-6 py-4 border-b border-surface-2 bg-gradient-to-l from-emerald-500/5 to-teal-500/5">
-          <div className="flex items-center gap-3">
+        <div className="px-4 md:px-6 py-4 border-b border-surface-2 bg-gradient-to-l from-emerald-500/5 to-teal-500/5 space-y-3">
+          {/* Top row: date, author, edit/delete buttons */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {isAdmin && (
+                <>
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <Calendar size={14} />
+                    <span>
+                      {announcement.createdAt?.toLocaleDateString("he-IL", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </span>
+                  </div>
+                  <span className="text-gray-300">•</span>
+                </>
+              )}
+              <span className="text-sm text-gray-500">{announcement.authorName}</span>
+            </div>
             {isAdmin && (
-              <>
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <Calendar size={14} />
-                  <span>
-                    {announcement.createdAt?.toLocaleDateString("he-IL", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    })}
-                  </span>
-                </div>
-                <span className="text-gray-300">•</span>
-              </>
-            )}
-            <span className="text-sm text-gray-500">{announcement.authorName}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium">
-              {gradeLabels[announcement.targetGrade]}
-            </span>
-            {isAdmin && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowDeleteConfirm(true)}
-                className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                aria-label="מחק פרסום"
-              >
-                <Trash2 size={16} />
-              </Button>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowEditModal(true)}
+                  className="text-blue-500 hover:text-blue-600 hover:bg-blue-50"
+                  aria-label="ערוך פרסום"
+                >
+                  <Pencil size={16} />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                  aria-label="מחק פרסום"
+                >
+                  <Trash2 size={16} />
+                </Button>
+              </div>
             )}
           </div>
+
+          {/* Grade badge */}
+          <span className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium">
+            {gradeLabels[announcement.targetGrade]}
+          </span>
         </div>
 
         {/* Content */}
@@ -118,19 +138,17 @@ export function AnnouncementCard({
           {/* Image */}
           {announcement.imageUrl && (
             <div className="mt-4">
-              <a
-                href={announcement.imageUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block"
+              <button
+                onClick={() => setShowImageModal(true)}
+                className="block cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-xl"
               >
                 <img
                   src={announcement.imageUrl}
                   alt="תמונה מצורפת"
-                  className="max-w-full h-auto rounded-xl shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                  className="max-w-full h-auto rounded-xl shadow-sm hover:shadow-md transition-shadow"
                   style={{ maxHeight: "400px", objectFit: "contain" }}
                 />
-              </a>
+              </button>
             </div>
           )}
         </div>
@@ -144,15 +162,17 @@ export function AnnouncementCard({
           >
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <MessageCircle size={16} />
-              <span>
-                {announcement.comments.length > 0
-                  ? `${announcement.comments.length} תגובות`
-                  : "אין תגובות עדיין"}
-              </span>
+              <span>תגובות</span>
+              {announcement.comments.length > 0 && (
+                <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium">
+                  {announcement.comments.length}
+                </span>
+              )}
             </div>
-            <span className="text-gray-400 text-sm">
-              {showComments ? "הסתר" : "הצג"}
-            </span>
+            <div className="flex items-center gap-2 text-gray-400 text-sm">
+              <span>{showComments ? "הסתר" : "הצג"}</span>
+              {showComments ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </div>
           </button>
 
           {/* Comments List */}
@@ -244,6 +264,24 @@ export function AnnouncementCard({
         confirmLabel="מחק"
         variant="danger"
       />
+
+      {/* Image Viewer Modal */}
+      {announcement.imageUrl && (
+        <ImageViewerModal
+          imageUrl={announcement.imageUrl}
+          isOpen={showImageModal}
+          onClose={() => setShowImageModal(false)}
+        />
+      )}
+
+      {/* Edit Announcement Modal (admin only) */}
+      {isAdmin && (
+        <EditAnnouncementModal
+          announcement={announcement}
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+        />
+      )}
     </>
   );
 }

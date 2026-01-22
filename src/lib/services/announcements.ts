@@ -39,6 +39,7 @@ export async function getAllAnnouncements(): Promise<Announcement[]> {
       id: doc.id,
       ...doc.data(),
       createdAt: doc.data().createdAt?.toDate(),
+      allowedCommentGrades: doc.data().allowedCommentGrades || [],
       comments: doc.data().comments?.map((c: { createdAt?: { toDate: () => Date } }) => ({
         ...c,
         createdAt: c.createdAt instanceof Date ? c.createdAt : c.createdAt?.toDate?.() || new Date(),
@@ -64,6 +65,7 @@ export async function getAnnouncementsByGrade(grade: Grade): Promise<Announcemen
       id: doc.id,
       ...doc.data(),
       createdAt: doc.data().createdAt?.toDate(),
+      allowedCommentGrades: doc.data().allowedCommentGrades || [],
       comments: doc.data().comments?.map((c: { createdAt?: { toDate: () => Date } }) => ({
         ...c,
         createdAt: c.createdAt instanceof Date ? c.createdAt : c.createdAt?.toDate?.() || new Date(),
@@ -77,7 +79,7 @@ export async function getAnnouncementsByGrade(grade: Grade): Promise<Announcemen
 
 // Create a new announcement (admin only)
 export async function createAnnouncement(
-  data: Omit<Announcement, "id" | "createdAt" | "comments">
+  data: Omit<Announcement, "id" | "createdAt" | "comments" | "allowedCommentGrades">
 ): Promise<string> {
   try {
     const sanitizedData = {
@@ -85,6 +87,7 @@ export async function createAnnouncement(
       authorName: sanitizeString(data.authorName, MAX_AUTHOR_LENGTH),
       targetGrade: data.targetGrade,
       imageUrl: data.imageUrl || null,
+      allowedCommentGrades: [], // Default: no one can comment
       comments: [],
       createdAt: serverTimestamp(),
     };
@@ -93,6 +96,34 @@ export async function createAnnouncement(
     return docRef.id;
   } catch (error) {
     handleFirebaseError(error, "createAnnouncement");
+    throw error;
+  }
+}
+
+// Update an announcement (admin only)
+export async function updateAnnouncement(
+  id: string,
+  data: Partial<Pick<Announcement, "content" | "imageUrl" | "targetGrade" | "allowedCommentGrades">>
+): Promise<void> {
+  try {
+    const updateData: Record<string, unknown> = {};
+
+    if (data.content !== undefined) {
+      updateData.content = sanitizeString(data.content, MAX_CONTENT_LENGTH);
+    }
+    if (data.imageUrl !== undefined) {
+      updateData.imageUrl = data.imageUrl || null;
+    }
+    if (data.targetGrade !== undefined) {
+      updateData.targetGrade = data.targetGrade;
+    }
+    if (data.allowedCommentGrades !== undefined) {
+      updateData.allowedCommentGrades = data.allowedCommentGrades;
+    }
+
+    await updateDoc(doc(db, COLLECTION, id), updateData);
+  } catch (error) {
+    handleFirebaseError(error, "updateAnnouncement");
     throw error;
   }
 }

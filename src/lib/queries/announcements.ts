@@ -4,6 +4,7 @@ import {
   getAllAnnouncements,
   getAnnouncementsByGrade,
   createAnnouncement,
+  updateAnnouncement,
   addAnnouncementComment,
   deleteAnnouncement,
   deleteAnnouncementComment,
@@ -34,6 +35,23 @@ export function useCreateAnnouncement() {
     mutationFn: createAnnouncement,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.announcements.all });
+    },
+  });
+}
+
+// Update announcement (admin)
+export function useUpdateAnnouncement() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: Partial<Pick<Announcement, "content" | "imageUrl" | "targetGrade" | "allowedCommentGrades">>;
+    }) => updateAnnouncement(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["announcements"] });
     },
   });
 }

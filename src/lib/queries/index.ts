@@ -136,6 +136,7 @@ export {
   useAllAnnouncements,
   useAnnouncementsByGrade,
   useCreateAnnouncement,
+  useUpdateAnnouncement,
   useAddAnnouncementComment,
   useDeleteAnnouncement,
   useDeleteAnnouncementComment,

@@ -329,6 +329,7 @@ export interface Announcement {
   content: string;
   imageUrl?: string;
   targetGrade: Grade | "all";
+  allowedCommentGrades: Grade[]; // Which grades can comment (empty = no one)
   comments: AnnouncementComment[];
   authorName: string;
   createdAt: Date;

@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.32] - 2026-01-22
+
+### Added
+
+- **Announcements edit modal**: Admins can edit announcement content, image, and target grade
+- **Announcements comment permissions**: Admins can configure which grades can comment on each announcement via "Allow Comments" modal (default: no one)
+- **Image viewer modal**: Announcement images now open in a modal instead of a new browser tab
+- **Admin grade filter tabs**: Filter announcements by target grade with count badges showing total per grade
+- **Carousel navigation**: Announcements display in horizontal carousel with left/right navigation buttons, position indicator dots, and keyboard arrow key support
+
+### Changed
+
+- **Comments collapsed by default**: Comment section now starts collapsed, showing count badge when collapsed
+
 ## [0.9.31] - 2026-01-22
 
 ### Added
