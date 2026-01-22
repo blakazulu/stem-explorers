@@ -452,6 +452,8 @@ export function Sidebar({ onClose }: SidebarProps) {
             </ul>
           </>
         )}
+        </>
+        )}
       </nav>
 
       {/* Footer with STEM decoration */}
