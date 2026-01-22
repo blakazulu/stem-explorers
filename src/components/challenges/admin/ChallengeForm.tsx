@@ -9,6 +9,7 @@ import { uploadImage, uploadImageWithProgress } from "@/lib/utils/imageUpload";
 import {
   compressVideo,
   isFFmpegSupported,
+  isSlowCompressionMode,
   formatFileSize,
   CompressionProgress,
 } from "@/lib/utils/videoCompression";
@@ -214,9 +215,16 @@ export function ChallengeForm({
       // Handle video upload if mode is "upload" and we have a new file
       if (videoMode === "upload" && videoFile) {
         if (!isFFmpegSupported()) {
-          toast.error("שגיאה", "הדפדפן שלך לא תומך בדחיסת וידאו. נסה להעלות קישור במקום.");
+          toast.error("שגיאה", "הדפדפן שלך לא תומך בעיבוד וידאו. נסה להשתמש בדפדפן Chrome או Edge.");
           setUploading(false);
           return;
+        }
+
+        // Show friendly message if using slow mode
+        if (isSlowCompressionMode()) {
+          toast.info(
+            "הסרטון יעובד בהצלחה, אבל זה עשוי לקחת קצת יותר זמן מהרגיל. אפשר להמשיך לעבוד בינתיים 😊"
+          );
         }
 
         // Compress video

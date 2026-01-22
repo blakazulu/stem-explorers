@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.33] - 2026-01-22
+
+### Fixed
+
+- **Video compression browser support**: Video uploads now work on all modern browsers by automatically using single-threaded FFmpeg when SharedArrayBuffer is unavailable (e.g., Safari, some mobile browsers). Users see a friendly message that processing may take a bit longer.
+
 ## [0.9.32] - 2026-01-22
 
 ### Added

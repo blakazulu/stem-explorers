@@ -5,6 +5,7 @@ import { fetchFile, toBlobURL } from "@ffmpeg/util";
 let ffmpeg: FFmpeg | null = null;
 let isLoading = false;
 let loadPromise: Promise<void> | null = null;
+let usingSingleThreaded = false;
 
 // Maximum video duration in seconds (5 minutes)
 const MAX_DURATION_SECONDS = 300;
@@ -29,7 +30,18 @@ export interface CompressionResult {
 export type ProgressCallback = (progress: CompressionProgress) => void;
 
 /**
+ * Check if multi-threaded FFmpeg is supported (requires SharedArrayBuffer)
+ */
+function isMultiThreadedSupported(): boolean {
+  return (
+    typeof SharedArrayBuffer !== "undefined" &&
+    typeof WebAssembly !== "undefined"
+  );
+}
+
+/**
  * Load FFmpeg library (lazy-loaded, one-time ~25MB download)
+ * Automatically uses single-threaded version if SharedArrayBuffer is unavailable
  */
 async function loadFFmpeg(onProgress?: ProgressCallback): Promise<FFmpeg> {
   if (ffmpeg && ffmpeg.loaded) {
@@ -43,17 +55,29 @@ async function loadFFmpeg(onProgress?: ProgressCallback): Promise<FFmpeg> {
 
   isLoading = true;
 
+  // Determine which version to use
+  const useMultiThreaded = isMultiThreadedSupported();
+  usingSingleThreaded = !useMultiThreaded;
+
   loadPromise = (async () => {
+    const loadingMessage = usingSingleThreaded
+      ? "טוען את מנוע עיבוד הוידאו (עשוי לקחת קצת יותר זמן)..."
+      : "טוען את מנוע עיבוד הוידאו...";
+
     onProgress?.({
       stage: "loading",
       progress: 0,
-      message: "טוען את מנוע עיבוד הוידאו...",
+      message: loadingMessage,
     });
 
     ffmpeg = new FFmpeg();
 
-    // Load ffmpeg-core from CDN with CORS support
-    const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm";
+    // Use multi-threaded core if supported, otherwise fall back to single-threaded
+    // @ffmpeg/core = single-threaded (works everywhere)
+    // @ffmpeg/core-mt = multi-threaded (requires SharedArrayBuffer, faster)
+    const baseURL = useMultiThreaded
+      ? "https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/esm"
+      : "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm";
 
     await ffmpeg.load({
       coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
@@ -237,14 +261,19 @@ export async function compressVideo(
 
 /**
  * Check if FFmpeg is supported in the current browser
+ * Now always returns true since we have single-threaded fallback
+ * Only requires WebAssembly support (available in all modern browsers)
  */
 export function isFFmpegSupported(): boolean {
-  // Check for SharedArrayBuffer support (required for multi-threading)
-  // and WebAssembly support
-  return (
-    typeof SharedArrayBuffer !== "undefined" &&
-    typeof WebAssembly !== "undefined"
-  );
+  return typeof WebAssembly !== "undefined";
+}
+
+/**
+ * Check if video compression will use slow mode (single-threaded)
+ * Returns true if the browser doesn't support SharedArrayBuffer
+ */
+export function isSlowCompressionMode(): boolean {
+  return !isMultiThreadedSupported();
 }
 
 /**

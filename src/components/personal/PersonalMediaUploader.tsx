@@ -9,6 +9,7 @@ import {
   compressVideo,
   generateVideoThumbnail,
   isFFmpegSupported,
+  isSlowCompressionMode,
   formatFileSize,
   CompressionProgress,
 } from "@/lib/utils/videoCompression";
@@ -162,16 +163,23 @@ export default function PersonalMediaUploader({
           grades,
         });
       } else if (mode === "video" && selectedFile) {
-        // Check browser support
+        // Check browser support (WebAssembly required)
         if (!isFFmpegSupported()) {
           if (filePreview) {
             URL.revokeObjectURL(filePreview);
           }
           toast.error(
-            "הדפדפן שלך לא תומך בדחיסת וידאו. נסה להעלות קישור YouTube במקום."
+            "הדפדפן שלך לא תומך בעיבוד וידאו. נסה להשתמש בדפדפן Chrome או Edge."
           );
           setIsUploading(false);
           return;
+        }
+
+        // Show friendly message if using slow mode
+        if (isSlowCompressionMode()) {
+          toast.info(
+            "הסרטון יעובד בהצלחה, אבל זה עשוי לקחת קצת יותר זמן מהרגיל. אפשר להמשיך לעבוד בינתיים 😊"
+          );
         }
 
         // Compress video
