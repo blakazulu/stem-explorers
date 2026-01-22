@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import { Upload, Video, ImageIcon, Youtube, X, Loader2 } from "lucide-react";
+import { Upload, Video, ImageIcon, Youtube, X, Loader2, Code2, HelpCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { UploadOverlay } from "@/components/ui/UploadOverlay";
 import { uploadImageWithProgress } from "@/lib/utils/imageUpload";
@@ -13,6 +13,7 @@ import {
   CompressionProgress,
 } from "@/lib/utils/videoCompression";
 import { useToastActions } from "@/components/ui/Toast";
+import { validateEmbedUrl } from "@/lib/utils/embedValidator";
 import type { Grade, PersonalMediaType } from "@/types";
 
 interface PersonalMediaUploaderProps {
@@ -29,7 +30,7 @@ interface PersonalMediaUploaderProps {
 
 const GRADES: Grade[] = ["א", "ב", "ג", "ד", "ה", "ו"];
 
-type UploadMode = "image" | "video" | "youtube";
+type UploadMode = "image" | "video" | "youtube" | "embed";
 
 export default function PersonalMediaUploader({
   onUpload,
@@ -41,6 +42,9 @@ export default function PersonalMediaUploader({
   const [selectedGrades, setSelectedGrades] = useState<Grade[]>([]);
   const [allGrades, setAllGrades] = useState(true);
   const [youtubeUrl, setYoutubeUrl] = useState("");
+  const [embedUrl, setEmbedUrl] = useState("");
+  const [embedSource, setEmbedSource] = useState<string | null>(null);
+  const [showEmbedHelp, setShowEmbedHelp] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -121,6 +125,20 @@ export default function PersonalMediaUploader({
         await onUpload({
           type: "youtube",
           url: youtubeUrl,
+          title: title.trim(),
+          description: description.trim() || undefined,
+          grades,
+        });
+      } else if (mode === "embed") {
+        const validation = validateEmbedUrl(embedUrl);
+        if (!validation.isValid) {
+          toast.error(validation.error || "קישור לא תקין");
+          return;
+        }
+
+        await onUpload({
+          type: "embed",
+          url: validation.embedUrl!,
           title: title.trim(),
           description: description.trim() || undefined,
           grades,
@@ -268,7 +286,7 @@ export default function PersonalMediaUploader({
         <h2 className="text-lg font-bold text-gray-900 mb-4 text-right">
           הוסף מדיה חדשה
         </h2>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <button
             onClick={() => setMode("image")}
             className="flex flex-col items-center gap-2 p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
@@ -289,6 +307,13 @@ export default function PersonalMediaUploader({
           >
             <Youtube className="w-8 h-8 text-red-500" />
             <span className="text-sm font-medium">YouTube</span>
+          </button>
+          <button
+            onClick={() => setMode("embed")}
+            className="flex flex-col items-center gap-2 p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-teal-500 hover:bg-teal-50 transition-colors"
+          >
+            <Code2 className="w-8 h-8 text-teal-500" />
+            <span className="text-sm font-medium">מצגת / הטמעה</span>
           </button>
         </div>
         <button
@@ -315,6 +340,7 @@ export default function PersonalMediaUploader({
           {mode === "image" && "העלאת תמונה"}
           {mode === "video" && "העלאת סרטון"}
           {mode === "youtube" && "הוספת סרטון YouTube"}
+          {mode === "embed" && "הוספת מצגת / הטמעה"}
         </h2>
       </div>
 
@@ -333,6 +359,105 @@ export default function PersonalMediaUploader({
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-left"
               dir="ltr"
             />
+          </div>
+        ) : mode === "embed" ? (
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1 text-right">
+                קישור למצגת
+              </label>
+              <input
+                type="url"
+                value={embedUrl}
+                onChange={(e) => {
+                  setEmbedUrl(e.target.value);
+                  const result = validateEmbedUrl(e.target.value);
+                  setEmbedSource(result.source?.nameHe || null);
+                }}
+                placeholder="https://prezi.com/v/..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-left"
+                dir="ltr"
+              />
+              {embedSource && (
+                <p className="text-xs text-teal-600 mt-1 text-right">
+                  זוהה: {embedSource}
+                </p>
+              )}
+              <p className="text-xs text-gray-500 mt-1 text-right">
+                ניתן להדביק קישור או קוד iframe מלא
+              </p>
+            </div>
+
+            {/* Help section */}
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setShowEmbedHelp(!showEmbedHelp)}
+                className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition-colors text-right"
+              >
+                <span className="flex items-center gap-2 text-sm text-gray-600">
+                  <HelpCircle size={16} />
+                  איך להשיג קישור?
+                </span>
+                {showEmbedHelp ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
+              </button>
+
+              {showEmbedHelp && (
+                <div className="p-3 space-y-4 text-sm bg-white max-h-64 overflow-y-auto">
+                  {/* Prezi */}
+                  <div className="border-b border-gray-100 pb-3">
+                    <h4 className="font-medium text-gray-800 mb-1">Prezi</h4>
+                    <ol className="text-gray-600 text-xs space-y-1 list-decimal list-inside">
+                      <li>פתח את המצגת ב-Prezi</li>
+                      <li>לחץ על &quot;Share&quot; → &quot;Embed&quot;</li>
+                      <li>העתק את כל קוד ה-iframe או רק את הקישור</li>
+                    </ol>
+                  </div>
+
+                  {/* Google Slides */}
+                  <div className="border-b border-gray-100 pb-3">
+                    <h4 className="font-medium text-gray-800 mb-1">Google Slides</h4>
+                    <ol className="text-gray-600 text-xs space-y-1 list-decimal list-inside">
+                      <li>פתח את המצגת ב-Google Slides</li>
+                      <li>לחץ על קובץ ← פרסם באינטרנט</li>
+                      <li>בחר &quot;הטמע&quot; והעתק את הקישור (רק את ה-URL)</li>
+                      <li>או פשוט העתק את הקישור משורת הכתובת</li>
+                    </ol>
+                  </div>
+
+                  {/* Canva */}
+                  <div className="border-b border-gray-100 pb-3">
+                    <h4 className="font-medium text-gray-800 mb-1">Canva</h4>
+                    <ol className="text-gray-600 text-xs space-y-1 list-decimal list-inside">
+                      <li>פתח את העיצוב ב-Canva</li>
+                      <li>לחץ על &quot;Share&quot; בפינה הימנית העליונה</li>
+                      <li>בחר &quot;More&quot; ואז &quot;Embed&quot;</li>
+                      <li>העתק את הקישור מה-URL (לא את כל קוד ה-iframe)</li>
+                    </ol>
+                  </div>
+
+                  {/* Genially */}
+                  <div className="border-b border-gray-100 pb-3">
+                    <h4 className="font-medium text-gray-800 mb-1">Genially</h4>
+                    <ol className="text-gray-600 text-xs space-y-1 list-decimal list-inside">
+                      <li>פתח את היצירה ב-Genially</li>
+                      <li>לחץ על &quot;Share&quot;</li>
+                      <li>העתק את הקישור הציבורי</li>
+                    </ol>
+                  </div>
+
+                  {/* Padlet */}
+                  <div>
+                    <h4 className="font-medium text-gray-800 mb-1">Padlet</h4>
+                    <ol className="text-gray-600 text-xs space-y-1 list-decimal list-inside">
+                      <li>פתח את הלוח ב-Padlet</li>
+                      <li>לחץ על &quot;Share&quot; (שיתוף)</li>
+                      <li>העתק את הקישור מ-&quot;Copy link&quot;</li>
+                    </ol>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         ) : (
           <div>

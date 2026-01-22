@@ -21,6 +21,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import PersonalMediaCard from "./PersonalMediaCard";
 import VideoPlayerModal from "./VideoPlayerModal";
+import EmbedPlayerModal from "./EmbedPlayerModal";
 import { ImageCarousel } from "@/components/ui/ImageCarousel";
 import type { PersonalMedia } from "@/types";
 
@@ -97,6 +98,7 @@ export default function PersonalMediaGallery({
   );
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [showImageCarousel, setShowImageCarousel] = useState(false);
+  const [showEmbedModal, setShowEmbedModal] = useState(false);
 
   // Get all images for carousel
   const images = media.filter((m) => m.type === "image");
@@ -118,6 +120,8 @@ export default function PersonalMediaGallery({
       setSelectedMedia(item);
       if (item.type === "video" || item.type === "youtube") {
         setShowVideoModal(true);
+      } else if (item.type === "embed") {
+        setShowEmbedModal(true);
       } else {
         setShowImageCarousel(true);
       }
@@ -209,6 +213,19 @@ export default function PersonalMediaGallery({
           url={selectedMedia.url}
           title={selectedMedia.title}
           type={selectedMedia.type}
+        />
+      )}
+
+      {/* Embed Modal */}
+      {selectedMedia && selectedMedia.type === "embed" && (
+        <EmbedPlayerModal
+          isOpen={showEmbedModal}
+          onClose={() => {
+            setShowEmbedModal(false);
+            setSelectedMedia(null);
+          }}
+          url={selectedMedia.url}
+          title={selectedMedia.title}
         />
       )}
 

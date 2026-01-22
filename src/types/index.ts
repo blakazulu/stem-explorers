@@ -286,7 +286,7 @@ export type {
 export { DEFAULT_GLOBE_MONITOR_QUESTIONS } from "./globeMonitor";
 
 // Personal Page
-export type PersonalMediaType = "image" | "video" | "youtube";
+export type PersonalMediaType = "image" | "video" | "youtube" | "embed";
 
 export interface PersonalPageConfig {
   id: string;

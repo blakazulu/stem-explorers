@@ -24,7 +24,7 @@ export function usePersonalPageConfig() {
 export function useSavePersonalPageConfig() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: Omit<PersonalPageConfig, "id" | "updatedAt">) =>
+    mutationFn: (data: Partial<Omit<PersonalPageConfig, "id" | "updatedAt">> & { updatedBy: string }) =>
       savePersonalPageConfig(data),
     onSuccess: () => {
       queryClient.invalidateQueries({

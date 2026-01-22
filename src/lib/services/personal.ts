@@ -58,7 +58,7 @@ export async function getPersonalPageConfig(): Promise<PersonalPageConfig | null
 }
 
 export async function savePersonalPageConfig(
-  data: Omit<PersonalPageConfig, "id" | "updatedAt">
+  data: Partial<Omit<PersonalPageConfig, "id" | "updatedAt">> & { updatedBy: string }
 ): Promise<void> {
   try {
     const docRef = doc(db, CONFIG_COLLECTION, CONFIG_DOC_ID);

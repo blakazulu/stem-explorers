@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Play, Pencil, Trash2, GripVertical, ImageIcon } from "lucide-react";
+import { Play, Pencil, Trash2, GripVertical, ImageIcon, Presentation } from "lucide-react";
 import type { PersonalMedia } from "@/types";
 import { getYouTubeThumbnail } from "./YouTubeEmbed";
 
@@ -28,6 +28,7 @@ export default function PersonalMediaCard({
   const [imageError, setImageError] = useState(false);
 
   const isVideo = media.type === "video" || media.type === "youtube";
+  const isEmbed = media.type === "embed";
 
   // Get thumbnail URL
   const thumbnailUrl =
@@ -58,7 +59,13 @@ export default function PersonalMediaCard({
         className="relative cursor-pointer aspect-[4/3] overflow-hidden bg-gray-100"
         onClick={onClick}
       >
-        {thumbnailUrl && !imageError ? (
+        {isEmbed ? (
+          // Embed placeholder with gradient background
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-teal-50 to-teal-100">
+            <Presentation className="w-12 h-12 text-teal-500 mb-2" />
+            <span className="text-xs text-teal-600 font-medium">מצגת</span>
+          </div>
+        ) : thumbnailUrl && !imageError ? (
           <>
             {!imageLoaded && (
               <div className="absolute inset-0 flex items-center justify-center">
@@ -86,6 +93,15 @@ export default function PersonalMediaCard({
           <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
             <div className="w-14 h-14 flex items-center justify-center bg-white/90 rounded-full shadow-lg group-hover:scale-110 transition-transform">
               <Play className="w-7 h-7 text-gray-800 mr-[-2px]" />
+            </div>
+          </div>
+        )}
+
+        {/* Embed open button overlay */}
+        {isEmbed && (
+          <div className="absolute inset-0 flex items-center justify-center bg-teal-500/10 group-hover:bg-teal-500/20 transition-colors">
+            <div className="w-14 h-14 flex items-center justify-center bg-white/90 rounded-full shadow-lg group-hover:scale-110 transition-transform">
+              <Presentation className="w-7 h-7 text-teal-600" />
             </div>
           </div>
         )}

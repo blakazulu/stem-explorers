@@ -7,9 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.31] - 2026-01-22
+
+### Added
+
+- **Embed/iframe support for Personal page**: Admins can now embed presentations and interactive content from Prezi, Google Slides, Canva, Genially, and Padlet in the personal media gallery. Includes help section with instructions for each platform.
+- **Banner management**: Admins can now upload, edit, and delete a banner image for the Personal page (already displayed in student view)
+- **Enhanced edit modal**: Media items can now be fully edited including replacing images, changing URLs for embeds/YouTube, and updating all metadata fields
+
 ### Fixed
 
 - **Sidebar loading flash**: Fixed issue where sidebar showed default order briefly before loading saved config from Firestore. Now shows skeleton while loading for non-admin roles.
+- **Prezi URL support**: Fixed validation to support /view/ URLs and full iframe code pasting
 
 ## [0.9.30] - 2026-01-22
 
