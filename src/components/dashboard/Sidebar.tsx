@@ -250,7 +250,7 @@ export function Sidebar({ onClose }: SidebarProps) {
   }, []);
 
   // Get visibility config
-  const { getSidebarConfig } = useVisibility();
+  const { getSidebarConfig, isLoading: isConfigLoading } = useVisibility();
 
   // Get role-specific theme
   const theme = role ? sidebarThemes[role] : defaultTheme;
@@ -358,6 +358,18 @@ export function Sidebar({ onClose }: SidebarProps) {
 
       {/* Navigation */}
       <nav className="flex-1 p-4 overflow-y-auto" aria-label="תפריט ראשי">
+        {/* Loading skeleton for non-admin roles while config loads */}
+        {isConfigLoading && role !== "admin" ? (
+          <div className="space-y-2">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="flex items-center gap-3 px-4 py-2.5">
+                <div className="w-5 h-5 rounded bg-surface-2 animate-pulse" />
+                <div className={`h-4 rounded bg-surface-2 animate-pulse ${i % 3 === 0 ? "w-3/4" : i % 2 === 0 ? "w-2/3" : "w-4/5"}`} />
+              </div>
+            ))}
+          </div>
+        ) : (
+        <>
         {/* Main Navigation Items */}
         <ul className="space-y-1" role="list">
           {mainItems.map((item) => {

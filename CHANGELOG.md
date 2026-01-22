@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Sidebar loading flash**: Fixed issue where sidebar showed default order briefly before loading saved config from Firestore. Now shows skeleton while loading for non-admin roles.
+
 ## [0.9.30] - 2026-01-22
 
 ### Added
