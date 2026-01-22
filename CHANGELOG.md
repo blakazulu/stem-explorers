@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.35] - 2026-01-22
+
+### Changed
+
+- **Challenge comment dates hidden from non-admins**: Comment dates on challenges (stem-family page) are now only visible to admins, matching the behavior of announcement comments
+
 ## [0.9.34] - 2026-01-22
 
 ### Added

@@ -142,10 +142,14 @@ export function ChallengeCommentList({
                     <Users size={10} />
                     כיתה {comment.authorGrade}׳
                   </span>
-                  <span className="text-xs text-gray-400">•</span>
-                  <span className="text-xs text-gray-400">
-                    {comment.createdAt?.toLocaleDateString("he-IL")}
-                  </span>
+                  {isAdmin && (
+                    <>
+                      <span className="text-xs text-gray-400">•</span>
+                      <span className="text-xs text-gray-400">
+                        {comment.createdAt?.toLocaleDateString("he-IL")}
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
 
