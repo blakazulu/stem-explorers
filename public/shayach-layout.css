@@ -1,0 +1,4 @@
+html{--shayach-rail:64px;padding-right:var(--shayach-rail)!important;box-sizing:border-box!important}body{max-width:100%;box-sizing:border-box}html::after{content:"";position:fixed;right:0;top:0;bottom:0;width:var(--shayach-rail);background:#eef2f7;border-left:1px solid #8893a533;z-index:900;pointer-events:none}@media(max-width:640px){html{--shayach-rail:56px}}
+#nl-badge-frame{position:relative!important;display:block!important;bottom:auto!important;right:auto!important;margin-left:auto!important;max-width:100%}
+/* Keep full-screen app layers and native dialogs out of the widget rail. */
+.fixed.inset-0{right:var(--shayach-rail)!important}dialog{max-width:calc(100vw - var(--shayach-rail) - 24px)!important}dialog.fixed.inset-0{right:var(--shayach-rail)!important}

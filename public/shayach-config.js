@@ -1,0 +1,1 @@
+window.A11yConfig={"language": "auto", "icon": {"shape": "rounded", "position": "bottom-right", "offsetX": 8, "offsetY": 12, "size": 48, "background": "#0F766E", "draggable": false, "mobile": {"position": "bottom-right", "offsetX": 6, "offsetY": 12, "size": 44}}, "theme": {"primary": "#0F766E"}};

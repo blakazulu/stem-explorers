@@ -1,3 +1,4 @@
+import Script from "next/script";
 import type { Metadata, Viewport } from "next";
 import { Rubik, Heebo } from "next/font/google";
 import { QueryProvider } from "@/providers/QueryProvider";
@@ -68,7 +69,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Playpen+Sans+Hebrew:wght@700&display=swap" rel="stylesheet" />
-      </head>
+      <link rel="stylesheet" href="/shayach-layout.css" /><Script src="/shayach-config.js" strategy="beforeInteractive" /></head>
       <body className="font-heebo bg-background text-foreground min-h-screen">
         <QueryProvider>
           <VersionGuard>
@@ -77,7 +78,7 @@ export default function RootLayout({
             </AuthProvider>
           </VersionGuard>
         </QueryProvider>
-      </body>
+      <Script src="https://shayach.co.il/v1/widget.js" strategy="afterInteractive" /></body>
     </html>
   );
 }
