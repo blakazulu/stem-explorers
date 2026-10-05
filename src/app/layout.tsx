@@ -69,7 +69,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Playpen+Sans+Hebrew:wght@700&display=swap" rel="stylesheet" />
-      <link rel="stylesheet" href="/shayach-layout.css" /><Script src="/shayach-config.js" strategy="beforeInteractive" /></head>
+      <Script src="/shayach-config.js" strategy="beforeInteractive" /></head>
       <body className="font-heebo bg-background text-foreground min-h-screen">
         <QueryProvider>
           <VersionGuard>
