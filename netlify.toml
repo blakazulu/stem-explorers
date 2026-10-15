@@ -4,3 +4,16 @@
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+# Old address -> custom domain (host-specific, keeps path and query)
+[[redirects]]
+  from = "https://stem-explorers.netlify.app/*"
+  to = "https://stem-explorers.esekpo.co.il/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://stem-explorers.netlify.app/*"
+  to = "https://stem-explorers.esekpo.co.il/:splat"
+  status = 301
+  force = true

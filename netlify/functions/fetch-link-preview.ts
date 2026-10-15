@@ -169,7 +169,7 @@ export const handler: Handler = async (event) => {
     const response = await fetch(url, {
       headers: {
         "User-Agent":
-          "Mozilla/5.0 (compatible; LinkPreviewBot/1.0; +https://stem-explorers.netlify.app)",
+          "Mozilla/5.0 (compatible; LinkPreviewBot/1.0; +https://stem-explorers.esekpo.co.il)",
         Accept: "text/html,application/xhtml+xml",
       },
       signal: controller.signal,
